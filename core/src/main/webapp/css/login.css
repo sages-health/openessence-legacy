@@ -1,0 +1,166 @@
+/*
+ * Copyright (c) 2013 The Johns Hopkins University/Applied Physics Laboratory
+ *                             All rights reserved.
+ *
+ * This material may be used, modified, or reproduced by or for the U.S.
+ * Government pursuant to the rights granted under the clauses at
+ * DFARS 252.227-7013/7014 or FAR 52.227-14.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * NO WARRANTY.   THIS MATERIAL IS PROVIDED "AS IS."  JHU/APL DISCLAIMS ALL
+ * WARRANTIES IN THE MATERIAL, WHETHER EXPRESS OR IMPLIED, INCLUDING (BUT NOT
+ * LIMITED TO) ANY AND ALL IMPLIED WARRANTIES OF PERFORMANCE,
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT OF
+ * INTELLECTUAL PROPERTY RIGHTS. ANY USER OF THE MATERIAL ASSUMES THE ENTIRE
+ * RISK AND LIABILITY FOR USING THE MATERIAL.  IN NO EVENT SHALL JHU/APL BE
+ * LIABLE TO ANY USER OF THE MATERIAL FOR ANY ACTUAL, INDIRECT,
+ * CONSEQUENTIAL, SPECIAL OR OTHER DAMAGES ARISING FROM THE USE OF, OR
+ * INABILITY TO USE, THE MATERIAL, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES
+ * FOR LOST PROFITS.
+ */
+
+body {
+    overflow: auto !important;
+}
+
+#mainLogin {
+    margin: 5px auto 5px auto;
+    padding: 5px 0px;
+    min-width: 325px;
+    width: 25%;
+}
+
+#mainLogin form {
+    border-radius: 0 0 8px 8px;
+    -webkit-border-radius: 0 0 8px 8px;
+    -moz-border-radius: 0 0 8px 8px;
+    background-color: #CAE5D3;
+}
+
+#mainLogin form .x-form-item {
+    font-weight: bold;
+}
+
+.login-mainLogin-logo {
+    display: inline;
+    float: left;
+    height: 300px;
+    width: 300px;
+    top: -80px;
+    left: 10%;
+    position: absolute;
+    overflow: visible;
+}
+
+.login-mainLogin-logo .x-panel-body {
+    background-color: transparent;
+}
+
+#mainLogin .x-panel-bwrap, .x-panel-body-noheader, .x-panel-mc .x-panel-body, .x-panel-noborder .x-panel-body-noborder {
+    overflow: visible;
+}
+
+.login-mainLogin {
+    background: #6BACB6;
+    margin: 10px auto 50px auto;
+    overflow: visible;
+}
+
+.login-mainLogin .x-panel-bwrap {
+    overflow: visible;
+}
+
+#mainLogos {
+    margin: 15px auto 15px auto;
+    background: transparent;
+}
+
+#mainInfo {
+    width: 85%;
+}
+
+.login-header {
+    height: 100px;
+    margin-bottom: 10px;
+    overflow: hidden; /* for IE */
+    text-align: center; /* center title, other components override this */
+}
+
+/* this is everything in ext + xttheme ()x-form-item,label etc) flattened for reuse on the login page */
+.loginLabel {
+    font: 12px arial, tahoma, helvetica, sans-serif;
+    clear: left;
+    display: block;
+    float: left;
+    padding: 3px 3px 3px 0;
+    position: relative;
+    width: 100px;
+    z-index: 2;
+    text-align: left;
+}
+
+/* this is everything in ext + xttheme (x-form-field,textarea etc) flattened for reuse on the login page */
+.loginField {
+    margin: 0;
+    vertical-align: middle;
+    height: 22px;
+    background-image: url("../js/ext-3.0.3/resources/images/default/form/text-bg.gif");
+    font: 12px arial, tahoma, helvetica, sans-serif;
+    background-color: #FFFFFF;
+    border: 1px solid #B5B8C8;
+    clear: none;
+    display: block;
+    float: left;
+    padding-bottom: 0;
+    padding-top: 2px;
+    padding-right: 3px;
+    padding-left: 3px;
+    background-repeat: repeat-x;
+    background-position: 0px 0px;
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-origin: padding-box;
+    background-size: auto auto;
+}
+
+.loginCheckboxField {
+    margin: 0;
+    vertical-align: middle;
+    height: 22px;
+    font: 12px arial, tahoma, helvetica, sans-serif;
+    background-color: #FFFFFF;
+    border-style: none;
+    clear: none;
+    display: block;
+    float: left;
+    padding-bottom: 0;
+    padding-top: 2px;
+    padding-right: 3px;
+    padding-left: 0px;
+}
+
+.loginPanelHeader {
+    border-radius: 8px 8px 0 0;
+    -webkit-border-radius: 8px 8px 0 0;
+    -moz-border-radius: 8px 8px 0 0;
+}
+
+.loginPanelBody {
+    border-radius: 0 0 8px 8px;
+    -webkit-border-radius: 0 0 8px 8px;
+    -moz-border-radius: 0 0 8px 8px;
+}
+
+.loginInfoPanel {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.legalText {
+    text-align: center;
+}

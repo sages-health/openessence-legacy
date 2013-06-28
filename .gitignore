@@ -1,0 +1,41 @@
+# Gradle
+build/
+.gradle/
+
+# Maven (just in case)
+target/
+
+# OS X
+.DS_Store
+
+# Eclipse settings
+.classpath
+.project
+.settings/
+
+# IntelliJ settings
+*.iml
+*.ipr
+*.iws
+out/
+
+# Backup and lock files
+*~
+\#*\#
+
+# Vagrant storage
+.vagrant/
+
+# Managed by librarian
+chef/lib/cookbooks/
+chef/lib/tmp/
+
+# Other
+*.class
+bin/
+.svn/
+
+# Let's just ignore all dotfiles by default
+.*
+!.gitignore
+!.gitattributes

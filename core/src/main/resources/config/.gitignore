@@ -1,0 +1,7 @@
+# The properties files in this directory shouldn't
+# be checked in. They have dev-specific settings
+# and/or security credentials.
+*.properties
+
+# Except for env
+!env.properties

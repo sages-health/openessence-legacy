@@ -1,0 +1,15 @@
+dependencies {
+	compile "org.slf4j:slf4j-api:${project.versions.slf4j}"
+	compile 'commons-collections:commons-collections:3.2.1'
+	compile "org.codehaus.jackson:jackson-mapper-asl:${project.versions.jackson}"
+
+	compile "org.springframework:spring-core:${project.versions.spring}"
+	compile "org.springframework:spring-context:${project.versions.spring}"
+	compile "org.springframework:spring-tx:${project.versions.spring}"
+	compile "org.springframework:spring-jdbc:${project.versions.spring}"
+	compile group: 'org.springframework.security', name: 'spring-security-core',
+		version: project.versions.springSecurity
+
+	testCompile "junit:junit:${project.versions.junit}"
+	testCompile "org.codehaus.groovy:groovy:${project.versions.groovy}"
+}

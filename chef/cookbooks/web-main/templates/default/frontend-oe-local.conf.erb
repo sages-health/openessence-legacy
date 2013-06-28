@@ -1,0 +1,62 @@
+ServerName web.local
+
+<VirtualHost *:80>
+    ServerName web.local
+    ServerAlias web.oe.local www.web.local www.web.oe.local
+    Redirect permanent / https://web.local/
+</VirtualHost>
+
+<VirtualHost *:443>
+
+  ServerName web.local
+  ServerAlias web.oe.local www.web.local www.web.oe.local
+  
+  SSLEngine On
+  SSLCertificateFile /etc/ssl/certs/web.local.pem
+  SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
+  ProxyRequests Off
+  <Proxy *>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
+  ProxyPass        /geoserver ajp://geoserver.oe.local:8009/geoserver
+  ProxyPassReverse /geoserver ajp://geoserver.oe.local:8009/geoserver  
+  ProxyPass        / ajp://app.oe.local:8009/
+  ProxyPassReverse / ajp://app.oe.local:8009/
+  ProxyPreserveHost On
+</VirtualHost>
+
+# VirtualHosts that forwards to VM host, useful for running Tomcat on your dev machine
+<VirtualHost *:80>
+    ServerName web.host.local
+    ServerAlias www.web.host.local
+    
+    # Redirect to VirtualHost that proxies to VM host
+    Redirect permanent / https://web.host.local/
+</VirtualHost>
+<VirtualHost *:443>
+
+  ServerName web.host.local
+  ServerAlias www.web.host.local
+  
+  SSLEngine On
+  SSLCertificateFile /etc/ssl/certs/web.local.pem
+  SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
+  ProxyRequests Off
+  <Proxy *>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
+  # GeoServer requests can always go to VM
+  ProxyPass        /geoserver ajp://geoserver.oe.local:8009/geoserver
+  ProxyPassReverse /geoserver ajp://geoserver.oe.local:8009/geoserver
+
+  # forward to host, 10.0.2.2 is host in VirtualBox NAT network
+  ProxyPass        / ajp://10.0.2.2:8009/
+  ProxyPassReverse / ajp://10.0.2.2:8009/
+  ProxyPreserveHost On
+</VirtualHost>

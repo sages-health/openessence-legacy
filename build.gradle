@@ -1,0 +1,124 @@
+/*
+ * Copyright (c) 2013 The Johns Hopkins University/Applied Physics Laboratory
+ *                             All rights reserved.
+ *
+ * This material may be used, modified, or reproduced by or for the U.S.
+ * Government pursuant to the rights granted under the clauses at
+ * DFARS 252.227-7013/7014 or FAR 52.227-14.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * NO WARRANTY.   THIS MATERIAL IS PROVIDED "AS IS."  JHU/APL DISCLAIMS ALL
+ * WARRANTIES IN THE MATERIAL, WHETHER EXPRESS OR IMPLIED, INCLUDING (BUT NOT
+ * LIMITED TO) ANY AND ALL IMPLIED WARRANTIES OF PERFORMANCE,
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT OF
+ * INTELLECTUAL PROPERTY RIGHTS. ANY USER OF THE MATERIAL ASSUMES THE ENTIRE
+ * RISK AND LIABILITY FOR USING THE MATERIAL.  IN NO EVENT SHALL JHU/APL BE
+ * LIABLE TO ANY USER OF THE MATERIAL FOR ANY ACTUAL, INDIRECT,
+ * CONSEQUENTIAL, SPECIAL OR OTHER DAMAGES ARISING FROM THE USE OF, OR
+ * INABILITY TO USE, THE MATERIAL, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES
+ * FOR LOST PROFITS.
+ */
+
+// add site-specific build logic
+apply from: 'site.gradle'
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+
+    // This is needed for all projects even if they don't build WARs,
+    // see http://stackoverflow.com/a/16178234
+    apply plugin: 'eclipse-wtp'
+
+    eclipse {
+        project {
+            // Use a unique prefix for subproject names.
+            // Otherwise, Eclipse won't let you have multiple OE deployments,
+            // since they'll all have a "core" project, "graph" project, etc. that will collide.
+            if (rootProject.hasProperty('eclipseProjectPrefix')) {
+                name = eclipseProjectPrefix + project.name
+                logger.info("Using $name as eclipse project name")
+            }
+        }
+    }
+
+    version = '2.0.0'
+    group = 'edu.jhuapl.openessence'
+
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
+
+    ext {
+        versions = [
+                spring: '3.2.3.RELEASE',
+                springSecurity: '3.1.4.RELEASE',
+                commonsIo: '2.4',
+                jackson: '1.9.12',
+                bonecp: '0.7.1.RELEASE',
+                slf4j: '1.7.5',
+                logback: '1.0.13',
+                groovy: '2.1.3',
+                httpclient: '4.2.5',
+                junit: '4.11',
+                servlet: '2.5',
+                jsp: '2.1',
+                jstl: '1.2'
+        ]
+    }
+
+    repositories {
+        mavenCentral()
+        maven {
+            // Unfortunately, repos in subprojects are broken in gradle.
+            // A repo declared in a single project won't get used by client
+            // projects. E.g. graph subproject needs a repo, but if that repo
+            // is declared only in the graph subproject, core (which depends
+            // on graph) will not be able to build graph.
+
+            // for JAI
+            url "http://repository.springsource.com/maven/bundles/external"
+        }
+    }
+
+    configurations {
+        // globally exclude commons-logging in favor of slf4j (take that maven!)
+        all*.exclude group: 'commons-logging', module: 'commong-logging'
+    }
+
+    dependencies {
+        // TODO make this dependent on presence of commons-logging
+        compile "org.slf4j:jcl-over-slf4j:${project.versions.slf4j}"
+    }
+
+    task docs(type: Jar, dependsOn: javadoc) {
+        classifier = "javadoc"
+        from javadoc.destinationDir
+    }
+
+    task srcs(type: Jar, dependsOn: classes) {
+        classifier = "sources"
+        from sourceSets.main.allSource
+    }
+
+    javadoc {
+        options.links = [
+                'http://docs.oracle.com/javase/7/docs/api/',
+                'http://docs.oracle.com/javaee/6/api/'
+        ]
+    }
+
+    artifacts {
+        archives docs
+        archives srcs
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.6'
+}

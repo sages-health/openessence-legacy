@@ -1,0 +1,6 @@
+# Vagrant storage
+.vagrant/
+
+# Managed by librarian
+chef/lib/cookbooks/
+chef/lib/tmp/

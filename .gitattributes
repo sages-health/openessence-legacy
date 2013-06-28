@@ -1,0 +1,26 @@
+# Default behavior, in case users don't have core.autocrlf set.
+* text=auto
+
+# Explicitly convert crlf to lf on commit for these files
+*.java text
+*.groovy text
+*.js text
+*.css text
+*.txt text
+*.md text
+*.sql text
+*.jsp text
+
+# Files that will always have CRLF line endings on checkout
+*.bat text eol=crlf
+
+# Binary files that should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.jar binary
+
+
+# Users need to explicitly add custom merge strategy or this won't do anything.
+site.gradle merge=ours

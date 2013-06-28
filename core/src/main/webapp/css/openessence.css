@@ -1,0 +1,743 @@
+/*
+ * Copyright (c) 2013 The Johns Hopkins University/Applied Physics Laboratory
+ *                             All rights reserved.
+ *
+ * This material may be used, modified, or reproduced by or for the U.S.
+ * Government pursuant to the rights granted under the clauses at
+ * DFARS 252.227-7013/7014 or FAR 52.227-14.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * NO WARRANTY.   THIS MATERIAL IS PROVIDED "AS IS."  JHU/APL DISCLAIMS ALL
+ * WARRANTIES IN THE MATERIAL, WHETHER EXPRESS OR IMPLIED, INCLUDING (BUT NOT
+ * LIMITED TO) ANY AND ALL IMPLIED WARRANTIES OF PERFORMANCE,
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT OF
+ * INTELLECTUAL PROPERTY RIGHTS. ANY USER OF THE MATERIAL ASSUMES THE ENTIRE
+ * RISK AND LIABILITY FOR USING THE MATERIAL.  IN NO EVENT SHALL JHU/APL BE
+ * LIABLE TO ANY USER OF THE MATERIAL FOR ANY ACTUAL, INDIRECT,
+ * CONSEQUENTIAL, SPECIAL OR OTHER DAMAGES ARISING FROM THE USE OF, OR
+ * INABILITY TO USE, THE MATERIAL, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES
+ * FOR LOST PROFITS.
+ */
+
+/**
+ * core styles
+ */
+
+/**
+ * Header styles 
+ */
+.openessence-header {
+    height: 50px;
+    margin-bottom: 10px;
+    overflow: hidden; /* for IE */
+    text-align: center; /* center title, other components override this */
+}
+
+.header-images {
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 5px;
+}
+
+/* header text, this is poorly named, but kept for compatibility */
+.oe-header {
+    font-size: 14pt;
+    color: #999966;
+
+    /* practically every site already sets this, so set it in core */
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+#mainLogin {
+    margin: auto;
+    padding-top: 10px;
+    padding-bottom: 50px;
+    min-width: 325px;
+    width: 25%;
+}
+
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.oe-title {
+    /* vertically center title */
+    line-height: 50px; /* equal to openessence-header height */
+}
+
+#header-username {
+    position: fixed;
+    padding: 10px;
+    top: 0;
+    /* JS positions this dynamically left of logoutBtn */
+}
+
+#logoutBtn {
+    position: fixed; /* make more sense to float: right, but this is the only thing that Ext likes */
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+
+.dimmed {
+    opacity: 0.5;
+}
+
+table.params td {
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+}
+
+.reportPanel {
+    padding: 0px;
+}
+
+/* fix date picker width in WebKit, 
+   fixed in Ext 3.1: http://www.sencha.com/forum/showthread.php?82493-FIXED-347-DatePicker-popup-width-incorrect-in-Webkit/page2 */
+.ext-webkit .x-date-picker {
+    width: 185px;
+}
+
+body {
+    background: #f4f4dd;
+}
+
+.x-border-layout-ct {
+    background-color: #f4f4dd;
+}
+
+.x-panel-header {
+    color: #333300;
+}
+
+.x-panel-tl .x-panel-header {
+    color: #333300;
+}
+
+.x-window-tl .x-window-header {
+    color: #333300;
+}
+
+.x-window-mc {
+    background-color: #f4f4dd;
+}
+
+.x-panel-noborder .x-panel-header-noborder {
+    border-bottom-width: 1px;
+    background: transparent url(../images/oe-hd.png) repeat-x;
+    border-color: #666633;
+    font-weight: bold;
+    padding-left: 5px;
+}
+
+.x-combo-list .x-combo-selected {
+    background-color: #999966;
+}
+
+.x-tab-strip-top .x-tab-right, .x-tab-strip-top .x-tab-left, .x-tab-strip-top .x-tab-strip-inner {
+    background-image: url(../images/oe-tabs-sprite.png);
+}
+
+td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-asc .x-grid3-hd-inner, td.x-grid3-hd-menu-open .x-grid3-hd-inner {
+    background-image: url(../images/oe-grid3-hrow-over.gif);
+}
+
+.openessence-navigation-menu .x-tree-node-leaf .x-tree-node-icon {
+    background-image: url("../images/oe-bullet.png");
+}
+
+.x-tree-node .x-tree-selected {
+    background-color: #cccc99;
+}
+
+.x-date-middle, .x-date-left, .x-date-right {
+    background-image: url("../images/oe-hd-sprite.gif");
+}
+
+.x-date-bottom {
+    background-color: #f4f4dd;
+    background-image: url("../images/oe-glass-bg.gif");
+    border-top-color: #999966;
+}
+
+.x-date-inner .x-date-selected a {
+    background-color: #DFECFB;
+    background-image: url("../images/oe-glass-bg.gif");
+}
+
+td.x-date-mp-month a:hover, td.x-date-mp-year a:hover {
+    background-color: #cccc99;
+    color: #999966;
+}
+
+td.x-date-mp-month a, td.x-date-mp-year a {
+    color: #666633;
+}
+
+td.x-date-mp-sel a {
+    background-image: url("../images/oe-glass-bg.gif");
+}
+
+.x-date-mp-btns button {
+    background-color: #999966;
+    border-color: #999966 #000055 #000055 #999966;
+}
+
+.x-date-inner th {
+    color: #666633;
+}
+
+.x-date-mp-btns {
+    background-color: #DFECFB;
+    background-image: url("../images/oe-glass-bg.gif");
+}
+
+.x-date-inner th {
+    background-color: #DFECFB;
+    background-image: url("../images/oe-glass-bg.gif");
+    border-bottom-color: #cccc99;
+    color: #666633;
+}
+
+.reportPanel .x-panel-tl, .x-panel-tr, .x-panel-bl, .x-panel-br, .x-panel-tc, .x-panel-ml, .x-panel-mr, .x-panel-mc, .x-panel-bc {
+    background-image: none;
+    border: 0px transparent;
+    padding: 0px;
+}
+
+.reportPanel .x-panel-mc {
+    padding: 0px;
+    background-color: transparent;
+}
+
+.reportPanel .x-tool {
+    float: left;
+    display: inline;
+    margin-right: 5px;
+}
+
+.reportPanel .x-tool-refresh {
+    float: right;
+    display: inline;
+    margin-right: 5px;
+}
+
+.reportPanel .x-tool-save {
+    float: right;
+    display: inline;
+    margin-right: 5px;
+}
+
+.reportPanel .x-tool-gear {
+    float: right;
+    display: inline;
+    margin-right: 5px;
+}
+
+.reportPanel .x-tool-maximize {
+    float: right;
+    display: inline;
+    margin-right: 5px;
+}
+
+.reportPanel .chartPanel {
+    padding: 10px;
+}
+
+.reportPanel .chartPanel .x-panel-tl .x-panel-header {
+    border-bottom: 1px solid;
+}
+
+.reportFieldSet {
+    padding: 10px;
+    margin: 5px;
+}
+
+.reportGridFieldSet {
+    padding: 0px;
+}
+
+.reportFormPanel {
+    padding: 0px;
+    margin: 0px;
+}
+
+.reportFormPanel .x-form-checkbox {
+    margin-top: 5px;
+}
+
+.x-date-epi {
+    text-decoration: none !important;
+    background: #ccc;
+}
+
+.x-date-epi-week-selected {
+    background: transparent url(../images/epi-week-highlight.png) repeat-x;
+}
+
+.x-linkform-item input,
+.x-linkform-item label,
+.x-linkform-item .x-form-field-wrap,
+.x-linkform-item .x-form-item-help,
+.x-linkform-item .x-form-check-wrap,
+.x-linkform-item .x-form-radio-wrap {
+    float: left;
+    display: block;
+    clear: none;
+}
+
+.x-form-item-link {
+    float: left;
+    display: inline;
+    margin-left: 50px;
+    color: #2200CC;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.x-form-item-link a:hover {
+    color: #551A8B;
+    text-decoration: underline;
+}
+
+.x-form-item-help {
+    float: left;
+    display: inline;
+    background: transparent url(../images/information.png) no-repeat scroll 0 0;
+    height: 18px;
+    width: 16px;
+    margin-left: 25px;
+    cursor: help;
+}
+
+.help-button,
+.help-button .x-btn-mc,
+.help-button button {
+    cursor: help;
+}
+
+.main-tab {
+    background-color: transparent;
+}
+
+.main-tab .x-panel-body {
+    background-color: transparent;
+}
+
+.main-tab .x-tab-panel-body {
+    background-color: transparent;
+}
+
+.x-tab-panel-body {
+    background-color: transparent;
+}
+
+.report-date-range-fieldset {
+    margin: 0px;
+    padding: 0px;
+}
+
+.graph-details-detection-0 {
+    /* no detection */
+    /*background-color: #a0a0ff;*/
+}
+
+.graph-details-detection-1 {
+    /* detection ok */
+    /*background-color: #a0d080;*/
+}
+
+.graph-details-detection-2 {
+    /* detection yellow */
+    background-color: #ffffa0;
+}
+
+.graph-details-detection-3 {
+    /* detection red */
+    background-color: #ffa0a0;
+}
+
+.legend {
+    border: 1px solid #000000;
+}
+
+.x-layout-collapsed {
+    border-top-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+    background: transparent url(../images/oe-hd.png) repeat-x;
+    border-color: #666633;
+    padding: 5px 0 4px 5px;
+    height: 15px;
+}
+
+.x-tool-expand-north, .x-tool-expand-south {
+    margin: 0;
+}
+
+.x-tool {
+    margin: 0;
+}
+
+.x-tool.x-tool-pin.saved-query-pin {
+    position: absolute;
+    display: block;
+    top: 3px;
+    left: 3px;
+    margin-right: 9px;
+    z-index: 2;
+    background-position: 0 -135px;
+}
+
+.x-panel-collapsed-text {
+    line-height: 15px;
+    font: bold 12px arial, verdana, sans-serif;
+    color: #333300;
+}
+
+/*
+	Palette (light -> dark)
+	#ffffcc
+	#cccc99
+	#999966
+	#666633
+	#333300
+*/
+
+.bottomlight {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.listTEXT {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #000;
+    list-style-position: outside;
+    margin-left: 45px;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 10px;
+    list-style-type: none;
+}
+
+.paraspace {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 5px;
+    margin-left: 45px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.text {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+    color: #000;
+}
+
+.textINDENT {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+    color: #000;
+    text-align: left;
+    list-style-type: square;
+    margin-left: 0px;
+    padding-left: 15px;
+}
+
+.sectionTITLE {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    color: #069;
+}
+
+.pdfTITLE {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+    color: #633;
+    text-indent: 50px;
+}
+
+.textARIAL {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.titleARIAL {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #036;
+}
+
+.textARIALindent {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    margin: 0px;
+}
+
+.textARIALsm {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.textARIALblue {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #436378;
+}
+
+.textARIALdocheadings {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #FFF;
+    background-color: #9C9773;
+    text-indent: 5px;
+}
+
+.textARIALgrayed {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #999671;
+}
+
+.navigation-item a {
+    font-weight: bold;
+}
+
+/**
+ * demo styles TODO merge with core styles on individual level
+ */
+
+/* header fixes */
+#header-div {
+    border: 0px;
+}
+
+.header-images {
+    background-color: transparent;
+    padding: 20 xp;
+}
+
+.oe-header {
+    color: #000000;
+    font-size: 25pt;
+}
+
+.oe-title {
+    /* vertically center title */
+    line-height: 130px; /* equal to openessence-header height */
+}
+
+#logoutBtn {
+    margin: 16px;
+    padding-top: 15px;
+}
+
+#header-username {
+    padding-top: 30px;
+    padding-bottom: 0px;
+    font-size: 14pt;
+}
+
+.sagesLogo {
+    display: block;
+    margin: auto;
+    padding-top: 50px;
+    padding-right: 230px;
+    width: 500px;
+}
+
+body {
+    background: #FAFAFA none no-repeat;
+    height: 65px;
+}
+
+.x-border-layout-ct {
+    background-color: #FAFAFA;
+}
+
+.openessence-header {
+    background-color: #FAFAFA;
+    border-style: none;
+    border: 0px;
+    height: 100px;
+}
+
+.headerLogoImage {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.x-panel-header {
+    /*     color: #000033; */
+}
+
+.x-panel-tl .x-panel-header {
+    /*     color: #000033; */
+}
+
+.x-window-tl .x-window-header {
+    /*     color: #000033; */
+}
+
+.x-window-mc {
+    background-color: #FAFAFA;
+}
+
+.x-panel-noborder .x-panel-header-noborder {
+    /* 	background: transparent url(../images/purple-hd.png) repeat-x; */
+    /* 	border-color: #333366; */
+}
+
+.x-combo-list .x-combo-selected {
+    /* 	background-color: #666699; */
+}
+
+.x-tab-strip-top .x-tab-right, .x-tab-strip-top .x-tab-left, .x-tab-strip-top .x-tab-strip-inner {
+    /* 	background-image: url(../images/purple-tabs-sprite.png); */
+}
+
+td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-asc .x-grid3-hd-inner, td.x-grid3-hd-menu-open .x-grid3-hd-inner {
+    /*     background-image: url(../images/purple-grid3-hrow-over.gif); */
+}
+
+.openessence-navigation-menu {
+    padding: 124px 0 0 0;
+    background-image: url("../images/OpenESSENCE-Logo_110.png");
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-position: center 5px;
+    background-color: #CAE5D3;
+}
+
+.openessence-navigation-menu .x-tree .x-panel-body {
+    background-color: #CAE5D3;
+}
+
+#navPanel-xsplit {
+    background-color: #6FAEB8;
+}
+
+#navPanel .x-panel-body {
+    background-color: #CAE5D3;
+}
+
+.openessence-navigation-menu .x-tree-node-el .x-tree-node-anchor {
+    font-weight: bolder;
+    color: #000044;
+}
+
+.openessence-navigation-menu .x-tree-node-leaf .x-tree-node-icon {
+    /* 	background-image: url("../images/purple-bullet.png"); */
+}
+
+.x-tree-node .x-tree-selected {
+    /* 	background-color: #9999cc; */
+}
+
+.x-date-middle, .x-date-left, .x-date-right {
+    /* 	background-image: url("../images/purple-hd-sprite.gif"); */
+}
+
+.x-date-bottom {
+    /* 	background-color: #FAFAFA; */
+    /* 	background-image: url("../images/purple-glass-bg.gif"); */
+    /* 	border-top-color: #666699; */
+}
+
+.x-date-inner .x-date-selected a {
+    /* 	background-color:#DFECFB; */
+    /* 	background-image: url("../images/purple-glass-bg.gif"); */
+}
+
+td.x-date-mp-month a:hover, td.x-date-mp-year a:hover {
+    /* 	background-color: #9999cc; */
+    /* 	color: #666699; */
+}
+
+td.x-date-mp-month a, td.x-date-mp-year a {
+    /* 	color: #333366; */
+}
+
+td.x-date-mp-sel a {
+    /* 	background-image: url("../images/purple-glass-bg.gif"); */
+}
+
+.x-date-mp-btns button {
+    /* 	background-color: #666699; */
+    /* 	border-color: #666699 #000055 #000055 #666699; */
+}
+
+.x-date-inner th {
+    /* 	color: #333366; */
+}
+
+.x-date-mp-btns {
+    /* 	background-color:#DFECFB; */
+    /* 	background-image: url("../images/purple-glass-bg.gif"); */
+}
+
+.x-date-inner th {
+    /* 	background-color:#DFECFB; */
+    /* 	background-image: url("../images/purple-glass-bg.gif"); */
+    /* 	border-bottom-color: #9999cc; */
+    /* 	color: #333366; */
+}
+
+.x-layout-collapsed {
+    /* 	background: transparent url(../images/purple-hd.png) repeat-x; */
+    /* 	border-color: #333366; */
+}
+
+.x-panel-collapsed-text {
+    /* 	color: #000033; */
+}
+
+.reportFormPanel .x-border-layout-ct {
+    /* 	background-color: #ffffff;	 */
+}
+
+/*
+	Palette (light -> dark)
+	#ccccff
+	#9999cc
+	#666699
+	#333366
+	#000033
+	
+	TBD
+	
+New Color Scheme
+
+Primary
+006699
+FF9900
+FF6600
+
+Less Strong
+336666
+6699CC
+996600
+CC9933
+FF9933
+FFCC33
+
+From Shraddha for SAGES scheme
+339999
+CC6633
+CC9933
+FFCC66
+	
+*/

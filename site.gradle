@@ -1,0 +1,12 @@
+// Put site-specific build logic here, but DO NOT MERGE YOUR CHANGES INTO OE-CORE.
+
+/*
+
+ext {
+    // Prefix to add to Eclipse projects.
+    eclipseProjectPrefix = 'site-'
+    
+    // TODO put more settings here
+}
+
+*/
