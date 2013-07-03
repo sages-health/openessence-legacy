@@ -24,6 +24,8 @@
  * FOR LOST PROFITS.
  */
 
+import org.apache.tools.ant.filters.EscapeUnicode
+
 // add site-specific build logic
 apply from: 'site.gradle'
 
@@ -94,6 +96,16 @@ allprojects {
     dependencies {
         // TODO make this dependent on presence of commons-logging
         compile "org.slf4j:jcl-over-slf4j:${project.versions.slf4j}"
+    }
+
+    processResources {
+        eachFile {
+            if (it.name.endsWith('.properties')) {
+                // Java demands .properties files be Latin-1 encoded,
+                // we prefer UTF-8, so escape non-ASCII chars during build
+                it.filter(EscapeUnicode)
+            }
+        }
     }
 
     task docs(type: Jar, dependsOn: javadoc) {
