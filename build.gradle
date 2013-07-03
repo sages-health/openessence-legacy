@@ -90,7 +90,7 @@ allprojects {
 
     configurations {
         // globally exclude commons-logging in favor of slf4j (take that maven!)
-        all*.exclude group: 'commons-logging', module: 'commong-logging'
+        all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
 
     dependencies {
