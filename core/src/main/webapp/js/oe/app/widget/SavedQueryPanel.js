@@ -46,6 +46,7 @@ OE.SavedQueryPanel = Ext.extend(Ext.Panel, {
             title: messagesBundle[OE.SAVED_QUERY_DS + '.grid'] || config.title || 'Saved Queries',
             cls: 'reportPanel',
             layout: 'fit',
+            split: true,
             plugins: new Ext.ux.collapsedPanelTitlePlugin(),
             collapsible: true,
             cmargins: '0 0 6 0',
