@@ -427,6 +427,26 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
         };
     }
 
+    if (dimensionFormMetadata.xtype === 'queryImage') {
+        var oldRenderer = column.renderer;
+        column.renderer = function (value, meta, record) {
+            var queryImg = "url('" + OE.context.root + "/images/queryimages/";
+            if (value == "charts") {
+                var chartType = Ext.decode(record.json.Parameters).charts[0].type;
+                if (chartType == "pie") {
+                    queryImg += "piechart";
+                } else {
+                    queryImg += "barchart";
+                }
+            } else {
+                queryImg += value;
+            }
+            meta.attr = 'style="background:' + queryImg
+                + '.png\') no-repeat center"';
+            return oldRenderer.call(this, ""); // delegate to existing renderer
+        };
+    }
+
     return column;
 };
 

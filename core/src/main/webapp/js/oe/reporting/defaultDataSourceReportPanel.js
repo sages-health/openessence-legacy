@@ -221,6 +221,7 @@ OE.report.datasource.panel = function(configuration) {
         							params: {
         								dsId: 'SavedQuery_Entry',
         								QueryName: queryName,
+                                        QueryType: tab.parameters.queryType,
         								DataSource: tab.parameters.dsId,
         								Parameters: Ext.encode({
         									dataSource: tab.parameters.dsId,
