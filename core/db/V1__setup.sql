@@ -53,6 +53,7 @@ CREATE TABLE saved_query (
   query_name  TEXT    NOT NULL,
   user_id     INTEGER NOT NULL REFERENCES "user" (id),
   data_source TEXT    NOT NULL,
+  query_type  TEXT    NOT NULL,
   parameters  TEXT    NOT NULL,
   CONSTRAINT saved_query_user_id_query_name_key UNIQUE (user_id, query_name)
 );
