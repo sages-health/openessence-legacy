@@ -70,7 +70,8 @@ allprojects {
                 junit: '4.11',
                 servlet: '2.5',
                 jsp: '2.1',
-                jstl: '1.2'
+                jstl: '1.2',
+                postgresql: '9.2-1003-jdbc4'
         ]
     }
 
