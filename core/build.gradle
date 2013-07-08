@@ -83,6 +83,8 @@ dependencies {
 
     compile "javax.servlet:jstl:${project.versions.jstl}"
 
+    compile "org.postgresql:postgresql:${project.versions.postgresql}"
+
     providedCompile "javax.servlet:servlet-api:${project.versions.servlet}"
     providedCompile "javax.servlet.jsp:jsp-api:${project.versions.jsp}"
 }
