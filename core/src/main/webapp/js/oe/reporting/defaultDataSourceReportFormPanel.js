@@ -311,17 +311,17 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
         var i = 0;
         for (i = 0; i < form.items.length; i++) {
             var fld = form.items.get(i);
-            if (fld.xtype && (fld.xtype == 'combo' || fld.xtype == 'superboxselect')) {
-                fld.clearValue();
-                fld.applyEmptyText();
-            } else if (fld.xtype && (fld.xtype == 'textfield') && (fld.inputType != 'hidden')) {
-                // textfield.reset() did not work, thus, setting raw value
-                // Do NOT reset hidden fields, else it would also reset dsId
-                fld.setRawValue("");
-            } else if (fld.xtype && (fld.xtype == 'numberfield') && (fld.inputType != 'hidden')) {
-                fld.setRawValue();
-            } else {
-                fld.reset();
+            if (fld.name && (fld.name != 'dsId') && (fld.name != 'timezoneOffset')) {
+                if ((fld.xtype && ((fld.xtype == 'combo') || (fld.xtype == 'superboxselect'))) ||
+                    (fld.vtype && ((fld.vtype == 'combo') || (fld.vtype == 'superboxselect')))) {
+                    fld.clearValue();
+                    fld.applyEmptyText();
+                } else if ((fld.xtype && (fld.xtype == 'daterange')) || (fld.vtype && (fld.vtype == 'daterange'))) {
+                    fld.reset();
+                } else {
+                    fld.setValue(null);
+                    fld.setRawValue(null);
+                }
             }
         }
     },
