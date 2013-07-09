@@ -55,12 +55,6 @@ public class OEUserDetailsService implements UserDetailsService {
     @Resource
     private Map<String, JdbcOeDataSource> dataSources;
 
-    @Resource
-    private String salt1;
-
-    @Resource
-    private String salt2;
-
     private static final Logger log = LoggerFactory.getLogger(OEUserDetailsService.class);
 
     /**
@@ -95,8 +89,8 @@ public class OEUserDetailsService implements UserDetailsService {
         List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
 
         Collection<Record> roleRecs = roleDs.detailsQuery(
-                        new QueryManipulationStore(roleDs.getAllResultDimensions(), null, roleFilters, null, false,
-                                                   null));
+                new QueryManipulationStore(roleDs.getAllResultDimensions(), null, roleFilters, null, false,
+                                           null));
         for (Record roleRec : roleRecs) {
             String role = (String) roleRec.getValue("Role");
             GrantedAuthority authority = new SimpleGrantedAuthority(role);
@@ -118,6 +112,8 @@ public class OEUserDetailsService implements UserDetailsService {
         if (recs.size() == 1) {
             Record rec = recs.toArray(new Record[1])[0];
             String rspassword = (String) rec.getValue("Password");
+            String salt = (String) rec.getValue("Salt");
+            String algorithm = (String) rec.getValue("Algorithm");
             Boolean rsenabled = getBooleanValue(rec.getValue("Enabled"));
             Boolean rsnonexpired = getBooleanValue(rec.getValue("NonExpired"));
             Boolean rscrednonexp = getBooleanValue(rec.getValue("CredentialsNonExpired"));
@@ -133,12 +129,9 @@ public class OEUserDetailsService implements UserDetailsService {
                     attributes.put(rid, rec.getValue(rid));
                 }
             }
-            String salt[] = {salt1, salt2};
-            result = new OEUser(username, rspassword, rsenabled,
-                                rsnonexpired, rscrednonexp, rsacctnonlock, roles,
-                                attributes, salt);
+            result = new OEUser(username, rspassword, roles,
+                                attributes, salt, algorithm);
         }
-
         return result;
     }
 

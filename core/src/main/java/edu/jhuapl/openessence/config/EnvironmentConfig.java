@@ -56,8 +56,6 @@ public class EnvironmentConfig {
 
     public static final String GRAPH_DIR = "/oe/config/graph.dir";
     public static final String GRAPH_RETENTION = "/oe/config/graph.retention";
-    public static final String SALT_1 = "salt1";
-    public static final String SALT_2 = "salt2";
 
     private static final Logger log = LoggerFactory.getLogger(EnvironmentConfig.class);
 
@@ -115,8 +113,8 @@ public class EnvironmentConfig {
     }
 
     /**
-     * It doesn't make sense to pass around a String instead of a Path, but the graph module expects a String in a lot of
-     * places.
+     * It doesn't make sense to pass around a String instead of a Path, but the graph module expects a String in a lot
+     * of places.
      *
      * @deprecated Use {@link #graphPath()} instead
      */
@@ -142,16 +140,6 @@ public class EnvironmentConfig {
         } else {
             return retention;
         }
-    }
-
-    @Bean
-    public String salt1() {
-        return environment.getRequiredProperty(SALT_1);
-    }
-
-    @Bean
-    public String salt2() {
-        return environment.getRequiredProperty(SALT_2);
     }
 
     @Bean
