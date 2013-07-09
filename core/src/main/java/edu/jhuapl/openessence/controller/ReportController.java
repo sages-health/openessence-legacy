@@ -107,8 +107,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -1889,7 +1887,7 @@ public class ReportController extends OeController {
     }
 
     /**
-     * Used to convert the given dimension value into a safe URL-encoded value.
+     * Used to convert the given dimension value into a Javascript-safe function call value.
      *
      * <p> In the event that the object is a <code>java.util.Date</code>, the numeric will be returned.
      *
@@ -1897,17 +1895,28 @@ public class ReportController extends OeController {
      *
      * @param value The dimension value to be converted.
      * @return The safe string representation of the given value.
-     * @throws RuntimeException An UnsupportedEncodingException will be re-thrown if unable to encode the value as a
-     *                          UTF-8 string.
      */
     private static String convertFilter(final Object value) {
-        try {
-            return value == null ? "" :
-                   (value instanceof Date
-                    ? String.valueOf(((Date) value).getTime())
-                    : URLEncoder.encode(String.valueOf(value), "UTF-8").replaceAll("\\+", "%20"));
-        } catch (final UnsupportedEncodingException uee) {
-            throw new RuntimeException("Unable To Encode Filter: " + value, uee);
+        // http://en.wikipedia.org/wiki/Percent-encoding
+        //     All Reserved Chars:    ! # $ & ' ( ) * + , / : ; = ? @ [ ]
+        //     Others Handled:        % < > ` ~ ^ | { } . - " \ _
+
+        // If a literal _ or % (the single char and variable char wild card symbols in PostgreSQL)
+        // are desired in the filter criteria, then they need to be backslash escaped by the user.
+
+        // Yes, some need lots of backslashes due to various levels of decoding between PostgreSQL, Java, Javascript
+
+        if (value == null) {
+            return "";
+        } else if (value instanceof Date) {
+            return String.valueOf(((Date) value).getTime());
+        } else {
+            return String.valueOf(value)
+                    .replaceAll("%", "%25") // To fix query filters: %fever%
+                    .replaceAll("\\\\", "\\\\\\\\") // To fix chart groupings: This is a sad face :\
+                    .replaceAll("'", "\\\\'") // To fix chart groupings: Prince George's
+                    .replaceAll("\"", "&quot;") // To fix chart groupings: Bob said "his quote".
+                    .replaceAll(" ", "%20");
         }
     }
 }
