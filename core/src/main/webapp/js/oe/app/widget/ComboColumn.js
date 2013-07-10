@@ -61,7 +61,12 @@ Ext.ux.renderer.ComboBoxRenderer = function (combo, gridId) {
 
     return function (value) {
         // Ensure combos store is loaded
-        if (combo.store.getCount() == 0 && gridId) {
+        if (combo.store.getCount() == 0 && gridId &&
+            // Ensure we are adding onLoad only once per combo column
+            // This check was added because onLoad was added to the store 2^n times
+            // where n is number of combo columns in this grid
+            (combo.onloadDefined == undefined || combo.onloadDefined === false)) {
+            combo.onloadDefined = true;
             combo.store.on('load', function () {
                     var grid = Ext.getCmp(gridId);
                     if (grid) {

@@ -51,6 +51,7 @@ dependencies {
     compile "opensymphony:quartz-all:1.6.3"
     compile "org.codehaus.groovy:groovy:${project.versions.groovy}"
     compile "org.codehaus.jackson:jackson-mapper-asl:${project.versions.jackson}"
+    compile "net.sf.opencsv:opencsv:2.0"
 
     // Connection pooling. This is used if their's no container managed pool.
     compile "com.jolbox:bonecp:${project.versions.bonecp}"
