@@ -29,6 +29,8 @@ package edu.jhuapl.openessence.security;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import edu.jhuapl.openessence.security.EncryptionDetails;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,27 +40,27 @@ import java.util.Map;
 public class OEUser extends User {
 
     private Map<String, Object> attributes;
-    private String[] saltbits;
+    private String salt;
+    private String algorithm;
 
-    public OEUser(String username, String password, boolean enabled, boolean accountNonExpired,
-                  boolean credentialsNonExpired, boolean accountNonLocked,
-                  Collection<? extends GrantedAuthority> authorities,
-                  Map<String, Object> attribs, String[] saltfill)
+    public OEUser(String username, String password, Collection<? extends GrantedAuthority> authorities,
+                  Map<String, Object> attribs, String salt, String algorithm)
             throws IllegalArgumentException {
 
-        super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
+        super(username, password, authorities);
         attributes = new HashMap<String, Object>();
         if (attribs != null) {
             attributes.putAll(attribs);
         }
-        saltbits = saltfill;
+        this.salt = salt;
+        this.algorithm = algorithm;
     }
 
     /**
      * Get this user's salt. Used in security.xml (<salt-source user-property="someSalt" />).
      */
-    public String getSomeSalt() {
-        return new StringBuilder(saltbits[0]).append(getUsername()).append(saltbits[1]).toString();
+    public EncryptionDetails getSalt() {
+        return new EncryptionDetails(this.salt, this.algorithm);
     }
 
     @Override

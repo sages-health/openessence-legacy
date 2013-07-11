@@ -24,17 +24,6 @@ db.username=postgres
 db.password=
 ```
 
-# salt.properties
-Defines system-wide salts. For a lot of reasons, this isn't
-great security. In the future, we'd like to replace this
-with per user salts stored in the database.
-
-## Example
-```
-salt1=aZBycXDwe
-salt2=192837465
-```
-
 # maps.properties
 Map related settings. See `MapConfig` for more info.
 
