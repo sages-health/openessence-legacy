@@ -70,7 +70,7 @@
     <authentication-manager alias="authenticationManager">
         <authentication-provider user-service-ref="oeUserService">
             <password-encoder ref="oePasswordEncoder">
-                <salt-source user-property="someSalt"/>
+                <salt-source user-property="salt"/>
             </password-encoder>
         </authentication-provider>
     </authentication-manager>
