@@ -23,7 +23,13 @@
  * INABILITY TO USE, THE MATERIAL, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES
  * FOR LOST PROFITS.
  */
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath 'org.eclipse.jgit:org.eclipse.jgit:3.0.0.201306101825-r' }
+}
 
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.eclipse.jgit.lib.*
 import org.apache.tools.ant.filters.EscapeUnicode
 
 // add site-specific build logic
@@ -104,6 +110,17 @@ allprojects {
                 // Java demands .properties files be Latin-1 encoded,
                 // we prefer UTF-8, so escape non-ASCII chars during build
                 it.filter(EscapeUnicode)
+            }
+            if (it.name == 'messages.properties') {
+                def tz = TimeZone.getTimeZone('UTC')
+                def timestamp = new java.util.Date().format("yyyy-MM-dd HH:mm z", tz)
+
+                def builder = new RepositoryBuilder()
+                def repo = builder.findGitDir().build()
+                def head = repo.resolve(Constants.HEAD)
+                def sha = ObjectId.toString(head)[0..6]
+
+                it.filter(ReplaceTokens, tokens: [VERSION: version, SHA: sha, DATE: timestamp])
             }
         }
     }
