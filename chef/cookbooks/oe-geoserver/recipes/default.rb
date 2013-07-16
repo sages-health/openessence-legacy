@@ -59,7 +59,7 @@ hostsfile_entry '192.168.22.2' do
   action :create
 end
 
-# Begin CA cert install process FIXME this code is copied in web-main
+# Begin CA cert install process FIXME this code is copied in oe-web
 directory '/usr/share/ca-certificates/local' do
   owner 'root'
   group 'root'

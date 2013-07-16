@@ -28,7 +28,7 @@ Vagrant.configure("2") do |config|
       # own cookbooks separately
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
 
-      chef.add_recipe "db-main"
+      chef.add_recipe "oe-db"
     end
   end
 
@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
   #
   #   app.vm.provision :chef_solo do |chef|
   #     chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
-  #     chef.add_recipe "app-main"
+  #     chef.add_recipe "oe-app"
   #   end
   # end
    
@@ -63,7 +63,7 @@ Vagrant.configure("2") do |config|
 
     geoserver.vm.provision :chef_solo do |chef|
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
-      chef.add_recipe "geoserver-main"
+      chef.add_recipe "oe-geoserver"
     end
   end
    
@@ -78,7 +78,7 @@ Vagrant.configure("2") do |config|
     
     web.vm.provision :chef_solo do |chef|
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
-      chef.add_recipe "web-main"
+      chef.add_recipe "oe-web"
     end 
   end
    

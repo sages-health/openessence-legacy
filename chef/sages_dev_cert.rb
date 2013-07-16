@@ -92,7 +92,7 @@ sages_dev_cert = SagesDevCert.new
 
 ['web', 'geoserver'].each { |node|
   # CA cert
-  File.open("cookbooks/#{node}-main/files/default/Sages_Dev_CA.crt", 'wb') { |f|
+  File.open("cookbooks/oe-#{node}/files/default/Sages_Dev_CA.crt", 'wb') { |f|
     # Debian convention is for CA certs to be PEM encoded with .crt extension
     f.print(sages_dev_cert.root_ca.to_pem)
   }
@@ -100,12 +100,12 @@ sages_dev_cert = SagesDevCert.new
   cert_key = sages_dev_cert.generate_cert("#{node}.local")
 
   # signed cert
-  File.open("cookbooks/#{node}-main/files/default/#{node}.local.pem", 'wb') { |f|
+  File.open("cookbooks/oe-#{node}/files/default/#{node}.local.pem", 'wb') { |f|
     f.print(cert_key[:cert].to_pem)
   }
 
   # private key
-  File.open("cookbooks/#{node}-main/files/default/#{node}.local.key", 'wb') { |f|
+  File.open("cookbooks/oe-#{node}/files/default/#{node}.local.key", 'wb') { |f|
     f.print(cert_key[:key].to_pem)
   }
 }

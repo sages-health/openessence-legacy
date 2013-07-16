@@ -57,15 +57,15 @@ delegate this to a [Chef Server](http://docs.opscode.com/chef_overview_server.ht
 
 ## Configure passwords
 GeoServer and PostgreSQL require admin passwords. For GeoServer, create a file called `default.rb`
-and put it in the [chef/cookbooks/geoserver-main/attributes](https://github.com/sages-health/openessence/tree/master/chef/cookbooks/geoserver-main/attributes) 
+and put it in the [chef/cookbooks/oe-geoserver/attributes](https://github.com/sages-health/openessence/tree/master/chef/cookbooks/oe-geoserver/attributes)
 directory. The files should look something like this:
 
-    default['geoserver-main']['password'] = 'PASSWORD'
+    default['oe-geoserver']['password'] = 'PASSWORD'
 
-Likewise for the database, create a file called `default.rb` and put it in the [chef/cookbooks/db-main/attributes](https://github.com/sages-health/openessence/tree/master/chef/cookbooks/db-main/attributes) 
+Likewise for the database, create a file called `default.rb` and put it in the [chef/cookbooks/oe-db/attributes](https://github.com/sages-health/openessence/tree/master/chef/cookbooks/oe-db/attributes)
 directory. The files should look something like this:
 
-    default['db-main']['password'] = 'PASSWORD'
+    default['oe-db']['password'] = 'PASSWORD'
 
 ## Add the machines to your hosts file.
 This isn't strictly necessary, but it can make things
@@ -82,7 +82,7 @@ code deployment working on a remote Tomcat). You should be able to hit the webse
 [web.local](https://web.local/) address (assuming you added it to your hosts file). GeoServer should be reachable at
 [web.local/geoserver](https://web.local/geoserver)
 and Tomcat should be reachable at [web.host.local](https://web.host.local/). See the
-[Apache config](https://github.com/sages-health/openessence/tree/master/chef/cookbooks/db-mainchef/cookbooks/web-main/templates/default/frontend-oe-local.conf.erb)
+[Apache config](https://github.com/sages-health/openessence/tree/master/chef/cookbooks/oe-web/templates/default/frontend-oe-local.conf.erb)
 for more information.
 
 ## Set up the database
