@@ -164,7 +164,7 @@ Ext.ux.Multiselect = Ext.extend(Ext.form.Field,  {
     },
 
     setRawValue: function(values){
-        setValue(values);
+        this.setValue(values);
     },
 
     validateValue : function(value){
