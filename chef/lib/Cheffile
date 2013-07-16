@@ -3,6 +3,6 @@
 
 site 'http://community.opscode.com/api/v1'
 
-cookbook 'apt', '1.7.0' # 1.7 until image has Chef >= 10.16.4 
+cookbook 'apt', '1.10.0' # 2.0+ requires Chef 11+, which Vagrant and/or our recipes don't like
 cookbook 'apache2'
 cookbook 'hostsfile'

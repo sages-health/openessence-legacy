@@ -1,12 +1,12 @@
 SITE
   remote: http://community.opscode.com/api/v1
   specs:
-    apache2 (1.6.2)
-    apt (1.7.0)
-    hostsfile (1.0.0)
+    apache2 (1.6.6)
+    apt (1.10.0)
+    hostsfile (1.0.2)
 
 DEPENDENCIES
   apache2 (>= 0)
-  apt (= 1.7.0)
+  apt (= 1.10.0)
   hostsfile (>= 0)
 

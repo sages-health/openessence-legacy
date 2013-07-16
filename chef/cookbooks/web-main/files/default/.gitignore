@@ -1,0 +1,4 @@
+# These ignores are in the main .gitignore, but you can never be too careful when it comes to private keys
+web.local.key
+web.local.pem
+Sages_Dev_CA.crt

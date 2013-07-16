@@ -2,6 +2,13 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
+
+  # requires vagrant plugin vagrant-omnibus
+  config.omnibus.chef_version = '10.26.0' # Vagrant and/or our cookbooks don't like 11.0+
+
+  # requires vagrant plugin vagrant-librarian-chef
+  config.librarian_chef.cheffile_dir = "chef/lib"
+
   config.vm.box = "precise64"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
@@ -17,7 +24,7 @@ Vagrant.configure("2") do |config|
     end
 
     db.vm.provision :chef_solo do |chef|
-      # Librarian like to control the cookbooks dir, so store our
+      # Librarian likes to control the cookbooks dir, so store our
       # own cookbooks separately
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
 
