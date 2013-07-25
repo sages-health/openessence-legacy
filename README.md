@@ -41,7 +41,7 @@ running `vagrant plugin install vagrant-omnibus` and `vagrant plugin install vag
 in your shell. Vagrant is kind enough to add itself to your `PATH` variable on Windows, so this
 should just work.
 
-## Install an SSH client.
+## Install an SSH client
 SSH is needed if you want to log in to the VMs. Note that you can get
 OpenEssence up and running without logging into the VMs, but at some point you'll probably want to
 do work on the guest instances. On Windows, you can install SSH via [Cygwin's](http://www.cygwin.com)
