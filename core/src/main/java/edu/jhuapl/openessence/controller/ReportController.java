@@ -401,7 +401,7 @@ public class ReportController extends OeController {
                                                                 model.getTimeseriesDetectorClass(),
                                                                 model.isIncludeDetails(),
                                                                 model.isDisplayIntervalEndDate(), graphData,
-                                                                ControllerUtils.getRequestTimezone(request));
+                                                                ControllerUtils.getRequestTimezone(request), model.isGraphExpectedValues());
 
         result.putAll(timeseriesResult);
 
@@ -527,7 +527,7 @@ public class ReportController extends OeController {
                                                  final List<Dimension> timeseriesDenominators,
                                                  String detectorClass, boolean includeDetails,
                                                  boolean displayIntervalEndDate, GraphDataInterface graphData,
-                                                 TimeZone clientTimezone) {
+                                                 TimeZone clientTimezone, boolean graphExpected) {
 
         Map<String, Object> result = new HashMap<String, Object>();
         Map<String, ResolutionHandler> resolutionHandlers = null;
@@ -627,7 +627,7 @@ public class ReportController extends OeController {
                 double[][] allLevels = new double[accumulations.size()][];
                 String[][] allLineSetURLs = new String[accumulations.size()][];
                 String[][] allSwitchInfo = new String[accumulations.size()][];
-                String[] lineSetLabels = new String[accumulations.size()];
+                String[] lineSetLabels = new String[accumulations.size() + 1];
                 boolean[] displayAlerts = new boolean[accumulations.size()];
 
                 //get all results
@@ -822,6 +822,8 @@ public class ReportController extends OeController {
                     dimIds.remove(accumId);
                 }
 
+                lineSetLabels[aIndex] = "Expected Values";
+
                 GraphDataSerializeToDiskHandler hndl = new GraphDataSerializeToDiskHandler(graphDir);
                 GraphController gc = getGraphController(null, hndl, userPrincipalName);
                 //TODO figure out why I (hodancj1) added this to be accumulation size ~Feb 2012
@@ -847,7 +849,7 @@ public class ReportController extends OeController {
                 graphData.setMaxLabeledCategoryTicks(Math.min(maxLabels, allCounts[0].length));
 
                 StringBuffer sb = new StringBuffer();
-                GraphObject graph = gc.writeTimeSeriesGraph(sb, graphData, true, true, false, graphTimeSeriesUrl);
+                GraphObject graph = gc.writeTimeSeriesGraph(sb, graphData, true, true, false, graphTimeSeriesUrl, graphExpected);
 
                 result.put("html", sb.toString());
 
@@ -1249,7 +1251,8 @@ public class ReportController extends OeController {
                                 @RequestParam(required = false) String getImageMap,
                                 @RequestParam(required = false) String imageType,
                                 @RequestParam(required = false) String resolution,
-                                @RequestParam(required = false) String getHighResFile)
+                                @RequestParam(required = false) String getHighResFile,
+                                @RequestParam(required = false) boolean graphExpectedValues)
             throws GraphException, IOException {
 
         GraphDataSerializeToDiskHandler hndl = new GraphDataSerializeToDiskHandler(graphDir);
@@ -1267,7 +1270,7 @@ public class ReportController extends OeController {
             data.setYAxisLabel(yAxisLabel);
         }
 
-        GraphObject graph = gc.createTimeSeriesGraph(data, yAxisMin, yAxisMax, dataDisplayKey);
+        GraphObject graph = gc.createTimeSeriesGraph(data, yAxisMin, yAxisMax, dataDisplayKey, graphExpectedValues);
         BufferedOutputStream out = new BufferedOutputStream(resp.getOutputStream());
 
         if (getImageMap != null && (getImageMap.equals("1") || getImageMap.equalsIgnoreCase("true"))) {

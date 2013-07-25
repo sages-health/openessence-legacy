@@ -34,6 +34,7 @@ public class TimeSeriesModel { // TODO refactor with ChartModel
     private String timeseriesTitle;
     private String timeseriesDetectorClass;
     private boolean includeDetails;
+    private boolean graphExpectedValues;
     private String[] graphBaseColors;
     private boolean displayIntervalEndDate;
     private String timeseriesGroupResolution;
@@ -141,4 +142,11 @@ public class TimeSeriesModel { // TODO refactor with ChartModel
         this.prepull = prepull;
     }
 
+    public boolean isGraphExpectedValues() {
+        return graphExpectedValues;
+    }
+
+    public void setGraphExpectedValues(boolean graphExpectedValues) {
+        this.graphExpectedValues = graphExpectedValues;
+    }
 }
