@@ -51,6 +51,7 @@ import org.jfree.chart.plot.PlotOrientation;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -137,40 +138,23 @@ public class GraphController {
     }
 
     public GraphObject writeTimeSeriesGraph(PrintWriter out, GraphDataInterface graphData, boolean useImageMap,
-                                            boolean includeFooter, String callBackURL) {
+                                            boolean includeFooter, String callBackURL, boolean graphExpected) {
         StringBuffer sb = new StringBuffer();
-        GraphObject graph = writeTimeSeriesGraph(sb, graphData, useImageMap, includeFooter, callBackURL);
+        GraphObject graph = writeTimeSeriesGraph(sb, graphData, useImageMap, includeFooter, callBackURL, graphExpected);
         out.println(sb);
         return graph;
     }
 
-    public GraphObject writeSimpleTimeSeriesGraph(StringBuffer sb, GraphDataInterface graphData, String linkUrl,
-                                                  String callbackUrl) {
-        GraphObject graph = createTimeSeriesGraph(graphData);
-
-        writeSimpleLinkTSGraph(sb, graphData, callbackUrl, linkUrl, graph);
-        return graph;
+    public GraphObject writeTimeSeriesGraph(StringBuffer sb, GraphDataInterface graphData, boolean useImageMap,
+                                            boolean includeFooter, String callBackURL, boolean graphExpected) {
+        return writeTimeSeriesGraph(sb, graphData, useImageMap, includeFooter, true, callBackURL, graphExpected);
     }
 
     public GraphObject writeTimeSeriesGraph(StringBuffer sb, GraphDataInterface graphData, boolean useImageMap,
-                                            boolean includeFooter, String callBackURL) {
-        return writeTimeSeriesGraph(sb, graphData, useImageMap, includeFooter, true, callBackURL);
-    }
-
-    public GraphObject writeTimeSeriesGraph(StringBuffer sb, GraphDataInterface graphData, boolean useImageMap,
-                                            boolean includeFooter, boolean includeButtons, String callBackURL) {
-        GraphObject graph = createTimeSeriesGraph(graphData);
+                                            boolean includeFooter, boolean includeButtons, String callBackURL,
+                                            boolean graphExpected) {
+        GraphObject graph = createTimeSeriesGraph(graphData, graphExpected);
         writeGraph(sb, graphData, useImageMap, includeFooter, includeButtons, callBackURL, null, null, graph);
-        return graph;
-    }
-
-    public GraphObject writeTimeSeriesGraphWithHelpLinks(StringBuffer sb, GraphDataInterface graphData,
-                                                         boolean useImageMap, boolean includeFooter,
-                                                         String graphOptionsHelpLink, String downloadHelpLink,
-                                                         String callBackURL) {
-        GraphObject graph = createTimeSeriesGraph(graphData);
-        writeGraph(sb, graphData, useImageMap, includeFooter, callBackURL, graphOptionsHelpLink, downloadHelpLink,
-                   graph);
         return graph;
     }
 
@@ -264,16 +248,16 @@ public class GraphController {
         return graph;
     }
 
-    public GraphObject createTimeSeriesGraph(GraphDataInterface graphData) {
-        return createTimeSeriesGraph(graphData, null, null, null);
+    public GraphObject createTimeSeriesGraph(GraphDataInterface graphData, boolean graphExpected) {
+        return createTimeSeriesGraph(graphData, null, null, null, graphExpected);
     }
 
     public GraphObject createTimeSeriesGraph(GraphDataInterface graphData, Double yAxisMin, Double yAxisMax,
-                                             String displayKey) {
+                                             String displayKey, boolean graphExpected) {
         List<DataSeries> dataSeries = new ArrayList<DataSeries>();
         LegendItemCollection legendItems = new LegendItemCollection();
         Map<String, Object> graphMetaData = new HashMap<String, Object>();
-        double maxCount = setDataSeries(graphData, displayKey, false, dataSeries, legendItems);
+        double maxCount = setDataSeries(graphData, displayKey, false, dataSeries, legendItems, graphExpected);
 
         setTimeSeriesGraphMetaData(graphData, yAxisMin, yAxisMax, maxCount, graphMetaData);
 
@@ -380,7 +364,7 @@ public class GraphController {
         Color[] graphBaseColors = graphData.getGraphBaseColors();
         Map<Double, String> tickValueToLabelMapping = new HashMap<Double, String>();
 
-        setDataSeries(graphData, null, true, dataSeries, null);
+        setDataSeries(graphData, null, true, dataSeries, null, false);
         setBarGraphMetaData(graphData, true, graphMetaData);
 
         // create a custom legend
@@ -409,7 +393,7 @@ public class GraphController {
         List<DataSeries> dataSeries = new ArrayList<DataSeries>();
         LegendItemCollection legendItems = new LegendItemCollection();
         Map<String, Object> graphMetaData = new HashMap<String, Object>();
-        double maxCount = setDataSeries(graphData, null, false, dataSeries, legendItems);
+        double maxCount = setDataSeries(graphData, null, false, dataSeries, legendItems, false);
 
         setTimeSeriesGraphMetaData(graphData, null, null, maxCount, graphMetaData);
         setBarGraphMetaData(graphData, false, graphMetaData);
@@ -647,16 +631,18 @@ public class GraphController {
 
 
     private double setDataSeries(GraphDataInterface graphData, String displayKey, boolean useNoDataColor,
-                                 List<DataSeries> dataSeries, LegendItemCollection legendItems) {
-        return setDataSeries(graphData, displayKey, useNoDataColor, dataSeries, legendItems, false);
+                                 List<DataSeries> dataSeries, LegendItemCollection legendItems, boolean graphExpected) {
+        return setDataSeries(graphData, displayKey, useNoDataColor, dataSeries, legendItems, false, graphExpected);
     }
 
     /**
      * The useItemColor is still under development to allow each bar to be a different color.
      */
     private double setDataSeries(GraphDataInterface graphData, String displayKey, boolean useNoDataColor,
-                                 List<DataSeries> dataSeries, LegendItemCollection legendItems, boolean useItemColor) {
+                                 List<DataSeries> dataSeries, LegendItemCollection legendItems, boolean useItemColor,
+                                 boolean graphExpected) {
         double[][] counts = graphData.getCounts();
+        double[][] expecteds = graphData.getExpecteds();
         int[][] colors = graphData.getColors();
         String[][] altTexts = graphData.getAltTexts();
         String[][] lineSetURLs = graphData.getLineSetURLs();
@@ -701,6 +687,7 @@ public class GraphController {
             boolean displaySevereData = displaySeverityAlert &&
                                         displaySeries(displayKey, displayKeyIndex++) ? true : false;
             List<DataPoint> points = new ArrayList<DataPoint>();
+            List<DataPoint> epoints = new ArrayList<DataPoint>();
 
             /** get graph data */
 
@@ -722,6 +709,7 @@ public class GraphController {
                 } catch (Exception e) {
                 }
 
+                Map<String, Object> epointMetaData = new HashMap<String, Object>();
                 Map<String, Object> pointMetaData = new HashMap<String, Object>();
                 pointMetaData.put(GraphSource.ITEM_TOOL_TIP, altText);
                 pointMetaData.put(GraphSource.ITEM_URL, lineSetURL);
@@ -729,6 +717,9 @@ public class GraphController {
 
                 pointMetaData.put(GraphSource.ITEM_COLOR, seriesColor);
 
+                epointMetaData.put(GraphSource.ITEM_COLOR, seriesColor.brighter());
+                epointMetaData.put(GraphSource.ITEM_SHAPE, new Rectangle2D.Double(xy, xy, 7, 7));
+                epointMetaData.put(GraphSource.ITEM_TOOL_TIP, altText);
                 // color 0 = GRAY (no data), color 2 = YELLOW (warning), 3 = RED (alert),
                 // 4 = PURPLE (severe)
                 if (useNoDataColor && color == 0) {
@@ -758,6 +749,7 @@ public class GraphController {
                     // if normal data is supposed to be hidden and no alert data exists, then hide this
                     // data point
                     pointMetaData.put(GraphSource.ITEM_VISIBLE, false);
+                    epointMetaData.put(GraphSource.ITEM_VISIBLE, false);
                 }
 
                 // if the data is set to the Double.MIN_VALUE, then add it as a null.
@@ -765,6 +757,11 @@ public class GraphController {
                     points.add(new DataPoint(counts[i][j], xLabels[j], pointMetaData));
                 } else {
                     points.add(new DataPoint(null, xLabels[j], pointMetaData));
+                }
+                if (expecteds[i][j] != Double.MIN_VALUE) {
+                    epoints.add(new DataPoint(expecteds[i][j], xLabels[j], epointMetaData));
+                } else {
+                    epoints.add(new DataPoint(null, xLabels[j], epointMetaData));
                 }
 
             }
@@ -779,10 +776,23 @@ public class GraphController {
             dataSeriesMetaData.put(GraphSource.SERIES_LINES_VISIBLE, displayNormalData);
             dataSeries.add(new DataSeries(points, dataSeriesMetaData));
 
+            Map<String, Object> eDataSeriesMetaData = new HashMap<String, Object>();
+            eDataSeriesMetaData.put(GraphSource.SERIES_COLOR, seriesColor);
+            eDataSeriesMetaData.put(GraphSource.SERIES_STROKE, new BasicStroke(
+                    1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+                    1.0f, new float[]{10.0f, 6.0f}, 0.0f));
+            if (graphExpected) {
+                dataSeries.add(new DataSeries(epoints, eDataSeriesMetaData));
+            }
+            // code to set the text in the legend
             if (legendItems != null) {
                 if (displayNormalData && legendItems.getItemCount() < maxLegendItems) {
                     if (displayAlert && !singleAlertLegend) {
                         legendItems.add(new LegendItem(lineSetLabel + ": " + getTranslation("Normal"), seriesColor));
+                    }
+                    if (graphExpected) {
+                        legendItems.add(new LegendItem(lineSetLabel, seriesColor));
+                        legendItems.add(new LegendItem(("Expected " + lineSetLabel), seriesColor));
                     } else {
                         legendItems.add(new LegendItem(lineSetLabel, seriesColor));
                     }
@@ -1057,7 +1067,7 @@ public class GraphController {
         List<DataSeries> dataSeries = new ArrayList<DataSeries>();
         LegendItemCollection legendItems = new LegendItemCollection();
         Map<String, Object> graphMetaData = new HashMap<String, Object>();
-        double maxCount = setDataSeries(graphData, null, false, dataSeries, legendItems);
+        double maxCount = setDataSeries(graphData, null, false, dataSeries, legendItems, false);
 
         setTimeSeriesGraphMetaData(graphData, null, null, maxCount, graphMetaData);
 

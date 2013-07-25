@@ -55,6 +55,8 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
         var params = Ext.applyIf({filters: []}, this.parameters);
         delete params.filters;
 
+        params.graphExpectedValues = true;
+
         Ext.apply(params, filters);
         Ext.applyIf(params, {height: 460});
 
@@ -183,7 +185,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                 // parent should be checked iff all its children are
                 var allChildrenChecked = true;
 
-                while (i < dataSeriesJSON.length && dataSeriesJSON[i].seriesName == seriesName) {
+                while (i <= dataSeriesJSON.length && dataSeriesJSON[i].seriesName == seriesName) {
                     var childAry = new Array();
                     childAry["id"] = "checkbox" + graphId + i;
                     childAry["name"] = "checkbox" + graphId + i;
@@ -224,15 +226,16 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                 if (Ext.isDefined(me.graphConfiguration.dataDisplayKey[i])) {
                     parentAry["checked"] = me.graphConfiguration.dataDisplayKey[i] === "0" ? false : true;
                     parentAry["value"] = me.graphConfiguration.dataDisplayKey[i];
+                } else if (i + 1 == dataSeriesJSON.length){
+                    parentAry["checked"] = false;
+                    parentAry["value"] = "0";
                 } else {
                     parentAry["checked"] = true;
                     parentAry["value"] = "1";
                 }
-
                 treeData.push(parentAry);
             }
         }
-
         var graphOptionsWindow = null;
         graphOptionsWindow = new Ext.Window({
             title: messagesBundle['graph.options'],
@@ -372,10 +375,24 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                                     url: timeSeriesGraphURL + "&getImageMap=true",
                                     success: function (objServerResponse) {
                                         // reload the graph image map
-                                        graphDiv.innerHTML = objServerResponse.responseText;
+                                        var imageHTML = objServerResponse.responseText;
+
                                         // reload the graph
-                                        graphDiv.innerHTML += "<img src=\"" + timeSeriesGraphURL + "\" usemap=\"#"
-                                            + me.graphConfiguration.imageMapName + "\"/>";
+                                        for (var i = 0; i < me.graphConfiguration.dataDisplayKey.length; i++) {
+                                            var dataDisplayKey = me.graphConfiguration.dataDisplayKey[i];
+                                            var expectedCheckboxValue = dataDisplayKey.charAt(dataDisplayKey.length -1);
+                                            imageHTML += '<img src=\"' + timeSeriesGraphURL + '&graphExpectedValues=';
+
+                                            if (expectedCheckboxValue == '0') {
+                                                imageHTML += 'false';
+                                            } else {
+                                                imageHTML += 'true';
+                                            }
+
+                                            imageHTML += '" usemap="#' + me.graphConfiguration.imageMapName + '"/>';
+                                            graphDiv.innerHTML = imageHTML;
+                                        }
+
                                     },
                                     failure: function (objServerResponse) {
 
