@@ -1,16 +1,5 @@
 include_recipe 'apt'
 
-package 'ssl-cert' do
-  action :install
-end
-
-# Generate self-signed cert.
-# The snakeoil cert is already included with the ssl-cert package, 
-# but we regenerate it in case the hostname has changed.
-execute "make-ssl-cert" do
-  command "make-ssl-cert generate-default-snakeoil --force-overwrite"
-end
-
 # install Tomcat APR package
 package 'libtcnative-1' do
   action :install
@@ -70,6 +59,7 @@ hostsfile_entry '192.168.22.2' do
   action :create
 end
 
+# Begin CA cert install process FIXME this code is copied in oe-web
 directory '/usr/share/ca-certificates/local' do
   owner 'root'
   group 'root'
@@ -77,17 +67,41 @@ directory '/usr/share/ca-certificates/local' do
   action :create
 end
 
+cookbook_file '/usr/share/ca-certificates/local/Sages_Dev_CA.crt' do
+  source 'Sages_Dev_CA.crt'
+  owner 'root'
+  group 'root'
+  mode 0644
+end
+
 # There's lots of wrong advice on this.
 # See http://blog.lib.umn.edu/ajz/infotech/2012/02/ubuntu-and-java-keystores.html
 # for the right way to add cert
 bash 'add-frontend-cert' do
-  code 'echo "local/web.local.crt" >> /etc/ca-certificates.conf'
+  code 'echo "local/Sages_Dev_CA.crt" >> /etc/ca-certificates.conf'
   not_if do
-    File.readlines('/etc/ca-certificates.conf').grep(/local\/web.local.crt/).any?
+    File.readlines('/etc/ca-certificates.conf').grep(/local\/Sages_Dev_CA.crt/).any?
   end
 end
+
 execute 'update-ca-certificates' do
   user 'root'
   action :run
+end
+
+# End CA cert install process
+
+cookbook_file '/etc/ssl/certs/geoserver.local.pem' do
+  source 'geoserver.local.pem'
+  owner 'root'
+  group 'root'
+  mode 0777
+end
+
+cookbook_file '/etc/ssl/private/geoserver.local.key' do
+  source 'geoserver.local.key'
+  owner 'root'
+  group 'root'
+  mode 0710
 end
 

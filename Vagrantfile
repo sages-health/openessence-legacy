@@ -2,6 +2,15 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
+
+  require 'securerandom'
+
+  # requires vagrant plugin vagrant-omnibus
+  config.omnibus.chef_version = '10.26.0' # Vagrant and/or our cookbooks don't like 11.0+
+
+  # requires vagrant plugin vagrant-librarian-chef
+  config.librarian_chef.cheffile_dir = "chef/lib"
+
   config.vm.box = "precise64"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
@@ -12,16 +21,16 @@ Vagrant.configure("2") do |config|
     db.vm.hostname = "db"
     
     db.vm.provider 'virtualbox' do |v|
-      v.name = 'db'
+      v.name = "db-#{SecureRandom.hex 5}"
       v.customize ['modifyvm', :id, '--memory', 512]
     end
 
     db.vm.provision :chef_solo do |chef|
-      # Librarian like to control the cookbooks dir, so store our
+      # Librarian likes to control the cookbooks dir, so store our
       # own cookbooks separately
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
 
-      chef.add_recipe "db-main"
+      chef.add_recipe "oe-db"
     end
   end
 
@@ -33,13 +42,13 @@ Vagrant.configure("2") do |config|
   #   app.vm.hostname = "app"
   #
   #   app.vm.provider 'virtualbox' do |v|
-  #     v.name = 'app'
+  #     v.name = "app-#{SecureRandom.hex 5}"
   #     v.customize ['modifyvm', :id, '--memory', 2048]
   #   end
   #
   #   app.vm.provision :chef_solo do |chef|
   #     chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
-  #     chef.add_recipe "app-main"
+  #     chef.add_recipe "oe-app"
   #   end
   # end
    
@@ -48,7 +57,7 @@ Vagrant.configure("2") do |config|
     geoserver.vm.hostname = "geoserver"
     
     geoserver.vm.provider 'virtualbox' do |v|
-      v.name = 'geoserver'
+      v.name = "geoserver-#{SecureRandom.hex 5}"
 
       # GeoServer needs a lot more memory
       v.customize ['modifyvm', :id, '--memory', 1024]
@@ -56,7 +65,7 @@ Vagrant.configure("2") do |config|
 
     geoserver.vm.provision :chef_solo do |chef|
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
-      chef.add_recipe "geoserver-main"
+      chef.add_recipe "oe-geoserver"
     end
   end
    
@@ -65,13 +74,13 @@ Vagrant.configure("2") do |config|
     web.vm.hostname = "web"
 
     web.vm.provider 'virtualbox' do |v|
-      v.name = 'web'
+      v.name = "web-#{SecureRandom.hex 5}"
       v.customize ['modifyvm', :id, '--memory', 512]
     end
     
     web.vm.provision :chef_solo do |chef|
       chef.cookbooks_path = ["chef/cookbooks", "chef/lib/cookbooks"]
-      chef.add_recipe "web-main"
+      chef.add_recipe "oe-web"
     end 
   end
    

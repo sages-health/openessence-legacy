@@ -30,6 +30,13 @@ out/
 chef/lib/cookbooks/
 chef/lib/tmp/
 
+# Keys and certs
+*.key
+*.cer
+*.crt
+*.der
+*.pem
+
 # Other
 *.class
 bin/

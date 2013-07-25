@@ -1,0 +1,7 @@
+# Example hosts file for dev work on OpenEssence.
+# Add the following lines, but please don't delete anything already in your hosts file;
+# that's a guaranteed way to mess up your networking stack.
+192.168.22.2 web.oe.local web.local web.host.local
+192.168.22.3 app.oe.local app.local app.host.local
+192.168.22.4 db.oe.local db.local
+192.168.22.5 geoserver.oe.local geoserver.local
