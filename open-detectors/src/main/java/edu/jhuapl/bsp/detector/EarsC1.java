@@ -26,6 +26,10 @@
 
 package edu.jhuapl.bsp.detector;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * Runs the CDC Ears algorithms C1
  */
@@ -35,8 +39,7 @@ public class EarsC1 implements TemporalDetectorInterface, TemporalDetector {
     public double yellowLevel;
 
     public EarsC1() {
-        redLevel = 2;
-        yellowLevel = 1.5;
+        readConfigFile();
     }
 
     public String getID() {
@@ -69,6 +72,25 @@ public class EarsC1 implements TemporalDetectorInterface, TemporalDetector {
 
     public void setYellowLevel(double _yellowLevel) {
         yellowLevel = _yellowLevel;
+    }
+
+    private void readConfigFile() {
+        Properties defaultProps = new Properties();
+        InputStream in = getClass().getResourceAsStream("/EarsC1.properties");
+        try {
+            defaultProps.load(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String red = defaultProps.getProperty("redLevel");
+        String yellow = defaultProps.getProperty("yellowLevel");
+        setRedLevel(Double.parseDouble(red));
+        setYellowLevel(Double.parseDouble(yellow));
+        try {
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

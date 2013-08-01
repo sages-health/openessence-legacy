@@ -30,7 +30,10 @@ import edu.jhuapl.bsp.detector.exception.DetectorException;
 
 import org.apache.commons.math3.distribution.TDistribution;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
+import java.util.Properties;
 
 import static edu.jhuapl.bsp.detector.OpenMath.any;
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAbs;
@@ -97,6 +100,7 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
         alpha[2] = SMOOTHVEC2;
         Adj = ADJ;
         HOLfac = HOLFAC; // this is the input for the holiday adjustment
+        readConfigFile();
     }
 
     @Override
@@ -400,6 +404,25 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
             levels[i] = pvalues[i];
         }
         expectedData = y_Pred;
+    }
+
+    private void readConfigFile() {
+        Properties defaultProps = new Properties();
+        InputStream in = getClass().getResourceAsStream("/GSSages.properties");
+        try {
+            defaultProps.load(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String red = defaultProps.getProperty("THRESHOLD_PROBABILITY_RED_ALERT");
+        String yellow = defaultProps.getProperty("THRESHOLD_PROBABILITY_YELLOW_ALERT");
+        setRedLevel(Double.parseDouble(red));
+        setYellowLevel(Double.parseDouble(yellow));
+        try {
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void testDetector(TemporalDetectorDataInterface tddi) {
