@@ -28,8 +28,11 @@ package edu.jhuapl.bsp.detector;
 
 import org.apache.commons.math3.distribution.TDistribution;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 
 import static edu.jhuapl.bsp.detector.OpenMath.any;
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAdd;
@@ -86,6 +89,7 @@ public class EWMASagesDetector implements TemporalDetectorInterface, TemporalDet
         removeZeros = REMOVE_ZEROES;
         minBaseline = NUM_FIT_PARAMS + MIN_DEG_FREEDOM;
         degFreedomRange = maxBaseline - NUM_FIT_PARAMS;
+        readConfigFile();
     }
 
     @Override
@@ -226,6 +230,25 @@ public class EWMASagesDetector implements TemporalDetectorInterface, TemporalDet
         }
     }
 
+    private void readConfigFile() {
+        Properties defaultProps = new Properties();
+        InputStream in = getClass().getResourceAsStream("/EWMASagesDetector.properties");
+        try {
+            defaultProps.load(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String red = defaultProps.getProperty("THRESHOLD_PROBABILITY_RED_ALERT");
+        String yellow = defaultProps.getProperty("THRESHOLD_PROBABILITY_YELLOW_ALERT");
+        setRedLevel(Double.parseDouble(red));
+        setYellowLevel(Double.parseDouble(yellow));
+        try {
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void testDetector(TemporalDetectorDataInterface tddi) {
         double[] data = tddi.getCounts();
         calculate(data, OMEGA);
@@ -236,6 +259,7 @@ public class EWMASagesDetector implements TemporalDetectorInterface, TemporalDet
     public void runDetector(TemporalDetectorDataInterface tddi) {
         double[] data = tddi.getCounts();
 //
+
         calculate(data, OMEGA);
         DetectorHelper.postDetectionColorCoding(data, levels, colors, getRedLevel(), getYellowLevel(), 0.5, false);
 //
