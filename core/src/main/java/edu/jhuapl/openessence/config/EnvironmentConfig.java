@@ -40,6 +40,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -62,7 +65,7 @@ public class EnvironmentConfig {
     @Inject
     private Environment environment;
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public DataSource mainDataSource() {
         // Container-managed DataSource
         DataSource ds = environment.getProperty(MAIN_DB, DataSource.class);
@@ -86,7 +89,28 @@ public class EnvironmentConfig {
         bcpds.setAcquireIncrement(5);
         bcpds.setStatementsCacheSize(100);
         bcpds.setReleaseHelperThreads(1);
+        bcpds.setConnectionTestStatement("SELECT 1");
+
+        // we compare to Boolean.FALSE to avoid NPE from unboxing if property isn't defined
+        if (environment.getProperty("db.testConnection", Boolean.class) != Boolean.FALSE) {
+            try {
+                testDataSource(bcpds);
+            } catch (SQLException e) {
+                // fail at startup if we can't connect to database, rather than at first query
+                throw new IllegalStateException("Exception connecting to database", e);
+            }
+        } else {
+            log.info("db.testConnection set to false. Skipping database connection test.");
+        }
+
         return bcpds;
+    }
+
+    private void testDataSource(BoneCPDataSource ds) throws SQLException {
+        try (Connection connection = ds.getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(ds.getConnectionTestStatement());
+        }
     }
 
     @Bean
