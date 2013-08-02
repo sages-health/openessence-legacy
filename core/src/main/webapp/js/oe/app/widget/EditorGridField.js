@@ -23,9 +23,6 @@
  * INABILITY TO USE, THE MATERIAL, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES
  * FOR LOST PROFITS.
  */
-
-/*jshint loopfunc: true */
-
 Ext.ns('OE');
 
 /**
@@ -35,6 +32,8 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 
     constructor: function (config) {
         var me = this;
+        // enable editing on first click
+        this.clicksToEdit = 1;
 
         this.reportId = config.formConfig.itemId || null;
 
@@ -57,11 +56,16 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 
         var dateFormat = OE.util.defaultDateFormat;
 
-        var formatDate = function (value) {
+        var formatDate = function (val) {
+            var value = val;
+            if (value && (('string' == typeof value ) || ('number' == typeof value))) {
+                value = new Date(value);
+            }
             return value ? value.dateFormat(dateFormat) : '';
         };
 
         var gridId = 'editorgridfield-' + Ext.id();
+        var gridPlugins = [];
 
         var buildColumn = function (dsName, dimension) {
             var col = {};
@@ -69,8 +73,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             if (dimension.meta && dimension.meta.form) {
                 formMeta = dimension.meta.form;
             }
-            col.hidden = (formMeta.xtype && formMeta.xtype == 'hidden') ? true
-                : false;
+            col.hidden = formMeta.xtype && formMeta.xtype == 'hidden';
             if (col.hidden) {
                 hiddenFieldVals[dimension.name] = '';
             }
@@ -114,7 +117,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         });
 
                     store = new OE.data.RestrictedJsonStore({
-                        url: '../../oe/report/detailsQuery',
+                        url: OE.util.getUrl('/report/detailsQuery'),
                         method: 'POST',
                         autoLoad: true,
                         baseParams: {
@@ -134,8 +137,11 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     displayField = results[1];// 'Name';
                 }
 
+                store.valueField = valueField;
+                store.displayField = displayField;
+
                 col.xtype = 'combocolumn';
-                var combo = new Ext.form.ComboBox(Ext.apply({
+                col.editor = new Ext.form.ComboBox(Ext.apply({
                     allowBlank: false,
                     mode: 'local',
                     triggerAction: 'all',
@@ -147,10 +153,9 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     valueField: valueField,
                     displayField: displayField,
                     listClass: 'x-combo-list-small',
-                    lazyRender: true
+                    lazyRender: true,
+                    onloadDefined: false
                 }, formMeta));
-
-                col.editor = combo;
             } else {
                 switch (dimension.type) {
                     case 'Int':
@@ -177,8 +182,10 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         }, formMeta));
                         break;
                     case 'BOOLEAN':
-                        col.xtype = 'checkcolumn';
-                        col = Ext.apply(col, formMeta);
+                        var checkColumn = new Ext.grid.CheckColumn(Ext.apply(col, formMeta));
+                        col = checkColumn;
+                        gridPlugins.push(checkColumn);
+
                         break;
                 }
             }
@@ -233,9 +240,18 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 
         var grid = this;
         var dimensionMetadata = config.dimensionMetadata;
+
+        function updateBottomToolBar (grid, store) {
+            if (grid && grid.getBottomToolbar()) {
+                var recordCountMsg = (messagesBundle['input.datasource.default.records'] || 'Records') +
+                    ' : ' + store.getCount();
+                grid.getBottomToolbar().get(1).setText(recordCountMsg);
+            }
+        }
+
         config = Ext.apply({
             id: gridId,
-            height: 150,
+            height: 200,
             anchor: '100%',
             clicksToEdit: 1,
             enableColumnMove: false,
@@ -248,43 +264,171 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 singleSelect: true
             }),
             keys: keys,
+            bbar: ['->', {
+                xtype: 'tbtext',
+                text: 'Loading ...'
+            }],
             store: new Ext.data.JsonStore({
                 idIndex: 0,
                 fields: storeFields,
-                autoLoad: true,
                 root: 'data',
-                sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, "recId"), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'DESC')},
+                sortInfo: {
+                    field: OE.util.getStringValue(dimensionMetadata.sortcolumn, 'recId'),
+                    direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'DESC')
+                },
                 data: {
                     data: [ Ext.apply({recId: recId++}, rec) ]
+                },
+                listeners: {
+                    load: function (store) {
+                        updateBottomToolBar(grid, store);
+                    },
+                    add: function (store) {
+                        updateBottomToolBar(grid, store);
+                    },
+                    remove: function (store) {
+                        updateBottomToolBar(grid, store);
+                    }
                 }
             }),
-            tbar: [
-                {
-                    text: messagesBundle['input.datasource.default.add'],
-                    handler: function () {
-                        addNewRow(grid);
-                    },
-                    scope: grid
-                },
-                {
-                    text: messagesBundle['input.datasource.default.remove'],
-                    handler: function () {
-                        grid.stopEditing();
-                        // remove selected row
-                        grid.store.remove(grid.getSelectionModel().getSelected());
-                        // put cursor on the first cell...
-                        if (grid.store.getCount() > 0) {
-                            grid.startEditing(0, 0);
-                        }
-                    },
-                    scope: grid
-                }
-            ]
+            tbar: [ {
+                         text: messagesBundle['input.datasource.default.import'] || 'Import',
+                         handler: function () {
+                             importDataFromCSV(grid);
+                         },
+                         scope: grid
+                     }, {
+                         text: messagesBundle['input.datasource.default.add'] || 'Add',
+                         handler: function () {
+                             addNewRow(grid);
+                         },
+                         scope: grid
+                     }, {
+                         text: messagesBundle['input.datasource.default.remove'] || 'Remove',
+                         handler: function () {
+                             grid.stopEditing();
+                             // remove selected row
+                             grid.store.remove(grid.getSelectionModel().getSelected());
+                             // put cursor on the first cell...
+                             if (grid.store.getCount() > 0) {
+                                 grid.startEditing(0, 0);
+                             }
+                         },
+                         scope: grid
+                     } ]
         }, config);
 
-        function addNewRow(grid) {
-            var Rec = grid.getStore().recordType;
-            var c = new Rec(Ext.apply(Ext.apply({recId: recId++}, rec), hiddenFieldVals));
+        // Add grid plugins, if there are any added for check column
+        if (gridPlugins.length > 0) {
+            config.plugins = gridPlugins;
+        }
+
+        // returns list of fields that has property hidden=false
+        function getNonHiddenFields () {
+            var fields = [];
+            var numCols = grid.getColumnModel().getColumnCount();
+            for (var i = 0; i < numCols; i++ ) {
+                var col = grid.getColumnModel().getColumnAt(i) ;
+                if (!col.hidden) {
+                    fields.push(col);
+                }
+            }
+            return fields;
+        }
+
+        // returns list of field ids that has property hidden=false
+        function getNonHiddenFieldIds () {
+            var fields = [];
+            var cols = getNonHiddenFields();
+            for (var i = 0; i < cols.length; i++) {
+                var col = cols[i];
+                fields.push(col.id);
+            }
+            return fields;
+        }
+        // Translates combo column's display field to id field
+        // This will be used during import
+        function convertFromStore (newRec, field, value, editorStore) {
+            var itemIx = editorStore.findExact(editorStore.displayField, value); // use displayField
+            if (itemIx >= 0) {
+                newRec[field] =  editorStore.getAt(itemIx).data[editorStore.valueField]; // use id field
+            } else {
+                // TODO: If the lookup value not found...
+                newRec[field] = '';
+            }
+        }
+
+        // This function is called when we import data from csv
+        // It will translate combo display field to id fields,
+        // date string/int to JavaScript Date object
+        function convertDisplayValuesToIds (grid, rec) {
+            for (var prop in rec) {
+                if (rec.hasOwnProperty(prop)) {
+                    var value = rec[prop];
+
+                    var column = grid.getColumnModel().getColumnById(prop);
+                    if (column.xtype == 'combocolumn') {
+                        var editorStore = column.getEditor().getStore();
+                        if (editorStore.getCount() === 0) {
+                            editorStore.on('load',
+                                convertFromStore.createDelegate(this, [rec, prop, value, editorStore]), null,
+                                {single: true});
+                            return;
+                        } else {
+                            convertFromStore(rec, prop , value, editorStore);
+                        }
+                    } else if (column.editor && column.editor.getXType() == 'datefield') {
+                        var timestamp = Date.parse(rec[prop]);
+                        if (isNaN(timestamp) === false) {
+                            rec[prop] = new Date(rec[prop]);
+                        } else {
+                            rec[prop] = '';
+                        }
+                    }
+                }
+            }
+
+            return rec;
+        }
+
+        function importDataFromCSV (grid) {
+            var configuration = {};
+
+            // Note that fields will be comma separated string, NOT an array of string
+            // if we send as params, order of the fields may not be same as what we send
+            configuration.fields = getNonHiddenFields();
+            configuration.fieldIds = getNonHiddenFieldIds();
+            if (grid.uploadConfig) {
+                configuration.delimiter = grid.uploadConfig.delimiter || ',';
+                configuration.qualifier = grid.uploadConfig.qualifier || '"';
+                configuration.headerRow = grid.uploadConfig.headerRow || true;
+                configuration.numRowsToRead = grid.uploadConfig.numRowsToRead || -1;
+            }
+            configuration.successCallback = function (response) {
+                var recs = response.rows;
+
+                if (recs && recs.length > 0) {
+                    grid.stopEditing();
+
+                    for (var ix = 0; ix < recs.length; ix++) {
+                        var rec = recs[ix];
+                        var Rec = grid.getStore().recordType;
+                        // loop through fields and convert Name to Id value for combo fields
+                        rec = convertDisplayValuesToIds(grid, rec);
+                        var c = new Rec(Ext.apply(Ext.apply({recId: recId++}, rec), hiddenFieldVals));
+                        grid.store.addSorted(c);
+                    }
+                    grid.startEditing(grid.store.getCount(), 0);
+                }
+            };
+
+            var win = OE.uploadCSVForm(configuration);
+            win.show();
+        }
+
+        function addNewRow (grid) {
+            var recordType = grid.getStore().recordType;
+            var c = new recordType(Ext.apply(Ext.apply({recId: recId++}, rec), hiddenFieldVals));
             grid.stopEditing();
             grid.store.add([ c ]);
             grid.startEditing(grid.store.getCount(), 0);
@@ -292,7 +436,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 
         OE.EditorGridField.superclass.constructor.call(me, config);
 
-        function convertToGridDataType(value, dataType) {
+        function convertToGridDataType (value, dataType) {
             var res = null;
             if (value) {
                 switch (dataType) {
@@ -304,18 +448,16 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     case 'string':
                     case 'bool':
                     case 'int':
-                    {
                         if (value !== '') {
                             res = value;
                         }
                         break;
-                    }
-
                 }
             }
             return res;
         }
-        function dataTypeConversion(value, dataType) {
+
+        function dataTypeConversion (value, dataType) {
             var res = null;
             if (value) {
                 switch (dataType) {
@@ -327,12 +469,10 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     case 'string':
                     case 'bool':
                     case 'int':
-                    {
                         if (value !== '') {
                             res = value;
                         }
                         break;
-                    }
                 }
             }
             return res;
@@ -344,17 +484,19 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             me.ownerCt.ownerCt.add({
                 xtype: 'hidden',
                 name: config.name,
-                allowBlank: (!Ext.isDefined(this.dimension.meta.form.allowBlank) ||
-                    this.dimension.meta.form.allowBlank === true ) ? true : false,
+                updating: false,
+                allowBlank: !Ext.isDefined(this.dimension.meta.form.allowBlank) || this.dimension.meta.form.allowBlank,
                 setValue: function (val) {
+                    /*jshint loopfunc: true */
                     grid.stopEditing();
                     grid.store.removeAll();
-                    var Rec = grid.getStore().recordType;
-                    if (val !== null && Ext.isDefined(val) && val.length > 0) {
+                    // set updating to true so that we do not validate records while adding them
+                    this.updating = true;
+                    if (val && val.length > 0) {
                         for (var i = 0; i < val.length; i++) {
-                            Ext.iterate(grid.store.fields.items, function (fld, j) {
+                            Ext.iterate(grid.store.fields.items, function (fld) {
                                 val[i][fld.name] = convertToGridDataType(
-                                    val[i][fld.name], fld.type);
+                                    val[i][fld.name],fld.type);
                                 // check if this field is hidden field
                                 // if so, put the value in hiddenFieldVal json
                                 // TODO: we should do assignment only once and this only applies
@@ -363,10 +505,13 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                                     hiddenFieldVals[fld.name] = val[i][fld.name];
                                 }
                             });
-                            var c = new Rec(Ext.apply({recId: recId++}, val[i]));
+                            var recordType = grid.getStore().recordType;
+                            var c = new recordType(Ext.apply({recId: recId++}, val[i]));
                             grid.store.addSorted(c);
                         }
                     }
+                    // once done adding recs, set updating flag to false
+                    this.updating = false;
                     grid.startEditing(grid.store.getCount(), 0);
                 },
                 getValue: function () {
@@ -375,17 +520,15 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         return Ext.encode(data);
                     }
 
-                    Ext.iterate(me.getValue(), function (record, ix) {
+                    Ext.iterate(me.getValue(), function (record) {
                         var row = record.data;
                         var rowJson = {};
-                        Ext.iterate(grid.store.fields.items, function (fld, i) {
+                        Ext.iterate(grid.store.fields.items, function (fld) {
                             if (fld.name != 'recId') {
-                                rowJson[fld.name] = dataTypeConversion(row[fld.name], fld.type);
-                                if (rowJson[fld.name] === null || !Ext.isDefined(rowJson[fld.name]) || rowJson[fld.name] === '') {
+                                rowJson[fld.name] = dataTypeConversion(row[fld.name],fld.type);
+                                if (!rowJson[fld.name]) {
                                     if (grid.colModel.getColumnById(fld.name).hidden) {
-                                        if (hiddenFieldVals[fld.name] !== null && Ext.isDefined(hiddenFieldVals[fld.name]) &&
-                                            hiddenFieldVals[fld.name] !== '') {
-
+                                        if (!hiddenFieldVals[fld.name]) {
                                             rowJson[fld.name] = hiddenFieldVals[fld.name];
                                         }
                                     }
@@ -400,13 +543,17 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 isValid: function () {
                     var valid = true;
 
+                    // if we are in process of adding grid records,
+                    // do not run validation code...
+                    if (this.updating) {
+                        return valid;
+                    }
                     // Step 1
                     // if keys are defined ensure unique recs
-                    var recId = 0;
                     var keyId = 0;
                     var recArray = [];
                     var tmpRecs = me.getValue();
-                    for (recId = 0; recId < tmpRecs.length; recId++) {
+                    for (var recId = 0; recId < tmpRecs.length; recId++) {
                         var data = tmpRecs[recId].data;
                         var keyData = '';
 
@@ -425,13 +572,13 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         return valid;
                     }
 
-                    Ext.iterate(me.getValue(), function (record, ix) {
+                    Ext.iterate(me.getValue(), function (record) {
                         var row = record.data;
-                        Ext.iterate(grid.store.fields.items, function (fld, i) {
+                        Ext.iterate(grid.store.fields.items, function (fld) {
 
                             // if blank value is not valid for this field
                             if (fld.allowBlank === false) {
-                                if (row[fld.name] === null || !Ext.isDefined(row[fld.name]) || row[fld.name] === '') {
+                                if (!row[fld.name]) {
                                     valid = false;
                                 }
                             }
