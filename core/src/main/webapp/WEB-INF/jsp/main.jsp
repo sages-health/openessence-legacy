@@ -148,6 +148,7 @@
         src="${contextPath}/js/extplugins/Ext.ux.form.FileUploadField/FileUploadField.js"></script>
 <script type="text/javascript" src="${contextPath}/js/extplugins/PagingStore.js"></script>
 <script type="text/javascript" src="${contextPath}/js/extplugins/Ext.ux.ColorField/Ext.ux.ColorField.js"></script>
+<script type="text/javascript" src="${contextPath}/js/extplugins/CheckColumn.js"></script>
 
 <script type="text/javascript" src="${contextPath}/js/oe/app/plugin/collapsedPanelTitle.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/DynamicPagingToolbar.js"></script>
