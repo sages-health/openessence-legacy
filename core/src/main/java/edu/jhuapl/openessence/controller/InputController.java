@@ -26,20 +26,22 @@
 
 package edu.jhuapl.openessence.controller;
 
-import edu.jhuapl.openessence.datasource.Dimension;
-import edu.jhuapl.openessence.datasource.OeDataSourceAccessException;
-import edu.jhuapl.openessence.datasource.entry.ChildRecordSet;
-import edu.jhuapl.openessence.datasource.entry.CompleteRecord;
-import edu.jhuapl.openessence.datasource.entry.DbKeyValMap;
-import edu.jhuapl.openessence.datasource.jdbc.JdbcOeDataSource;
-import edu.jhuapl.openessence.datasource.jdbc.entry.JdbcOeDataEntrySource;
-import edu.jhuapl.openessence.datasource.jdbc.entry.TableAwareQueryRecord;
-import edu.jhuapl.openessence.model.DeleteRequest;
-import edu.jhuapl.openessence.upload.FileImporter;
-import edu.jhuapl.openessence.upload.FileImporterRegistry;
-import edu.jhuapl.openessence.web.util.ControllerUtils;
-import edu.jhuapl.openessence.web.util.ErrorMessageException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,17 +54,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import edu.jhuapl.openessence.datasource.Dimension;
+import edu.jhuapl.openessence.datasource.OeDataSourceAccessException;
+import edu.jhuapl.openessence.datasource.entry.ChildRecordSet;
+import edu.jhuapl.openessence.datasource.entry.CompleteRecord;
+import edu.jhuapl.openessence.datasource.entry.DbKeyValMap;
+import edu.jhuapl.openessence.datasource.jdbc.JdbcOeDataSource;
+import edu.jhuapl.openessence.datasource.jdbc.entry.JdbcOeDataEntrySource;
+import edu.jhuapl.openessence.datasource.jdbc.entry.TableAwareQueryRecord;
+import edu.jhuapl.openessence.model.DeleteRequest;
+import edu.jhuapl.openessence.parser.CSVParser;
+import edu.jhuapl.openessence.upload.FileImporter;
+import edu.jhuapl.openessence.upload.FileImporterRegistry;
+import edu.jhuapl.openessence.web.util.ControllerUtils;
+import edu.jhuapl.openessence.web.util.ErrorMessageException;
 
 @Controller
 @RequestMapping("/input")
@@ -241,4 +246,110 @@ public class InputController extends OeController {
         }
 
     }
+    
+
+    @RequestMapping(value = "/importCSV")
+    public void importCSV(@RequestPart MultipartFile file, 
+    		HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException  {
+ 
+    	parseCSVData(file, request, response);
+    }
+    
+    private void parseCSVData(MultipartFile csvFile,
+			HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		ObjectMapper mapper = new ObjectMapper();
+
+		String user = request.getUserPrincipal().getName();
+		Calendar cal = Calendar.getInstance();
+		String dateTimeString = cal.get(Calendar.YEAR) + "_"
+				+ (cal.get(Calendar.MONTH) + 1) + "_" + cal.get(Calendar.DATE)
+				+ "_" + cal.get(Calendar.HOUR_OF_DAY) + "_"
+				+ cal.get(Calendar.MINUTE) + "_" + cal.get(Calendar.SECOND);
+
+		char delimiter = ',';
+		char qualifier = '"';
+		int rowsToSkip = 0;
+		int numRowsToRead = -1;
+		if (request.getParameter("delimiter") != null
+				&& request.getParameter("delimiter").length() > 0) {
+			delimiter = request.getParameter("delimiter").charAt(0);
+		}
+		if (request.getParameter("qualifier") != null
+				&& request.getParameter("qualifier").length() > 0) {
+			qualifier = request.getParameter("qualifier").charAt(0);
+		}
+		if (request.getParameter("rowsToSkip") != null
+				&& request.getParameter("rowsToSkip").length() > 0 ) {
+			try {
+				rowsToSkip = Integer.parseInt(request
+						.getParameter("rowsToSkip"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if (request.getParameter("numRowsToRead") != null
+				&& request.getParameter("numRowsToRead").length() > 0) {
+			numRowsToRead = Integer.parseInt(request
+					.getParameter("numRowsToRead"));
+		}
+
+		Map<String, Object> map = new HashMap<String, Object>();
+		response.setContentType("text/html;charset=utf-8");
+		response.setHeader("Cache-control", "no-cache, no-store");
+		response.setHeader("Pragma", "no-cache");
+		response.setHeader("Expires", "-1");
+
+		File upDir = uploadDir();
+		try {
+			File upFile = null;
+			if (csvFile == null) {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter()
+						.write(mapper
+								.writeValueAsString(handleException(new RuntimeException(
+										"Error: File not uploaded!"))));
+				return;
+			}
+			upFile = new File(upDir, csvFile.getName() + "_" + user + "_"
+					+ dateTimeString + ".csv");
+			csvFile.transferTo(upFile);
+			
+			if (!upFile.isFile()) {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter()
+						.write(mapper
+								.writeValueAsString(handleException(new RuntimeException(
+										"Error: File is not valid!"))));
+				return;
+			}
+
+			CSVParser parser = new CSVParser();
+
+			String flds =request.getParameter("fields");
+			String [] fields = flds.split(",");
+			// parse first N lines if N not provided then parse everything...
+			Map<String, String>[] data = parser.parse(upFile, delimiter, qualifier,
+					rowsToSkip, numRowsToRead, fields);
+			map.put("rows", data);
+			map.put("success", true);
+			response.getWriter().write(mapper.writeValueAsString(map));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write(
+					mapper.writeValueAsString(handleException(e)));
+		}
+	}
+
+	private File uploadDir() {
+		String uploadDir = Paths.get(FileUtils.getTempDirectoryPath(), "upload").toString();//jndiConfig.configDir() + "/upload";
+		File uploadDirObj = new File(uploadDir);
+		if (!uploadDirObj.exists()) {
+			System.out.println("creating directory: " + uploadDirObj);
+			uploadDirObj.mkdir();
+		}
+		return uploadDirObj;
+	}
 }

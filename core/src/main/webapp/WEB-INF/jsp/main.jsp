@@ -166,6 +166,7 @@
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/ComboColumn.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/GraphConfigTreePanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/CategoryGridField.js"></script>
+<script type="text/javascript" src="${contextPath}/js/oe/app/widget/UploadCSVForm.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/EditorGridField.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/MainTabPanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/InputTab.js"></script>
