@@ -681,7 +681,8 @@ public class ReportController extends OeController {
                     try {
                         TDI.runDetector(TDDO);
                     } catch (Exception e) {
-                        String errorMessage = "Failure to create Timeseries";
+                        log.error("", e);
+                        String errorMessage = "Failure to create timeseries";
                         if (e.getMessage() != null) {
                             errorMessage = errorMessage + ":<BR>" + e.getMessage();
                         }

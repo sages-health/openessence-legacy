@@ -28,8 +28,11 @@ package edu.jhuapl.bsp.detector;
 
 import edu.jhuapl.bsp.detector.exception.DetectorException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAdd;
 import static edu.jhuapl.bsp.detector.OpenMath.dataInd;
@@ -473,6 +476,7 @@ public class CusumSagesDetector implements TemporalDetectorInterface, TemporalDe
         maxLT = max(lookup_table[0]);
         threshPValueR = THRESHOLD_PROBABILITY_RED_ALERT;
         threshPValueY = THRESHOLD_PROBABILITY_YELLOW_ALERT;
+        readConfigFile();
     }
 
     @Override
@@ -574,6 +578,25 @@ public class CusumSagesDetector implements TemporalDetectorInterface, TemporalDe
         }
         for (int i = 0; i < data.length; i++) {
             levels[i] = pvalues[i];
+        }
+    }
+
+    private void readConfigFile() {
+        Properties defaultProps = new Properties();
+        InputStream in = getClass().getResourceAsStream("/CusumSagesDetector.properties");
+        try {
+            defaultProps.load(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String red = defaultProps.getProperty("THRESHOLD_PROBABILITY_RED_ALERT");
+        String yellow = defaultProps.getProperty("THRESHOLD_PROBABILITY_YELLOW_ALERT");
+        setRedLevel(Double.parseDouble(red));
+        setYellowLevel(Double.parseDouble(yellow));
+        try {
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
