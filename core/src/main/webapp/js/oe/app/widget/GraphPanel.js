@@ -378,21 +378,19 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                                         var imageHTML = objServerResponse.responseText;
 
                                         // reload the graph
-                                        for (var i = 0; i < me.graphConfiguration.dataDisplayKey.length; i++) {
-                                            var dataDisplayKey = me.graphConfiguration.dataDisplayKey[i];
-                                            var expectedCheckboxValue = dataDisplayKey.charAt(dataDisplayKey.length -1);
-                                            imageHTML += '<img src=\"' + timeSeriesGraphURL + '&graphExpectedValues=';
+                                        var lastDisplayKeyIndex = me.graphConfiguration.dataDisplayKey.length - 1;
+                                        var dataDisplayKey = me.graphConfiguration.dataDisplayKey[lastDisplayKeyIndex];
+                                        var expectedCheckboxValue = dataDisplayKey.charAt(dataDisplayKey.length - 1);
+                                        imageHTML += '<img src=\"' + timeSeriesGraphURL + '&graphExpectedValues=';
 
-                                            if (expectedCheckboxValue == '0') {
-                                                imageHTML += 'false';
-                                            } else {
-                                                imageHTML += 'true';
-                                            }
-
-                                            imageHTML += '" usemap="#' + me.graphConfiguration.imageMapName + '"/>';
-                                            graphDiv.innerHTML = imageHTML;
+                                        if (expectedCheckboxValue == '0') {
+                                            imageHTML += 'false';
+                                        } else {
+                                            imageHTML += 'true';
                                         }
 
+                                        imageHTML += '" usemap="#' + me.graphConfiguration.imageMapName + '"/>';
+                                        graphDiv.innerHTML = imageHTML;
                                     },
                                     failure: function (objServerResponse) {
 
