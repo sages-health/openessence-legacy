@@ -26,10 +26,16 @@
 
 package edu.jhuapl.bsp.detector;
 
-import junit.framework.TestCase;
+import de.jollyday.HolidayManager;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import junit.framework.TestCase;
 
 public class TestCheckHoliday extends TestCase {
 
@@ -126,16 +132,19 @@ public class TestCheckHoliday extends TestCase {
     private CheckHoliday cd;
 
     @Override
+    @Before
     protected void setUp() throws Exception {
         cd = new CheckHoliday();
     }
 
     @Override
+    @After
     protected void tearDown() throws Exception {
         cd = null;
     }
 
-    public void testCheckHoliday() {
+    @Test
+    public void testCheckHoliday() throws Exception {
         Calendar now = Calendar.getInstance();
         Calendar cal = (Calendar) now.clone();
         Date dt1 = null, dt2 = null, dt3 = null;
@@ -163,6 +172,26 @@ public class TestCheckHoliday extends TestCase {
         for (int i = 0; i < dataReal.length; i++) {
             assertEquals(dataReal[i], flags[i], .00001);
         }
+        
+        HolidayManager holidayManager = HolidayManager.getInstance(getClass().getResource("/Holidays_2.xml"));
+    	
+        System.out.println("Testing CheckHoliday (Jollyday version)");
+        dataReal = v1;
+        flags = CheckHoliday.getHolidays(dt1, 992, holidayManager);
+        for (int i = 0; i < dataReal.length; i++) {
+            assertEquals(dataReal[i], flags[i], .00001);
+        }
+        dataReal = v2;
+        flags = CheckHoliday.getHolidays(dt2, 992, holidayManager);
+        for (int i = 0; i < dataReal.length; i++) {
+            assertEquals(dataReal[i], flags[i], .00001);
+        }
+        dataReal = v3;
+        flags = CheckHoliday.getHolidays(dt3, 992, holidayManager);
+        for (int i = 0; i < dataReal.length; i++) {
+            assertEquals(dataReal[i], flags[i], .00001);
+        }
+        
     }
 }
 

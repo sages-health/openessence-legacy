@@ -26,15 +26,6 @@
 
 package edu.jhuapl.bsp.detector;
 
-import edu.jhuapl.bsp.detector.exception.DetectorException;
-
-import org.apache.commons.math3.distribution.TDistribution;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.Properties;
-
 import static edu.jhuapl.bsp.detector.OpenMath.any;
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAbs;
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAdd;
@@ -59,6 +50,19 @@ import static java.lang.Math.abs;
 import static java.lang.Math.log;
 import static java.lang.Math.max;
 import static java.lang.Math.pow;
+import de.jollyday.HolidayManager;
+
+import edu.jhuapl.bsp.detector.exception.DetectorException;
+
+import org.apache.commons.math3.distribution.TDistribution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * Runs the Generalized Adaptive Smoothing algorithm
@@ -85,8 +89,21 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
     private double threshPValueR, threshPValueY;
     private double levels[], pvalues[], expectedData[], colors[], r2Levels[], switchFlags[], test_stat[];
 
-    //
+    private static final Logger log = LoggerFactory.getLogger(GSSages.class);
+    private HolidayManager holidayManager;
+
     public GSSages() {
+        try {
+            URL holidaysFile = getClass().getResource("/Holidays_OE.xml");
+            this.holidayManager = HolidayManager.getInstance(holidaysFile);
+        } catch (NullPointerException e) {
+            log.error("Could not instantiate HolidayManager. Could not locate " + "Holidays_OE.xml file.", e);
+        }
+        init();
+    }
+
+    public GSSages(HolidayManager holidayManager) {
+        this.holidayManager = holidayManager;
         init();
     }
 
@@ -154,7 +171,7 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
         UCL_Y = new double[Baseline];
         int degFreedom;
         minSigma = new double[Baseline];
-//
+        //
         levels = ones(data.length, 0.5);
         pvalues = ones(data.length, -9999);
         expectedData = ones(data.length, 0);
@@ -162,24 +179,25 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
         r2Levels = ones(data.length, 0);
         switchFlags = ones(data.length, 0);
         test_stat = ones(data.length, -9999);
-//
+        //
         double datak[] = copya(data);
-//    double datakr[][] = reshape (datak, Baseline/7, 7);
-//    c0 = mean(datakr); ck = mean(mean(datakr));
+        // double datakr[][] = reshape (datak, Baseline/7, 7);
+        // c0 = mean(datakr); ck = mean(mean(datakr));
         double datakr[][] = reshape(datak, 7, Baseline / 7);
         c0 = mean(transpose(datakr));
         ck = mean(mean(transpose(datakr)));
         for (int n0 = 0; n0 < c0.length; n0++) {
             c0[n0] = c0[n0] / ck;
         } // starting seasonality coefficients
-//for (int k=0; k<c0.length; k++) { System.out.println (ck+"/"+c0[k]+" "); } System.out.println(); System.out.println();
+        // for (int k=0; k<c0.length; k++) { System.out.println (ck+"/"+c0[k]+" "); } System.out.println();
+        // System.out.println();
         double m0 = mean(mean(transpose(datakr))); // starting level (mean)
-//
+        //
         double m[] = ones(data.length, m0);
         double b[] = ones(data.length, 0); // initialize trend at 0
-// Depending on the mean of the baseline choose smoothing coefficients
-// alpha is a vector with 3 coefficients - alpha(1) - level alpha(2)- trend
-// alpha(3) is seasonality (corresponds to alpha beta and gamma in the paper
+        // Depending on the mean of the baseline choose smoothing coefficients
+        // alpha is a vector with 3 coefficients - alpha(1) - level alpha(2)- trend
+        // alpha(3) is seasonality (corresponds to alpha beta and gamma in the paper
         if (median(reshape(datakr)) == 0) {
             alpha[0] = 0.4;
             alpha[1] = 0;
@@ -201,7 +219,7 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
                     alpha[0] = 0.15;
                     alpha[1] = 0;
                     alpha[2] = 0.05;
-                } else /*(m0 >= 100)*/ {
+                } else /* (m0 >= 100) */{
                     alpha[0] = 0.4;
                     alpha[1] = 0;
                     alpha[2] = 0.05;
@@ -209,12 +227,12 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
             }
             bSparseFlag = false;
         }
-        int HOL[] = CheckHoliday.isHoliday(startDate, data.length); // Holiday function
+        int HOL[] = CheckHoliday.getHolidays(startDate, data.length, holidayManager); // Holiday function
         // Format of the parameterList:
         // HOL - vector of holidays
         final int season = 7; // Seasonality
         double y[] = copya(datak);
-//
+        //
         final int b0 = 0; // No trend
         // Initialize values
         m[season - 1] = m0;
@@ -228,44 +246,44 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
         for (i = 7; i < 14; i++) {
             c[i] = c[i - 7];
         } // initialize seasonality coefficient vector
-//for (int k=0; k<14; k++) { System.out.println (c[k]+" "); } System.out.println(); System.out.println();
+        // for (int k=0; k<14; k++) { System.out.println (c[k]+" "); } System.out.println(); System.out.println();
         m[2 * season - 1] = m0; // initialize vector of levels
         double denom[] = ones(y.length, 0);
-//
+        //
         double y_Pred[] = ones(y.length, 0); // initialize predictions
         int ndxBaseline[] = new int[14];
         for (i = 0; i < 14; i++) {
             ndxBaseline[i] = i + 1;
         } // starting baseline
-//
+        //
         for (i = 2 * season + GUARDBAND; i < y.length; i++) { // beginning at day 15 + Guardband
             // use the indices of the entire baseline period
             // checking that there are at least 7 non-zero values "together"
             int ndxOK[] = zf.filterBaselineZeros(dataInd_js(datak, ndxBaseline));
             int ndxBaselineOK[] = dataInd(ndxBaseline, ndxOK);
             if (numel(ndxBaselineOK) >= 7) {
-                if (HOL[i] == 1 &&
-                    !((y[i] < (c[i - 6] * m[i - 6] + denom[i - 1]) && y[i] > (c[i - 6] * m[i - 6] - denom[i - 1]))
-                      || HOLfac == 1.0)) {
-                    // if holiday - check if the values within reasonable limits (+/- 1 standard deviation from the mean)
+                if (HOL[i] == 1
+                        && !((y[i] < (c[i - 6] * m[i - 6] + denom[i - 1]) && y[i] > (c[i - 6] * m[i - 6] - denom[i - 1])) || HOLfac == 1.0)) {
+                    // if holiday - check if the values within reasonable limits (+/- 1 standard deviation from the
+                    // mean)
                     multFac = HOLfac; // potentially change to use seasonality parameter from the last weekend
                 } else {
                     multFac = c[i - season];
                 }
                 // If mean of the recent "good" data all of a sudden is greater
                 // than 5 - start updating seasonal coefficients;
-//System.out.println (datak.length+" "+ndxBaselineOK.length+" "+datakr.length+" "+datakr[0].length+" "+ndxBaseline[ndxBaseline.length-1]);
+                // System.out.println
+                // (datak.length+" "+ndxBaselineOK.length+" "+datakr.length+" "+datakr[0].length+" "+ndxBaseline[ndxBaseline.length-1]);
                 if ((mean(dataInd_js(datak, ndxBaselineOK)) >= 5) && (median(reshape(datakr)) == 0)) {
-//System.out.println ("1");
+                    // System.out.println ("1");
                     alpha[2] = 0.05;
                     bSparseFlag = false;
-                    if ((numel(ndxBaselineOK) >= 14) &&
-                        (ndxBaselineOK[ndxBaselineOK.length - 1] - ndxBaselineOK[ndxBaselineOK.length - 1 - 13]
-                         == 13)) {
-                        datakr = reshape(
-                                dataInd_js(y, dataVec(ndxBaselineOK, ndxBaselineOK.length - 1 - 13,
-                                                      ndxBaselineOK.length - 1)),
-                                7, 2);
+                    if ((numel(ndxBaselineOK) >= 14)
+                            && (ndxBaselineOK[ndxBaselineOK.length - 1] - ndxBaselineOK[ndxBaselineOK.length - 1 - 13] == 13)) {
+                        datakr =
+                                reshape(dataInd_js(y,
+                                        dataVec(ndxBaselineOK, ndxBaselineOK.length - 1 - 13, ndxBaselineOK.length - 1)),
+                                        7, 2);
                         c0 = mean(transpose(datakr));
                         ck = mean(mean(transpose(datakr)));
                         for (int k = i - season, n0 = 0; k < i; k++, n0++) {
@@ -289,7 +307,7 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
                 b[i] = b[i - 1];
                 c[i] = c[i - season];
             }
-//
+            //
             int memList2[] = findLT(arrayAbs(arrayAdd2(dataVec(c, i - 6, i), -c[i])), 0.1);
             int memList3[] = arrayMod(arrayAdd2(memList2, i + 2), 7);
             int memList[] = ismember(arrayMod(ndxBaselineOK, 7), memList3);
@@ -301,10 +319,10 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
             }
             memList = find(memList);
             if (numel(dataInd_js(y, dataInd(ndxBaseline, memList))) <= 4) {
-//System.out.println ("2");
+                // System.out.println ("2");
                 denom[i] = std(dataInd_js(y, ndxBaseline));
             } else {
-//System.out.println ("3");
+                // System.out.println ("3");
                 denom[i] = std(dataInd_js(y, dataInd(ndxBaselineOK, memList)));
             }
             // For EWMA switch
@@ -335,8 +353,11 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
                 deltaSigma = new double[Baseline];
                 for (int k = 0; k < Baseline; k++) {
                     deltaSigma[k] =
-                            (alpha[0] / UCL_Y[k]) * (0.1289 - (0.2414 - 0.1826 * pow(1 - alpha[0], 4)) * log(
-                                    10 * 0.05)); // hard-coded yellow threshold to 0.05
+                            (alpha[0] / UCL_Y[k])
+                                    * (0.1289 - (0.2414 - 0.1826 * pow(1 - alpha[0], 4)) * log(10 * 0.05)); // hard-coded
+                                                                                                            // yellow
+                                                                                                            // threshold
+                                                                                                            // to 0.05
                 }
                 if (!any(dataInd_js(y, ndxBaselineOK))) {
                     Sigma = 0;
@@ -348,7 +369,7 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
                     Sigma = max(Sigma, minSigma[degFreedom - 1]);
                 }
             }
-//
+            //
             denom[i] = max(denom[i], 0.5);
             // making sure that denominator is big enough
             // Don't update the mean if seasonal coefficient is small, or
@@ -361,18 +382,15 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
             // 2) prediction is negative
             // 3) Holiday
             // 4) Day after holiday
-            if ((
-                        (abs(y_Pred[i] - y[i] + Adj) / denom[i] > APE_LIMIT) &&
-                        (numel(ndxBaseline) == numel(ndxBaselineOK)) &&
-                        (y[i] > c[8 + (i % 7) - 1] * OpenMath.percentile(dataInd_js(y, ndxBaseline), 95.0)))
-                || HOL[i] == 1) {
+            if (((abs(y_Pred[i] - y[i] + Adj) / denom[i] > APE_LIMIT) && (numel(ndxBaseline) == numel(ndxBaselineOK)) && (y[i] > c[8 + (i % 7) - 1]
+                    * OpenMath.percentile(dataInd_js(y, ndxBaseline), 95.0)))
+                    || HOL[i] == 1) {
                 m[i] = m[i - 1];
                 b[i] = b[i - 1];
                 c[i] = c[i - season];
             }
-            test_stat[i] =
-                    (y[i] - y_Pred[i] - Adj)
-                    / denom[i]; // Calculating the test statistics(removing the adjustment added on line 69
+            test_stat[i] = (y[i] - y_Pred[i] - Adj) / denom[i]; // Calculating the test statistics(removing the
+                                                                // adjustment added on line 69
             if (bSparseFlag) {
                 ytemp = dataInd_js(y, ndxBaselineOK);
                 Sigma = Math.max(Sigma, 0.5);
@@ -395,11 +413,11 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
                 }
             }
             arrayAdd(ndxBaseline, 1); // go forward by one day
-//System.out.println (String.format ("%.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f",
-//  denom[i], pvalues[i], m[i], c[i], test_stat[i], y_Pred[i], (bSparseFlag?1.0:0.0), m0, multFac));
+            // System.out.println (String.format ("%.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f",
+            // denom[i], pvalues[i], m[i], c[i], test_stat[i], y_Pred[i], (bSparseFlag?1.0:0.0), m0, multFac));
         }
         arrayAdd(y_Pred, -Adj); // remove adjustment from prediction
-//
+        //
         for (i = 0; i < data.length; i++) {
             levels[i] = pvalues[i];
         }
@@ -435,11 +453,11 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
     @Override
     public void runDetector(TemporalDetectorDataInterface tddi) {
         double[] data = tddi.getCounts();
-//
+        //
         setStartDate(tddi.getStartDate());
         calculate(data);
         DetectorHelper.postDetectionColorCoding(data, levels, colors, getRedLevel(), getYellowLevel(), 0.5, false);
-//
+        //
         tddi.setLevels(getLevels());
         tddi.setExpecteds(getExpecteds());
         tddi.setColors(getColors());
@@ -454,8 +472,8 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
         tddo.setCounts(data);
         tddo.setStartDate(startDate);
         this.runDetector(tddo);
-        double[][] ans = {tddo.getLevels(), tddo.getExpecteds(), tddo.getColors(),
-                          tddo.getSwitchFlags(), tddo.getR2Levels()};
+        double[][] ans =
+                {tddo.getLevels(), tddo.getExpecteds(), tddo.getColors(), tddo.getSwitchFlags(), tddo.getR2Levels()};
         return ans;
     }
 

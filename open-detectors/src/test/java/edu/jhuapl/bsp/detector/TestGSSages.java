@@ -26,10 +26,16 @@
 
 package edu.jhuapl.bsp.detector;
 
-import junit.framework.TestCase;
+import de.jollyday.HolidayManager;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import junit.framework.TestCase;
 
 public class TestGSSages extends TestCase {
 
@@ -448,17 +454,20 @@ public class TestGSSages extends TestCase {
 
     //
     @Override
+    @Before
     protected void setUp() throws Exception {
-        detector = new GSSages();
+    	HolidayManager holidayManager = HolidayManager.getInstance(getClass().getResource("/Holidays_2.xml"));
+    	detector = new GSSages(holidayManager);
     }
 
     //
     @Override
+    @After
     protected void tearDown() throws Exception {
         detector = null;
     }
 
-    //
+    @Test
     public void testGSSages() {
         double data[], dataReal[];
         TemporalDetectorDataInterface tddo = new TemporalDetectorSimpleDataObject();
@@ -466,7 +475,7 @@ public class TestGSSages extends TestCase {
         Calendar cal = (Calendar) now.clone();
         cal.set(2007, 0, 10);
         Date startDate = cal.getTime(); // month starts from 0
-//
+
         System.out.println("Testing Generalized Adaptive Smoothing detector");
         data = vec1;
         dataReal = v1;

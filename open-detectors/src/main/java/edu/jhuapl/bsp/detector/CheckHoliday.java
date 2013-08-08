@@ -29,8 +29,40 @@ package edu.jhuapl.bsp.detector;
 import java.util.Calendar;
 import java.util.Date;
 
+import de.jollyday.HolidayManager;
+
 public class CheckHoliday {
 
+	/**
+	 * This function returns an array having length same as numberOfDays and
+	 * each element of the array having values 0 or 1. If the corresponding day
+	 * is a holiday, it will have value 1 else value 0
+	 * 
+	 * @param startDate
+	 *            Start date
+	 * @param numberOfDays
+	 *            Number of days from start date
+	 * @param holidayManager
+	 *            HolidayManager object that knows about holidays for this
+	 *            system
+	 * @return array of 0 or 1 for a given date range
+	 */
+	public static int[] getHolidays(Date startDate, int numberOfDays,
+			HolidayManager holidayManager) {
+		int holidays[] = new int[numberOfDays];
+		Calendar cal = Calendar.getInstance();
+		cal.setFirstDayOfWeek(Calendar.SUNDAY);
+		cal.setTime(startDate);
+		for (int i = 0; i < numberOfDays; i++) {
+			// if holiday manager defined
+			if (holidayManager != null) {
+				holidays[i] = holidayManager.isHoliday(cal) ? 1 : 0;
+			}
+			cal.add(Calendar.DAY_OF_MONTH, 1);
+		}
+		return holidays;
+	}
+	
     private static int getNQ(int n, int q, int year, int month, Calendar cal) {
         cal.set(year, month - 1, 1);
         int dow = cal.get(Calendar.DAY_OF_WEEK) - 1; // formula requires Sunday to be zero
@@ -107,7 +139,6 @@ public class CheckHoliday {
             if (bH == true) {
                 hols[i] = 1;
             }
-//System.out.println(i+" "+hols[i]+" "+cal.getTime()+" "+weekday);
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
         return hols;
