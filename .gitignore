@@ -1,3 +1,6 @@
+# Developer settings
+dev.gradle
+
 # Gradle
 build/
 .gradle/
