@@ -758,7 +758,7 @@ public class GraphController {
                 } else {
                     points.add(new DataPoint(null, xLabels[j], pointMetaData));
                 }
-                if (expecteds[i][j] != Double.MIN_VALUE) {
+                if (expecteds != null && expecteds[i][j] != Double.MIN_VALUE) {
                     epoints.add(new DataPoint(expecteds[i][j], xLabels[j], epointMetaData));
                 } else {
                     epoints.add(new DataPoint(null, xLabels[j], epointMetaData));
