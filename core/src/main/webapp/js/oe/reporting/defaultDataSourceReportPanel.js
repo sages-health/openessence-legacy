@@ -57,17 +57,48 @@ OE.report.datasource.panel = function (configuration) {
     }
 
     function showPivot(parameters) {
-        parameters = Ext.applyIf({
-            url: OE.util.getUrl('/report/detailsPivot'),
-            autoTitle: parameters.title,
-            gridClass: Ext.grid.GridPanel,
-            gridExtraConfig: {},
-            pageSize: -1,
-            queryType: 'pivot'
-        }, parameters);
-        showDetails(parameters);
-    }
+        var ctId = Ext.id() + '-pivottable';
+        var tab = resultsTabPanel.add({
+            id:ctId,
+            title: parameters.title
 
+            // fix scrolling (layout=border?, region center...)
+        });
+
+        OE.data.doAjaxRestricted({
+            url: OE.util.getUrl('/report/detailsQuery'),
+            method: 'GET',
+            scope: this,
+            params: Ext.apply({
+                dsId: configuration.dataSource,
+                //results: parameters.results,
+                pagesize: -1
+            }, parameters.filters),
+            onJsonSuccess: function (response) {
+                // TODO error check??? on response.rows
+                $(function(){
+                    $('#'+ctId).pivotUI(
+                        response.rows
+                    )
+                });
+                $('#'+ctId).parent().css('overflow', 'auto');
+            },
+            // TODO make a callback function for this
+            onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
+        });
+
+        tab.parameters = parameters || {};
+
+        // this is a hack so saved queries know what type of query to save
+        // TODO move to more object-oriented solution
+        tab.parameters.queryType = parameters.queryType || 'details';
+
+        resultsTabPanel.setActiveTab(tab);
+        queryFormPanel.collapse(true);
+
+        return tab;
+    };
+    
     function showDetails(parameters) {
         Ext.applyIf(parameters, {
             gridClass: Ext.grid.GridPanel

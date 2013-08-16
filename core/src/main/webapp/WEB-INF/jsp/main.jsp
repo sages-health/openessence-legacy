@@ -62,6 +62,7 @@
     <link type="text/css" rel="stylesheet"
           href="${contextPath}/js/extplugins/Ext.ux.form.FileUploadField/FileUploadField.css"/>
     <link type="text/css" rel="stylesheet" href="${contextPath}/js/extplugins/Ext.ux.ColorField/Ext.ux.ColorField.css"/>
+    <link type="text/css" rel="stylesheet" href="${contextPath}/js/lib/Pivot/pivot.css"/>
 
     <%-- can also pass ?prettyPrint=true to get nicely formatted bundles, although the file size will be a lot larger --%>
     <script type="text/javascript" src="${contextPath}/oe/messages"></script>
@@ -129,6 +130,9 @@
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/MapTab.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/WelcomePanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/WelcomeItem.js"></script>
+<script type="text/javascript" src="${contextPath}/js/lib/Pivot/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="${contextPath}/js/lib/Pivot/jquery-ui-1.9.2.custom.min.js"></script>
+<script type="text/javascript" src="${contextPath}/js/lib/Pivot/pivot.js"></script>
 
 <%-- Core viewport and panels --%>
 <script type="text/javascript" src="${contextPath}/js/oe/contentTab.js"></script>
