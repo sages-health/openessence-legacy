@@ -778,12 +778,12 @@ OE.input.datasource.form.init = function (configuration) {
             {
                 text: messagesBundle[configuration.dataSource + '.save'] || messagesBundle['input.datasource.default.save'],
                 formBind: true,
-                handler: function () {
+                handler: function (button) {
                     var values = formPanel.getForm().getFieldValues();
                     values.dsId = configuration.dataSource;
 
                     OE.data.doAjaxRestricted({
-                        url: '../../oe/input/' + (configuration.itemId ? 'update' : 'add'),
+                        url: OE.util.getUrl('/input/' + (configuration.itemId ? 'update' : 'add')),
                         method: 'POST',
                         params: values,
                         onJsonSuccess: function (response) {
@@ -810,6 +810,9 @@ OE.input.datasource.form.init = function (configuration) {
                         },
                         onRelogin: {callback: this, args: []}
                     });
+
+                    // disable form to prevent resubmissions
+                    formPanel.disable();
                 },
                 scope: configuration
             }
