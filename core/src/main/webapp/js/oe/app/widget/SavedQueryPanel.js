@@ -156,21 +156,13 @@ OE.SavedQueryPanel = Ext.extend(Ext.Panel, {
                     var records = sm.getSelections();
                     var selectionCount = records.length;
 
-                    switch (selectionCount) {
-                        case 0:
-                        {
-                            deleteAction.disable();
-                            runAction.disable();
-                            break;
-                        }
-                        default:
-                        {
-                            deleteAction.enable();
-                            runAction.enable();
-                            break;
-                        }
+                    if (selectionCount === 0) {
+                        deleteAction.disable();
+                        runAction.disable();
+                    } else {
+                        deleteAction.enable();
+                        runAction.enable();
                     }
-                    ;
                 }, this, {buffer: 5});
 
                 this.add({
@@ -255,7 +247,7 @@ OE.SavedQueryPanel = Ext.extend(Ext.Panel, {
                         url: '../../oe/input/delete',
                         params: {dsId: me.dataSource},
                         jsonData: {pkIds: pkIds},
-                        onJsonSuccess: function (response) {
+                        onJsonSuccess: function () {
                             me.reload();
                         },
                         onRelogin: {callback: me.deleteReports, args: [records]}

@@ -44,12 +44,9 @@ OE.WelcomeItem = Ext.extend(Ext.Panel, {
 
         // Delegate the icon up to the parent node if we don't have one
         // If all else fails, get a default icon from the message bundle
-        var icon = Ext.isDefined(me.node.attributes.big_icon)
-            ? me.node.attributes.big_icon
-            : (Ext.isDefined(me.node.parentNode.attributes.big_icon)
-            ? me.node.parentNode.attributes.big_icon
-            : messagesBundle['main.navigation.panel.default_icon']
-                       ); // TODO fix this formatting
+        var icon = Ext.isDefined(me.node.attributes.big_icon) ? me.node.attributes.big_icon :
+                   (Ext.isDefined(me.node.parentNode.attributes.big_icon) ? me.node.parentNode.attributes.big_icon :
+                    messagesBundle['main.navigation.panel.default_icon']); // TODO fix this formatting
 
         this.add(
             new Ext.Panel({

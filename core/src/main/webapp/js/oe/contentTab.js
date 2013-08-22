@@ -56,7 +56,7 @@ OE.main.content.tab.init = function (configuration) {
     Ext.getCmp(configuration.destPanel).doLayout();
 };
 
-OE.main.content.tab.callback = function (el, success, response, options) {
+OE.main.content.tab.callback = function (el, success, response) {
     if (!success) {
         OE.data.defaultResponseFailure({});
     } else {

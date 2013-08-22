@@ -66,6 +66,7 @@ OE.login.loginForm = function (meta) {
             submitFunc: function (/*e*/) {
                 var locForm = pnl.getForm();
                 var locWin = pnl.findParentByType("window");
+                var me = this;
                 if (locForm.isValid()) {
                     Ext.Ajax.request({
                         url: OE.context.root + '/j_spring_security_check',
@@ -73,10 +74,9 @@ OE.login.loginForm = function (meta) {
                             j_username: pnl.form.getEl().dom.j_username.value,
                             j_password: pnl.form.getEl().dom.j_password.value
                         },
-                        scope: this,
                         callback: function (options, success, response) {
                             locWin.close();
-                            OE.login.resultHandler(this.oeMetaData, success, response);
+                            OE.login.resultHandler(me.oeMetaData, success, response);
                         }
                     });
                 }
@@ -114,7 +114,7 @@ OE.login.loginForm = function (meta) {
             {
                 key: [27],
                 scope: this,
-                handler: function (k, e) {
+                handler: function () {
                     pnl.findParentByType("window").close();
                 }
             }
@@ -177,7 +177,7 @@ OE.login.resultHandler = function (options, success, response) {
                 options.store.reload();
             }
         },
-        failure: function (response) {
+        failure: function () {
             // server error, not much to do but try again
             showLoginForm();
         }

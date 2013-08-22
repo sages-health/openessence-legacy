@@ -26,6 +26,6 @@
 
 Ext.namespace("OE.main.welcome.tab");
 OE.main.welcome.tab.init = function (configuration) {
-    Ext.getCmp(configuration.destPanel).add(new OE.WelcomePanel(configuration)).show()
+    Ext.getCmp(configuration.destPanel).add(new OE.WelcomePanel(configuration)).show();
     Ext.getCmp(configuration.destPanel).doLayout();
-}
+};

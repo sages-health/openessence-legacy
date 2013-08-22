@@ -72,9 +72,9 @@ OE.MapTab = Ext.extend(Ext.Panel, {
                 Ext.each(response.dsMapData.overlays, function (layer) {
 
                     // Filter must match selected accumulation if layer has one configured
-                    if (!Ext.isDefined(layer.accumulationId)
-                        || !Ext.isDefined(me.getMapData.accumId) // use all if none selected
-                        || layer.accumulationId === me.getMapData.accumId) {
+                    if (!Ext.isDefined(layer.accumulationId) ||
+                        !Ext.isDefined(me.getMapData.accumId) || // use all if none selected
+                        layer.accumulationId === me.getMapData.accumId) {
 
                         // TODO: for now, default to first overlay for legend creation (later specify which to use in map info)
                         if (!thresholds && layer.thresholds) {

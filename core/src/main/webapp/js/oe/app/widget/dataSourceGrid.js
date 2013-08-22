@@ -30,8 +30,6 @@ Ext.namespace("OE.datasource.grid");
  * Default data source function to build/populate grid(detail dimensions).
  */
 OE.datasource.grid.init = function (configuration) {
-    var me = this;
-
     var grid = null; // the resulting grid
     var dataStore = null;
 
@@ -129,7 +127,7 @@ OE.datasource.grid.init = function (configuration) {
             });
 
             return Ext.urlAppend('../report/exportGridToFile', Ext.urlEncode(parameters));
-        };
+        }
 
         var pagingToolbarItems = [];
         if (configuration.allowExport) {
@@ -210,9 +208,7 @@ OE.datasource.grid.init = function (configuration) {
             }
         },
         getExtGridPanel: function () {
-            if (grid) {
-                return grid;
-            }
+            return grid;
         }
     }, configuration));
 
@@ -277,7 +273,7 @@ OE.datasource.grid.init = function (configuration) {
                 results.push(result.name);
             });
 
-            function getPossibleValues() {
+            var getPossibleValues = function () {
                 // Extract the metadata from the dimension, delegating to inner objects if present
                 var dimensionMeta = configuration.pivot.x.dimension.meta || {};
                 dimensionMeta = Ext.applyIf(dimensionMeta, dimensionMeta.grid);
@@ -301,7 +297,7 @@ OE.datasource.grid.init = function (configuration) {
                     onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
                 });
                 return deferred.promise;
-            }
+            };
 
             getPossibleValues().then(function (response) {
                 // Add the category column (the Y dimension)
@@ -380,15 +376,15 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
     column.header =
         dimension.displayName || dimensionsBundle[dsId + '.' + dimension.name] || dimensionsBundle[dimension.name] || dimension.name;
 
-    if (dimensionGridMetadata.width != undefined) {
+    if (Ext.isDefined(dimensionGridMetadata.width)) {
         column.width = OE.util.getNumberValue(dimensionGridMetadata.width, 150);
     }
 
-    if (dimensionGridMetadata.sortable != undefined) {
+    if (Ext.isDefined(dimensionGridMetadata.sortable)) {
         column.sortable = OE.util.getBooleanValue(dimensionGridMetadata.sortable, true);
     }
 
-    if (dimensionGridMetadata.hidden != undefined) {
+    if (Ext.isDefined(dimensionGridMetadata.hidden)) {
         column.hidden = OE.util.getBooleanValue(dimensionGridMetadata.hidden, false);
     }
 
@@ -398,37 +394,37 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
     } else if (dimension.type == 'DATE' || dimension.type == 'Date' || dimension.type == 'DATE_TIME' || dimension.type == 'Date_Time') {
         column.format = dimensionGridMetadata.format || gridMetadata.format || OE.util.defaultDateFormat;
 
-        column.renderer = function (value, metaData, record, rowIndex, colIndex, store) {
+        column.renderer = function (value) {
             return OE.util.renderDate(value, this.format || OE.util.defaultDateFormat);
         };
     } else if (dimension.type == 'BOOLEAN') {
         if (dimensionGridMetadata.renderBooleanAsTernary) {
             var overrideBundle = dimensionGridMetadata.overrideBooleanTernary || {};
-            column.renderer = function (value, metaData, record, rowIndex, colIndex, store) {
+            column.renderer = function (value) {
                 return OE.util.renderBooleanAsTernary(value, overrideBundle);
             };
         }
     }
 
+    var oldRenderer = column.renderer;
+
     // assume all colorfields want their text to be colored; this makes sense, right?
     if (dimensionFormMetadata.xtype === 'colorfield') {
-        var oldRenderer = column.renderer;
-        column.renderer = function (value, meta, record) {
+        column.renderer = function (value, meta) {
             // adapted from Ext.ux.Colorfield
             var r = parseInt(value.slice(1, 3), 16);
             var g = parseInt(value.slice(3, 5), 16);
             var b = parseInt(value.slice(5), 16);
             var textColor = (r + g + b) / 3 > 128 ? '#000' : '#FFF';
 
-            meta.attr = 'style="background:' + value
-                + ';color:' + textColor
-                + ';border-radius:5px; -webkit-border-radius:5px; -moz-border-radius:5px"';
+            meta.attr = 'style="background:' + value +
+                ';color:' + textColor +
+                ';border-radius:5px; -webkit-border-radius:5px; -moz-border-radius:5px"';
             return oldRenderer.call(this, value); // delegate to existing renderer
         };
     }
 
     if (dimensionFormMetadata.xtype === 'queryImage') {
-        var oldRenderer = column.renderer;
         column.renderer = function (value, meta, record) {
             var queryImg = "url('" + OE.context.root + "/images/queryimages/";
             if (value == "charts") {
@@ -441,8 +437,7 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
             } else {
                 queryImg += value;
             }
-            meta.attr = 'style="background:' + queryImg
-                + '.png\') no-repeat center"';
+            meta.attr = 'style="background:' + queryImg + '.png\') no-repeat center"';
             return oldRenderer.call(this, ""); // delegate to existing renderer
         };
     }
@@ -463,39 +458,29 @@ OE.datasource.grid.createFieldFromDimension = function (dimension) {
         case 'Int':
         case 'INTEGER':
         case 'LONG':
-        {
             field.type = 'int';
             break;
-        }
         case 'DOUBLE':
         case 'FLOAT':
-        {
             field.type = 'float';
             break;
-        }
         case 'String':
         case 'TEXT':
-        {
             field.type = 'string';
             field.sortType = Ext.data.SortTypes.asUCString;
             break;
-        }
         case 'Date':
         case 'DATE':
         case 'Date_Time':
         case 'DATE_TIME':
-        {
             // Support long dates
             field.type = 'int';
             // field.type = 'date';
             // field.format = metadata.format || OE.util.defaultDateFormat;
             break;
-        }
         default:
-        {
             field.type = 'auto';
             break;
-        }
     }
 
     return field;

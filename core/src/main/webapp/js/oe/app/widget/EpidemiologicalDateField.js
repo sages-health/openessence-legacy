@@ -39,7 +39,7 @@ Ext.ux.EpidemiologicalDateField = Ext.extend(Ext.form.DateField, {
         if (this.disabled) {
             return;
         }
-        if (this.menu == null) {
+        if (this.menu === null) {
             this.menu = new Ext.ux.EpidemiologicalDateMenu({
                 hideOnClick: false
             });

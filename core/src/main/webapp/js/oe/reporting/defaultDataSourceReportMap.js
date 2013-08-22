@@ -55,7 +55,7 @@ OE.report.datasource.map.Panel = Ext.extend(GeoExt.MapPanel, {
             layers: [new OpenLayers.Layer.Image(
                 messagesBundle['map.loadmask'],
                 '../../js/ext-' + Ext.version + '/resources/images/tp/grid/loading.gif', this.extent,
-                new OpenLayers.Size(.01, .01), {
+                new OpenLayers.Size(0.01, 0.01), {
                     displayInLayerSwitcher: false
                 }
             )]
@@ -191,7 +191,7 @@ OE.report.datasource.map.Panel = Ext.extend(GeoExt.MapPanel, {
      */
     cleanupMap: function () {
         // Close visible popups
-        Ext.iterate(this.popups, function (k, v, o) {
+        Ext.iterate(this.popups, function (k, v) {
             if (v && v.close) {
                 v.close();
             }
@@ -333,7 +333,7 @@ OE.report.datasource.map.Panel = Ext.extend(GeoExt.MapPanel, {
         if (thresholds) {
             Ext.each(thresholds, function (threshold) {
                 legendHTML +=
-                    '<tr><td width="15" height="15" style="background:#' + threshold.color + ';border:1px solid;"/><td>';
+                    '<tr><td style="background:#' + threshold.color + ';border:1px solid;"/><td>';
 
                 if (threshold.low == threshold.high) {
                     if (threshold.low == -9999) {
@@ -362,7 +362,7 @@ OE.report.datasource.map.Panel = Ext.extend(GeoExt.MapPanel, {
     defaultStyle: null,
 
     getDefaultStyle: function (dsId, name, callback) {
-        if (this.defaultStyle == null) {
+        if (this.defaultStyle === null) {
             OE.data.doAjaxRestricted({
                 url: '../../oe/map/mapStyle',
                 method: 'POST',
@@ -409,7 +409,6 @@ OE.report.datasource.map.Popup = Ext.extend(GeoExt.Popup, {
 
         if (this.isVisible()) {
             var centerPx = this.map.getViewPortPxFromLonLat(centerLonLat);
-            var mapBox = Ext.fly(this.map.div).getBox();
 
             //This works for positioning with the anchor on the bottom.
 

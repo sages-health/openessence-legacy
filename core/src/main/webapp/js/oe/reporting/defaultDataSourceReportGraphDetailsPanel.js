@@ -32,8 +32,8 @@ Ext.namespace("OE.report.datasource.graph.details");
 OE.report.datasource.graph.details.init = function (configuration) {
 
     function renderLevel(v, p, r) {
-        return String.format('<div class="graph-details-detection-{0}">{1}</div>', r.data['Color'], v);
-    };
+        return String.format('<div class="graph-details-detection-{0}">{1}</div>', r.data.Color, v);
+    }
 
     var detailsGridStore = new Ext.ux.data.PagingJsonStore({
         totalProperty: 'detailsTotalRows',
@@ -79,7 +79,7 @@ OE.report.datasource.graph.details.init = function (configuration) {
         width: 440
     });
 
-    var gridPanel = new Ext.Panel({
+    return new Ext.Panel({
         title: messagesBundle["graph.details.header"],
         itemId: 'graph-details-grid-panel',
         cls: 'reportPanel',
@@ -97,6 +97,4 @@ OE.report.datasource.graph.details.init = function (configuration) {
         frame: true,
         items: detailsGridPanel
     });
-
-    return gridPanel;
 };

@@ -43,7 +43,7 @@ Ext.ux.grid.ComboColumn = Ext.extend(Ext.grid.Column, {
         };
     }
 });
-Ext.grid.Column.types['combocolumn'] = Ext.ux.grid.ComboColumn;
+Ext.grid.Column.types.combocolumn = Ext.ux.grid.ComboColumn;
 
 /**
  *  A renderer to show the display value when using combo boxes in editor grids (instead of value/fk)
@@ -61,7 +61,7 @@ Ext.ux.renderer.ComboBoxRenderer = function (combo, gridId) {
 
     return function (value) {
         // Ensure combos store is loaded
-        if (combo.store.getCount() == 0 && gridId) {
+        if (combo.store.getCount() === 0 && gridId) {
             combo.store.on('load', function () {
                     var grid = Ext.getCmp(gridId);
                     if (grid) {

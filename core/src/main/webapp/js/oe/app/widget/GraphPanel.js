@@ -60,20 +60,23 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
         Ext.apply(params, filters);
         Ext.applyIf(params, {height: 460});
 
+        var me = this;
         OE.data.doAjaxRestricted({
             url: this.url,
             method: 'GET',
             params: params,
-            scope: this,
             onJsonSuccess: function (response) {
-                this.createTimeSeriesPanel(response);
+                me.createTimeSeriesPanel(response);
             },
             onRelogin: {callback: this.loadChart, args: []}
         });
     },
 
     createTimeSeriesPanel: function (response) {
-        if (response.success == false) {
+        var chartPanelContent;
+        var chartPanelGraph;
+
+        if (response.success === false) {
             Ext.MessageBox.show({
                 title: messagesBundle['input.datasource.error'],
                 msg: response.message || messagesBundle['input.datasource.error.default'],
@@ -83,10 +86,10 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
             return;
         }
         if (response.html) {
-            var chartPanelContent = this.chartPanel.getComponent('chart-panel-content');
+            chartPanelContent = this.chartPanel.getComponent('chart-panel-content');
             if (chartPanelContent) {
                 //refresh
-                var chartPanelGraph = chartPanelContent.getComponent('chart-panel-graph');
+                chartPanelGraph = chartPanelContent.getComponent('chart-panel-graph');
                 if (chartPanelGraph) {
                     chartPanelGraph.body.update(response.html);
                 }
@@ -95,7 +98,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
 
             } else {
                 //initial create
-                var chartPanelGraph = this.createChartPanelGraph(response.html);
+                chartPanelGraph = this.createChartPanelGraph(response.html);
 
                 //tack on configuration information
                 this.graphConfiguration = response.graphConfiguration || {};
@@ -107,7 +110,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                     items.push(chartPanelDetails);
                 }
 
-                var chartPanelContent = new Ext.Panel({
+                chartPanelContent = new Ext.Panel({
                     itemId: 'chart-panel-content',
                     layout: 'border',
                     flex: 2,
@@ -148,14 +151,14 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                 {
                     id: 'gear',
                     qtip: messagesBundle['graph.editProperties'],
-                    handler: function (event, toolEl, panel) {
+                    handler: function () {
                         me.showTimeSeriesGraphOptions();
                     }
                 },
                 {
                     id: 'save',
                     qtip: messagesBundle['graph.downloadChart'],
-                    handler: function (event, toolEl, panel) {
+                    handler: function () {
                         me.showDownloadOptions();
                     }
                 }
@@ -168,7 +171,8 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
     showTimeSeriesGraphOptions: function () {
         var me = this;
         var graphId = "graph" + this.imageMapName;
-        var treeData = new Array();
+        var treeData = [];
+        var parentAry = [];
 
         if (!Ext.isDefined(me.graphConfiguration.dataDisplayKey)) {
             me.graphConfiguration.dataDisplayKey = "";
@@ -179,59 +183,57 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
         for (var i = 0; i < dataSeriesJSON.length; i++) {
             if (dataSeriesJSON[i].displayAlerts) {
                 var seriesName = dataSeriesJSON[i].seriesName;
-                var parentAry = new Array();
-                var childrenAry = new Array();
+                var childrenAry = [];
 
                 // parent should be checked iff all its children are
                 var allChildrenChecked = true;
 
                 while (i <= dataSeriesJSON.length && dataSeriesJSON[i].seriesName == seriesName) {
-                    var childAry = new Array();
-                    childAry["id"] = "checkbox" + graphId + i;
-                    childAry["name"] = "checkbox" + graphId + i;
-                    childAry["text"] = dataSeriesJSON[i].displayName;
-                    childAry["leaf"] = true;
+                    var childAry = [];
+                    childAry.id = "checkbox" + graphId + i;
+                    childAry.name = "checkbox" + graphId + i;
+                    childAry.text = dataSeriesJSON[i].displayName;
+                    childAry.leaf = true;
 
                     // restore state of check
                     if (Ext.isDefined(me.graphConfiguration.dataDisplayKey[i])) {
-                        var checked = me.graphConfiguration.dataDisplayKey[i] === "0" ? false : true;
-                        childAry["checked"] = checked;
+                        var checked = me.graphConfiguration.dataDisplayKey[i] !== "0";
+                        childAry.checked = checked;
                         if (!checked) {
                             allChildrenChecked = false;
                         }
-                        childAry["value"] = me.graphConfiguration.dataDisplayKey[i];
+                        childAry.value = me.graphConfiguration.dataDisplayKey[i];
                     } else {
-                        childAry["checked"] = true;
-                        childAry["value"] = "1";
+                        childAry.checked = true;
+                        childAry.value = "1";
                     }
 
                     childrenAry.push(childAry);
                     i++;
                 }
 
-                parentAry["text"] = seriesName;
-                parentAry["checked"] = allChildrenChecked;
-                parentAry["children"] = childrenAry;
-                parentAry["expanded"] = true;
+                parentAry.text = seriesName;
+                parentAry.checked = allChildrenChecked;
+                parentAry.children = childrenAry;
+                parentAry.expanded = true;
                 treeData.push(parentAry);
                 i--; // we still have to add the next element in the JSON
             } else {
-                var parentAry = new Array();
-                parentAry["id"] = "checkbox" + graphId + i;
-                parentAry["name"] = "checkbox" + graphId + i;
-                parentAry["text"] = dataSeriesJSON[i].seriesName;
-                parentAry["leaf"] = true;
+                parentAry.id = "checkbox" + graphId + i;
+                parentAry.name = "checkbox" + graphId + i;
+                parentAry.text = dataSeriesJSON[i].seriesName;
+                parentAry.leaf = true;
 
                 // restore state of check
                 if (Ext.isDefined(me.graphConfiguration.dataDisplayKey[i])) {
-                    parentAry["checked"] = me.graphConfiguration.dataDisplayKey[i] === "0" ? false : true;
-                    parentAry["value"] = me.graphConfiguration.dataDisplayKey[i];
+                    parentAry.checked = me.graphConfiguration.dataDisplayKey[i] !== "0";
+                    parentAry.value = me.graphConfiguration.dataDisplayKey[i];
                 } else if (i + 1 == dataSeriesJSON.length){
-                    parentAry["checked"] = false;
-                    parentAry["value"] = "0";
+                    parentAry.checked = false;
+                    parentAry.value = "0";
                 } else {
-                    parentAry["checked"] = true;
-                    parentAry["value"] = "1";
+                    parentAry.checked = true;
+                    parentAry.value = "1";
                 }
                 treeData.push(parentAry);
             }
@@ -412,7 +414,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
         }).show();
     },
 
-    showDownloadOptions: function (address, imageMapName, graphDataId) {
+    showDownloadOptions: function (address, imageMapName) {
         var me = this;
         var graphId = "graph" + imageMapName;
 
@@ -421,7 +423,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                 var downloadForm = Ext.getCmp(checkbox.graphId + "downloadForm");
                 var isDisabled = (checkbox.inputValue === "emf" || checkbox.inputValue === "eps");
 
-                downloadForm.items.each(function (item, index, length) {
+                downloadForm.items.each(function (item) {
                     var itemName = item.name;
 
                     if (itemName && itemName.substr(0, 10) === "resolution") {

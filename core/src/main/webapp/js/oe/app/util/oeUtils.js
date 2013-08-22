@@ -33,7 +33,7 @@ OE.util.defaultDateFormat = (function () {
     var defaultFormat = 'm-d-Y';
 
     try {
-        return dimensionsBundle['default.date.format'] || defaultFormat;
+        return messagesBundle['default.date.format'] || defaultFormat;
     } catch (e) {
         // dimensionsBundle isn't defined on login page
         return defaultFormat;
@@ -55,11 +55,11 @@ OE.util.renderDate = function (d, f) {
 };
 
 OE.util.renderBooleanAsTernary = function (v, overrideBundle) {
-    if (v != undefined) {
+    if (Ext.isDefined(v)) {
         if (v) {
-            return (overrideBundle && overrideBundle['true']) || dimensionsBundle['default.ternary.boolean.true'] || true;
+            return (overrideBundle && overrideBundle['true']) || messagesBundle['default.ternary.boolean.true'] || true;
         } else {
-            return (overrideBundle && overrideBundle['false']) || dimensionsBundle['default.ternary.boolean.false'] || false;
+            return (overrideBundle && overrideBundle['false']) || messagesBundle['default.ternary.boolean.false'] || false;
         }
     }
     return (overrideBundle && overrideBundle['null']) || dimensionsBundle['default.ternary.boolean.null'] || null;
@@ -73,7 +73,7 @@ OE.util.getMissingReports = function (store) {
     // TODO: getWeekOfYear
     var currentEW;
 
-    if (dimensionsBundle['use.cdc.epiweek'] == 1) {
+    if (messagesBundle['use.cdc.epiweek'] == 1) {
         currentEW = new Date().getEpiWeek();
     }
     else {
@@ -82,7 +82,7 @@ OE.util.getMissingReports = function (store) {
 
     // TODO: range
     var results = store.query('EpiWeek', currentEW, true, false);
-    if (!results || results.length == 0) {
+    if (!results || results.length === 0) {
         missingWeeks[0] = currentEW;
     }
 
@@ -193,7 +193,7 @@ OE.util.getBooleanValue = function (parameter, defaultTo) {
 OE.util.getStringValue = function (parameter, defaultTo) {
     var returnValue = defaultTo;
 
-    if (parameter != undefined) {
+    if (Ext.isDefined(parameter)) {
         returnValue = parameter;
     }
 
@@ -244,7 +244,7 @@ OE.util.getEmptyText = function (name) {
 OE.util.getDate = function (delta) {
     var force = dimensionsBundle['date.forceToday'];
     var d = force ? new Date(Date.parse(force)) : new Date();
-    var inc = delta ? new Number(delta) : 0;
+    var inc = delta ? delta : 0;
     d.setDate(d.getDate() - inc);
     return new Date(d).clearTime();
 };

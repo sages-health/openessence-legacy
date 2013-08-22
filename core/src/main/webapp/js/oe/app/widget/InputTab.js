@@ -138,21 +138,13 @@ OE.InputTab = Ext.extend(Ext.Panel, {
             var records = sm.getSelections();
             var selectionCount = records.length;
 
-            switch (selectionCount) {
-                case 0:
-                {
-                    me.editAction.disable();
-                    me.deleteAction.disable();
-                    break;
-                }
-                default:
-                {
-                    me.editAction.enable();
-                    me.deleteAction.enable();
-                    break;
-                }
+            if (selectionCount === 0) {
+                me.editAction.disable();
+                me.deleteAction.disable();
+            } else {
+                me.editAction.enable();
+                me.deleteAction.enable();
             }
-            ;
         }, this, {buffer: 5});
 
         return OE.datasource.grid.init({
@@ -164,7 +156,7 @@ OE.InputTab = Ext.extend(Ext.Panel, {
             parameters: { dsId: dataSource},
             data: data || {},
             selectionModel: selectionModel,
-            rowdblclick: function (index) {
+            rowdblclick: function () {
                 me.openFormTab(selectionModel.getSelected(), me.setValuesCallback);
             },
             plugins: null
@@ -322,7 +314,7 @@ OE.InputTab = Ext.extend(Ext.Panel, {
                         url: OE.util.getUrl('/input/delete'),
                         params: {dsId: me.dataSource},
                         jsonData: {pkIds: pkIds},
-                        onJsonSuccess: function (response) {
+                        onJsonSuccess: function () {
                             me.gridPanel.reload();
                         },
                         onRelogin: {callback: me.deleteReports, args: [records]}

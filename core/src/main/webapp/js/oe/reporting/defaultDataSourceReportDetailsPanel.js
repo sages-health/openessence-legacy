@@ -31,10 +31,9 @@ Ext.namespace("OE.report.datasource.details");
  */
 OE.report.datasource.details.init = function (configuration) {
     var title = configuration.title;
-    if (title == null || typeof title === 'undefined') {
-        title = (typeof configuration.autoTitle != 'undefined')
-            ? configuration.autoTitle + ' ' + configuration.index
-            : messagesBundle['panel.details.header'] + ' ' + configuration.index;
+    if (title === null || typeof title === 'undefined') {
+        title = (typeof configuration.autoTitle != 'undefined') ? configuration.autoTitle + ' ' +
+            configuration.index : messagesBundle['panel.details.header'] + ' ' + configuration.index;
     }
 
     return new Ext.Panel({

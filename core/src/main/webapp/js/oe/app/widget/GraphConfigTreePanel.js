@@ -51,11 +51,7 @@ OE.GraphConfigTreePanel = Ext.extend(Ext.tree.TreePanel, {
     resetCheckedValues: function () {
         this.root.cascade(function (n) {
             if (n.attributes.leaf) {
-                if (n.attributes.value == "1") {
-                    n.attributes.checked = true;
-                } else {
-                    n.attributes.checked = false;
-                }
+                n.attributes.checked = n.attributes.value === "1";
 
                 this.propagateCheckedValues(n, n.attributes.checked);
             }
@@ -92,7 +88,7 @@ OE.GraphConfigTreePanel = Ext.extend(Ext.tree.TreePanel, {
 
         return s;
     },
-    propagateCheckedValues: function (n, checked) {
+    propagateCheckedValues: function (n) {
         // check parent
         var p = n.parentNode;
 
@@ -105,7 +101,7 @@ OE.GraphConfigTreePanel = Ext.extend(Ext.tree.TreePanel, {
                 }
             });
 
-            p.attributes.checked = unchecked == 0;
+            p.attributes.checked = unchecked === 0;
         }
         // check children
         n.eachChild(function (c) {

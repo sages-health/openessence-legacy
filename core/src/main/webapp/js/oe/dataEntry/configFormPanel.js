@@ -36,7 +36,7 @@ OE.input.user.account.panel = function (configuration) {
     /**
      * The form panel
      */
-    var formPanel = undefined;
+    var formPanel;
 
     OE.data.doAjaxRestricted({
         url: '../../oe/report/getFields',

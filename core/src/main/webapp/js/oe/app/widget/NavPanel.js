@@ -130,6 +130,9 @@ OE.NavPanel = Ext.extend(Ext.tree.TreePanel, {
  * Ext 4 MVC has a similar view singleton convention, because they probably
  * don't know IoC exists.
  */
+
+/*jshint evil: true */
+
 OE.NavPanel.instance = null;
 
 /**

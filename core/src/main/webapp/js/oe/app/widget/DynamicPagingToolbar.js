@@ -30,9 +30,6 @@
  * Removes move to end/last page as well as total page/record count displays when total count is unknown.
  */
 (function () {
-
-    var T = Ext.Toolbar;
-
     Ext.ux.DynamicPagingToolbar = Ext.extend(Ext.PagingToolbar, {
 
         // Toggles display to dynamically handle if a total count is given
@@ -41,7 +38,7 @@
             var count = this.store.getCount();
             var activePage = Math.ceil((this.cursor + this.pageSize) / this.pageSize);
             var pages;
-            if (total == 0 && count > total) {
+            if (total === 0 && count > total) {
                 this.displayMsg = 'Displaying {0} - {1}';
                 this.afterPageText = '';
                 total = count;

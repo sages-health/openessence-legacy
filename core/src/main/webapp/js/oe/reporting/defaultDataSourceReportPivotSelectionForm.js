@@ -35,7 +35,7 @@ OE.report.datasource.pivot.form = function (configuration) {
 
     var filterSelected = function (record) {
         return !record.get('selected');
-    }
+    };
     var dimensionStore = new Ext.data.ArrayStore({
         idIndex: 0,
         fields: ['num', 'id', 'name', 'dimension', 'selected'],
@@ -54,7 +54,7 @@ OE.report.datasource.pivot.form = function (configuration) {
             dimensionStore.getById(newValue).set('selected', true);
         }
         dimensionStore.filterBy(filterSelected);
-    }
+    };
 
     var resultsFormPanel = new Ext.form.FormPanel({
         border: false,

@@ -108,11 +108,11 @@ OE.data.RestrictedJsonReader = Ext.extend(Ext.data.JsonReader, {
             OE.data.defaultOnNoJson();
         }
 
-        if (json.success != undefined && json.isLoggedIn != undefined && !json.success && !json.isLoggedIn) {
+        if (Ext.isDefined(json.success) && Ext.isDefined(json.isLoggedIn) && !json.success && !json.isLoggedIn) {
             OE.data.defaultUnsuccessfulNotLoggedIn(this.meta);
         }
 
-        if (json.success != undefined && !json.success) {
+        if (Ext.isDefined(json.success) && !json.success) {
             OE.data.defaultUnsuccessfulRequest(json);
         }
 
@@ -128,7 +128,7 @@ OE.data.RestrictedJsonReader = Ext.extend(Ext.data.JsonReader, {
  */
 OE.data.RestrictedJsonStore = Ext.extend(Ext.data.Store, {
     constructor: function (config) {
-        if (config.onRelogin == undefined) {
+        if (!Ext.isDefined(config.onRelogin)) {
             config.store = this;
         }
         var args = Ext.apply({
@@ -171,9 +171,9 @@ OE.data.doAjaxRestricted = function (request, isJson) {
             }
         }
 
-        if (json && (json.success == undefined || json.success == true)) {
+        if (json && (!Ext.isDefined(json.success) || json.success === true)) {
             request.onJsonSuccess.call(request.scope || window, json);
-        } else if (json && json.success == false && json.isLoggedIn == false) {
+        } else if (json && json.success === false && json.isLoggedIn === false) {
             // user not logged in
             if (request.onUnsuccessfulNotLoggedIn) {
                 request.onUnsuccessfulNotLoggedIn();
@@ -181,7 +181,7 @@ OE.data.doAjaxRestricted = function (request, isJson) {
                 OE.login.showLoginForm(request);
             }
             return;
-        } else if (isJson == undefined || isJson) {
+        } else if (!Ext.isDefined(isJson) || isJson) {
             // bad response from server or {success: false} but not isLoggedIn: false
             Ext.MessageBox.show({
                 title: messagesBundle['input.datasource.error'],
@@ -201,7 +201,7 @@ OE.data.doAjaxRestricted = function (request, isJson) {
     if (!request.failure) {
         /* Ajax request replied with failure
          * NOTE: this is different than a successful reply of {success: false} */
-        request.failure = function (response, options) {
+        request.failure = function (response) {
             OE.data.defaultResponseFailure(request, response);
         };
     }
@@ -211,5 +211,5 @@ OE.data.doAjaxRestricted = function (request, isJson) {
 
 OE.data.responseIsJson = function (response) {
     var contentType = response.getResponseHeader('Content-Type');
-    return /^application\/json(;.*)*$/.test(contentType);
+    return (/^application\/json(;.*)*$/).test(contentType);
 };

@@ -103,7 +103,6 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
         if (configuration.chartsCallback && OE.util.getBooleanValue(this.metadata.supportCharts, true)) {
             buttons.push({
                 text: messagesBundle['query.charts'],
-                scope: this,
                 handler: function () {
                     // Get group by dimensions (for user selection)
                     var dimensions = [];
@@ -120,8 +119,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                         }
                     });
                     me.showChartSelectionForm({dimensions: dimensions, accumulations: accumulations});
-                },
-                scope: configuration
+                }
             });
         }
 
@@ -308,8 +306,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
 
     clearForm: function () {
         var form = this.getForm();
-        var i = 0;
-        for (i = 0; i < form.items.length; i++) {
+        for (var i = 0; i < form.items.length; i++) {
             var fld = form.items.get(i);
             if (fld.name && (fld.name != 'dsId') && (fld.name != 'timezoneOffset')) {
                 if ((fld.xtype && ((fld.xtype == 'combo') || (fld.xtype == 'superboxselect'))) ||
@@ -327,24 +324,22 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
     },
 
     getSelectedDisplayVals: function () {
+        /*jshint loopfunc: true */
+
         var form = this.getForm();
         var items = form.items;
-        var i = 0;
         var result = {};
 
-        for (i = 0; i < items.length; i++) {
+        for (var i = 0; i < items.length; i++) {
             var fld = items.get(i);
-            if (fld.getRawValue() && fld.getRawValue() != '') {
+            if (fld.getRawValue() && fld.getRawValue() !== '') {
                 switch (fld.xtype) {
                     case 'combo':
                     case 'datefield':
-                    {
                         result[fld.name] = fld.getRawValue();
                         break;
-                    }
                     case 'superboxselect':
                     case 'multiselect':
-                    {
                         var res = [];
                         Ext.each(fld.getValue(), function (id) {
                             var index = fld.store.find('Id', id);
@@ -354,13 +349,10 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                         });
                         result[fld.name] = res;
                         break;
-                    }
                     // default will take care of textfield and numberfield
                     default:
-                    {
                         result[fld.name] = fld.getValue();
                         break;
-                    }
                 }
             }
         }
@@ -389,7 +381,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
             metadata: me.metadata,
             dataSource: this.dataSource,
             callback: function (records) {
-                if (records != undefined) {
+                if (Ext.isDefined(records)) {
                     var filters = me.getForm().getFieldValues();
                     var ds = filters.dsId;
                     delete filters.dsId;
@@ -437,7 +429,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
             accumulations: formConfiguration.accumulations,
             charts: this.charts, // to auto-populate chart parameters
             callback: function (records) {
-                if (records != undefined) {
+                if (Ext.isDefined(records)) {
                     var filters = me.getForm().getFieldValues();
                     var dsId = filters.dsId; // TODO don't store DS ID as hidden field
                     delete filters.dsId;
@@ -483,18 +475,18 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
             dataSource: this.dataSource,
             results: this.results,
             callback: function (pivot) {
-                if (pivot != undefined) {
+                if (Ext.isDefined(pivot)) {
                     var filters = me.getForm().getFieldValues();
                     var dsId = filters.dsId; // TODO don't store DS ID as hidden field
                     delete filters.dsId;
 
                     var results = [pivot.x.id, pivot.y.id];
-                    if (typeof pivot.z != "undefined" && pivot.z != null) {
+                    if (typeof pivot.z !== "undefined" && pivot.z !== null) {
                         results.push(pivot.z.id);
                     }
 
                     // Add the selected accumulation or all (for the grid)
-                    var selectedAccumulations = filters['accumId'];
+                    var selectedAccumulations = filters.accumId;
                     if (selectedAccumulations) {
                         results = results.concat(selectedAccumulations);
                     } else {
@@ -537,7 +529,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
             dataSource: this.dataSource,
             results: this.results,
             callback: function (records) {
-                if (records != undefined) {
+                if (Ext.isDefined(records)) {
                     var filters = me.getForm().getFieldValues();
                     var dsId = filters.dsId; // TODO don't store DS ID as hidden field
                     delete filters.dsId;
@@ -546,7 +538,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                     var results = Ext.pluck(data, 'dimensionId');
 
                     // Add the selected accumulation or all (for the grid)
-                    var selectedAccumulations = filters['accumId'];
+                    var selectedAccumulations = filters.accumId;
                     if (selectedAccumulations) {
                         results = results.concat(selectedAccumulations);
                     } else {
@@ -613,12 +605,12 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
 
         // Generic meta data configuration items
         // Width is defaulted on the field set at data source level meta data
-        if (dimensionMetadata.width != undefined) {
+        if (Ext.isDefined(dimensionMetadata.width)) {
             field.width = OE.util.getNumberValue(dimensionMetadata.width, 200);
         }
 
         // Height is defaulted on the field set at data source level meta data
-        if (dimensionMetadata.height != undefined) {
+        if (Ext.isDefined(dimensionMetadata.height)) {
             field.height = OE.util.getNumberValue(dimensionMetadata.height, 100);
         }
 
@@ -700,17 +692,14 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                 case 'Int':
                 case 'INTEGER':
                 case 'LONG':
-                {
                     field.xtype = 'numberfield';
                     field.allowDecimals = OE.util.getBooleanValue(dimensionMetadata.allowDecimals, false);
                     field.allowNegative = OE.util.getBooleanValue(dimensionMetadata.allowNegative, true);
                     field.maxValue = OE.util.getNumberValue(dimensionMetadata.maxValue, Number.MAX_VALUE);
                     field.minValue = OE.util.getNumberValue(dimensionMetadata.minValue, Number.NEGATIVE_INFINITY);
                     break;
-                }
                 case 'DOUBLE':
                 case 'FLOAT':
-                {
                     field.xtype = 'numberfield';
                     field.allowDecimals = OE.util.getBooleanValue(dimensionMetadata.allowDecimals, true);
                     field.decimalPrecision = OE.util.getNumberValue(dimensionMetadata.decimalPrecision, 2);
@@ -718,22 +707,18 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                     field.maxValue = OE.util.getNumberValue(dimensionMetadata.maxValue, Number.MAX_VALUE);
                     field.minValue = OE.util.getNumberValue(dimensionMetadata.minValue, Number.NEGATIVE_INFINITY);
                     break;
-                }
                 case 'String':
                 case 'TEXT':
-                {
-                    if (dimensionMetadata.maxLength != undefined) {
+                    if (Ext.isDefined(dimensionMetadata.maxLength)) {
                         field.maxLength = OE.util.getNumberValue(dimensionMetadata.maxLength, Number.MAX_VALUE);
                     }
 
                     // Toggle for textarea
                     field.xtype = OE.util.getStringValue(dimensionMetadata.xtype, 'textfield');
                     break;
-                }
                 case 'Date':
                 case 'DATE_TIME':
                 case 'DATE':
-                {
                     this.startDateFieldId = field.name + '_start';
                     this.endDateFieldId = field.name + '_end';
 
@@ -769,12 +754,9 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                         }
                     ];
                     break;
-                }
                 default:
-                {
                     field.xtype = 'textfield';
                     break;
-                }
             }
         }
 
@@ -790,7 +772,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
 // TODO:...
 Ext.apply(Ext.form.VTypes, {
     url: function (v) {
-        return /testingurl/.test(v);
+        return (/testingurl/).test(v);
     },
     urlText: 'enter valid url',
     urlMask: /testingmask/ });

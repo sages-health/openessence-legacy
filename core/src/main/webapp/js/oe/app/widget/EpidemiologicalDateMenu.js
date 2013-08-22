@@ -87,7 +87,8 @@ Ext.ux.EpidemiologicalDateMenu = Ext.extend(Ext.menu.Menu, {
 
     initComponent: function () {
         this.on('beforeshow', this.onBeforeShow, this);
-        if (this.strict = (Ext.isIE7 && Ext.isStrict)) {
+        this.strict = Ext.isIE7 && Ext.isStrict;
+        if (this.strict) {
             this.on('show', this.onShow, this, {single: true, delay: 20});
         }
         Ext.apply(this, {

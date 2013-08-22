@@ -26,7 +26,7 @@
 
 Ext.LinkButton = Ext.extend(Ext.Button, {
     template: new Ext.Template(
-        '<table border="0" cellpadding="0" cellspacing="0" class="x-btn-wrap"><tbody><tr>',
+        '<table border="0" class="x-btn-wrap"><tbody><tr>',
         '<td class="x-btn-left"><i> </i></td><td class="x-btn-center"><a class="x-btn-text" href="{1}" target="{2}">{0}</a></td><td class="x-btn-right"><i> </i></td>',
         "</tr></tbody></table>"),
 
@@ -46,7 +46,7 @@ Ext.LinkButton = Ext.extend(Ext.Button, {
     },
 
     onClick: function (e) {
-        if (e.button != 0) {
+        if (e.button !== 0) {
             return;
         }
         if (!this.disabled) {

@@ -43,7 +43,7 @@ OE.Chart = Ext.extend(Ext.Panel, { // TODO refactor with Graph version, have gen
                     id: 'save',
                     qtip: messagesBundle['graph.downloadChart'],
                     scope: this,
-                    handler: function (event, toolEl, panel) {
+                    handler: function () {
                         this.showDownloadOptions();
                     }
                 }
@@ -62,8 +62,8 @@ OE.Chart = Ext.extend(Ext.Panel, { // TODO refactor with Graph version, have gen
 
                     Ext.applyIf(this, graphJson); // sets a bunch of graph properties
 
-                    this.body.update(graphJson.imageMap + '<img src="' + graphJson.imageUrl + '" usemap="#'
-                        + graphJson.imageMapName + '"/>');
+                    this.body.update(graphJson.imageMap + '<img src="' + graphJson.imageUrl + '" usemap="#' +
+                        graphJson.imageMapName + '"/>');
                 }
             }
         });
@@ -79,7 +79,7 @@ OE.Chart = Ext.extend(Ext.Panel, { // TODO refactor with Graph version, have gen
                 var downloadForm = Ext.getCmp(checkbox.graphId + "downloadForm");
                 var isDisabled = (checkbox.inputValue === "emf" || checkbox.inputValue === "eps");
 
-                downloadForm.items.each(function (item, index, length) {
+                downloadForm.items.each(function (item) {
                     var itemName = item.name;
 
                     if (itemName && itemName.substr(0, 10) === "resolution") {

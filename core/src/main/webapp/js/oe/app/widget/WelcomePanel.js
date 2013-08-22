@@ -52,7 +52,7 @@ OE.WelcomePanel = Ext.extend(Ext.Panel, {
         navTree.cascade(function (node) {
             // Don't add yourself to the welcome tab because that doesn't do anything
             if (node.leaf && node.attributes.src != OE.main.welcome.tab.init) {
-                me.add(new OE.WelcomeItem({node: node}))
+                me.add(new OE.WelcomeItem({node: node}));
             }
         });
     }

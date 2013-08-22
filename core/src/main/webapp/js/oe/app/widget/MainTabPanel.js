@@ -42,7 +42,7 @@ OE.MainTabPanel = Ext.extend(Ext.TabPanel, {
     },
 
     initComponent: function () {
-        this.on('beforetabchange', function (tabPanel, newTab, currentTab) {
+        this.on('beforetabchange', function (tabPanel, newTab) {
             // Make sure the navigation panel's node is also set to selected
             var navPanelCtrl = OE.NavPanel.instance;
             var newTabId = newTab.itemId;

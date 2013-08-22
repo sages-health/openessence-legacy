@@ -73,7 +73,7 @@ OE.report.datasource.chart.form = function (configuration) {
                 hidden: true
             },
             {
-                header: dimensionsBundle['dimensionId'],
+                header: messagesBundle.dimensionId,
                 id: 'dimensionId',
                 dataIndex: 'dimensionId',
                 width: 155,
@@ -93,7 +93,7 @@ OE.report.datasource.chart.form = function (configuration) {
                 })
             },
             {
-                header: dimensionsBundle['accumId'],
+                header: messagesBundle.accumId,
                 id: 'accumId',
                 dataIndex: 'accumId',
                 width: 165,
@@ -113,7 +113,7 @@ OE.report.datasource.chart.form = function (configuration) {
                 })
             },
             {
-                header: dimensionsBundle['chartTypeId'],
+                header: messagesBundle.chartTypeId,
                 id: 'type',
                 dataIndex: 'type',
                 width: 60,
@@ -136,7 +136,7 @@ OE.report.datasource.chart.form = function (configuration) {
                 })
             },
             {
-                header: dimensionsBundle['chartCategoryLimitId'] || 'TopN',
+                header: messagesBundle.chartCategoryLimitId || 'TopN',
                 id: 'categoryLimit',
                 dataIndex: 'categoryLimit',
                 width: 60,
@@ -270,7 +270,7 @@ OE.report.datasource.chart.form = function (configuration) {
         grid.stopEditing();
         store.add([c]);
         grid.startEditing(store.getCount(), 0);
-    };
+    }
 
     var resultsFormPanel = new Ext.form.FormPanel({
         layout: 'border',

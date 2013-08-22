@@ -87,7 +87,7 @@ OE.CategoryGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 
         if (config.formConfig.record && config.formConfig.record[config.name]) {
             // copy existing record's data
-            Ext.each(config.formConfig.record[config.name], function (rec, index) {
+            Ext.each(config.formConfig.record[config.name], function (rec) {
                 var categoryId = rec[config.categoryIdField];
                 record[categoryId] = rec[config.categoryValueField];
             });
@@ -119,7 +119,7 @@ OE.CategoryGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 name: config.name,
                 getValue: function () {
                     var data = [];
-                    if (me.getValue().length == 0) {
+                    if (me.getValue().length === 0) {
                         return Ext.encode(data);
                     }
 

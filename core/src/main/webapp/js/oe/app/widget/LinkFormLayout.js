@@ -146,4 +146,4 @@ Ext.ux.LinkFormLayout = Ext.extend(Ext.layout.FormLayout, {
     }
 });
 
-Ext.Container.LAYOUTS['linkform'] = Ext.ux.LinkFormLayout;
+Ext.Container.LAYOUTS.linkform = Ext.ux.LinkFormLayout;

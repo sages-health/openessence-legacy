@@ -66,7 +66,7 @@ OE.report.datasource.timeseries.form = function (configuration) {
             field.valueField = 'AccumulationIds';
 
             field.listeners = {
-                select: function (combo, record, index) {
+                select: function (combo, record) {
                     titleField.setValue(record.data.Name);
                 }
             };

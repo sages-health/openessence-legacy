@@ -40,7 +40,7 @@ OE.report.datasource.result.parameter.init = function (configuration) {
 
     var dataSource = parameters.dsId;
     for (var key in parameters) {
-        if (key != 'displayVals' && parameters[key] != "" && parameters.hasOwnProperty(key)) {
+        if (key != 'displayVals' && parameters[key] !== "" && parameters.hasOwnProperty(key)) {
             // Attempts to load label from dimensions bundle using a qualified (data source name) "dot" dimension name, then
             // will try to load from dimensions bundle just using the dimension name, finally will just use the dimension name.
             var header = dimensionsBundle[dataSource + '.' + key] || dimensionsBundle[key] || key;
@@ -94,7 +94,7 @@ OE.report.datasource.result.parameter.init = function (configuration) {
                     {
                         text: messagesBundle['panel.parameters.button'],
                         tooltip: messagesBundle['panel.parameters.buttonToolTip'],
-                        handler: function (b, e) {
+                        handler: function () {
                             configuration.callback(parameters);
                         },
                         scope: configuration

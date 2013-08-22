@@ -24,6 +24,8 @@
  * FOR LOST PROFITS.
  */
 
+/*jshint loopfunc: true */
+
 Ext.ns('OE');
 
 /**
@@ -156,15 +158,12 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     case 'DOUBLE':
                     case 'FLOAT':
                     case 'LONG':
-                    {
                         col.editor = new Ext.form.NumberField(Ext.apply({
                             allowBlank: false
                         }, formMeta));
                         break;
-                    }
                     case 'DATE_TIME':
                     case 'DATE':
-                    {
                         col.renderer = formatDate;
                         col.editor = new Ext.form.DateField(Ext.apply({
                             allowBlank: false,
@@ -172,20 +171,15 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         }, formMeta));
                         col.width = formMeta.width ? formMeta.width : 150;
                         break;
-                    }
                     case 'TEXT':
-                    {
                         col.editor = new Ext.form.TextField(Ext.apply({
                             allowBlank: false
                         }, formMeta));
                         break;
-                    }
                     case 'BOOLEAN':
-                    {
                         col.xtype = 'checkcolumn';
                         col = Ext.apply(col, formMeta);
                         break;
-                    }
                 }
             }
             return col;
@@ -204,32 +198,22 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 case 'Int':
                 case 'INTEGER':
                 case 'LONG':
-                {
                     field.type = 'int';
                     break;
-                }
                 case 'DOUBLE':
                 case 'FLOAT':
-                {
                     field.type = 'float';
                     break;
-                }
                 case 'DATE_TIME':
                 case 'DATE':
-                {
                     field.type = 'date';
                     break;
-                }
                 case 'TEXT':
-                {
                     field.type = 'string';
                     break;
-                }
                 case 'BOOLEAN':
-                {
                     field.type = 'bool';
                     break;
-                }
             }
             return field;
         };
@@ -304,7 +288,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             grid.stopEditing();
             grid.store.add([ c ]);
             grid.startEditing(grid.store.getCount(), 0);
-        };
+        }
 
         OE.EditorGridField.superclass.constructor.call(me, config);
 
@@ -321,7 +305,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     case 'bool':
                     case 'int':
                     {
-                        if (value != '') {
+                        if (value !== '') {
                             res = value;
                         }
                         break;
@@ -330,7 +314,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 }
             }
             return res;
-        };
+        }
         function dataTypeConversion(value, dataType) {
             var res = null;
             if (value) {
@@ -344,7 +328,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     case 'bool':
                     case 'int':
                     {
-                        if (value != '') {
+                        if (value !== '') {
                             res = value;
                         }
                         break;
@@ -352,7 +336,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 }
             }
             return res;
-        };
+        }
 
         this.on('afterrender', function (me) {
             // add hidden field to store the
@@ -360,14 +344,14 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             me.ownerCt.ownerCt.add({
                 xtype: 'hidden',
                 name: config.name,
-                allowBlank: (this.dimension.meta.form.allowBlank == undefined || this.dimension.meta.form.allowBlank == true ) ? true : false,
+                allowBlank: (!Ext.isDefined(this.dimension.meta.form.allowBlank) ||
+                    this.dimension.meta.form.allowBlank === true ) ? true : false,
                 setValue: function (val) {
                     grid.stopEditing();
                     grid.store.removeAll();
                     var Rec = grid.getStore().recordType;
-                    if (val != null && val != undefined && val.length > 0) {
-                        var i = 0;
-                        for (i = 0; i < val.length; i++) {
+                    if (val !== null && Ext.isDefined(val) && val.length > 0) {
+                        for (var i = 0; i < val.length; i++) {
                             Ext.iterate(grid.store.fields.items, function (fld, j) {
                                 val[i][fld.name] = convertToGridDataType(
                                     val[i][fld.name], fld.type);
@@ -387,7 +371,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 },
                 getValue: function () {
                     var data = [];
-                    if (me.getValue().length == 0) {
+                    if (me.getValue().length === 0) {
                         return Ext.encode(data);
                     }
 
@@ -397,10 +381,11 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         Ext.iterate(grid.store.fields.items, function (fld, i) {
                             if (fld.name != 'recId') {
                                 rowJson[fld.name] = dataTypeConversion(row[fld.name], fld.type);
-                                if (rowJson[fld.name] == null || rowJson[fld.name] == undefined || rowJson[fld.name] == '') {
+                                if (rowJson[fld.name] === null || !Ext.isDefined(rowJson[fld.name]) || rowJson[fld.name] === '') {
                                     if (grid.colModel.getColumnById(fld.name).hidden) {
-                                        if (hiddenFieldVals[fld.name] != null && hiddenFieldVals[fld.name] != undefined
-                                            && hiddenFieldVals[fld.name] != '') {
+                                        if (hiddenFieldVals[fld.name] !== null && Ext.isDefined(hiddenFieldVals[fld.name]) &&
+                                            hiddenFieldVals[fld.name] !== '') {
+
                                             rowJson[fld.name] = hiddenFieldVals[fld.name];
                                         }
                                     }
@@ -445,10 +430,8 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         Ext.iterate(grid.store.fields.items, function (fld, i) {
 
                             // if blank value is not valid for this field
-                            if (fld.allowBlank == false) {
-                                if (row[fld.name] == null
-                                    || row[fld.name] == undefined
-                                    || row[fld.name] == '') {
+                            if (fld.allowBlank === false) {
+                                if (row[fld.name] === null || !Ext.isDefined(row[fld.name]) || row[fld.name] === '') {
                                     valid = false;
                                 }
                             }

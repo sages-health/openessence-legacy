@@ -63,6 +63,8 @@ OE.input.datasource.form.init = function (configuration) {
      * Function to build a form field using an edit dimension.
      */
     function createFormFieldFromDimension(dimension) {
+        /*jshint evil: true */
+
         var dimensionMetadata = (dimension.meta && dimension.meta.form ? dimension.meta.form : {});
         var field = Ext.applyIf({ formConfig: configuration }, dimensionMetadata);
 
@@ -86,16 +88,16 @@ OE.input.datasource.form.init = function (configuration) {
 
         // Generic meta data configuration items
         // Allow blank is defaulted on the field set at data source level meta data
-        if (dimensionMetadata.allowBlank != undefined) {
+        if (Ext.isDefined(dimensionMetadata.allowBlank)) {
             field.allowBlank = OE.util.getBooleanValue(dimensionMetadata.allowBlank, false);
         }
 
         // Width is defaulted on the field set at data source level meta data
-        if (dimensionMetadata.width != undefined) {
+        if (Ext.isDefined(dimensionMetadata.width)) {
             field.width = OE.util.getNumberValue(dimensionMetadata.width, 200);
         }
         // Height is defaulted on the field set at data source level meta data
-        if (dimensionMetadata.height != undefined) {
+        if (Ext.isDefined(dimensionMetadata.height)) {
             field.height = OE.util.getNumberValue(dimensionMetadata.height, 20);
         }
 
@@ -124,8 +126,8 @@ OE.input.datasource.form.init = function (configuration) {
         } else if (dimension.possibleValues) {
             if (dimensionMetadata.xtype === 'grid') {
                 field.xtype = 'fieldset';
-                field.layout = 'border',
-                    field.border = true;
+                field.layout = 'border';
+                field.border = true;
                 field.frame = true;
                 field.cls = 'reportGridFieldSet';
                 field.width = OE.util.getNumberValue(dimensionMetadata.width, 600);
@@ -166,18 +168,22 @@ OE.input.datasource.form.init = function (configuration) {
                     sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, columnsAndFields.columns[0].id), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')},
                     fields: columnsAndFields.fields,
                     listeners: {
-                        load: function (store, records, options) {
+                        load: function (store, records) {
                             toggleAddButton(records.length);
                         },
-                        remove: function (store, records, index) {
+                        remove: function (store, records) {
                             toggleAddButton((records.length ? records.length : 0));
                         }
                     }
                 });
 
-                function toggleAddButton(recordCount) {
-                    (!singleSelect || recordCount < 1) ? addButton.enable() : addButton.disable();
-                }
+                var toggleAddButton = function (recordCount) {
+                    if (!singleSelect || recordCount < 1) {
+                        addButton.enable();
+                    } else {
+                        addButton.disable();
+                    }
+                };
 
                 var addButton = new Ext.Button({
                     text: messagesBundle[configuration.dataSource + '.add'] || messagesBundle['input.datasource.default.add'],
@@ -226,22 +232,11 @@ OE.input.datasource.form.init = function (configuration) {
                         }
                     }
                 }, {
-                                      text: messagesBundle[configuration.dataSource + '.removeAll'] || messagesBundle['input.datasource.default.removeAll'],
-                                      handler: function () {
-                                          grid.getStore().removeAll();
-                                      }
-                                  }
-//                , '-', {
-//                    text: messagesBundle[configuration.dataSource + '.selectAll'] || messagesBundle['input.datasource.default.selectAll'],
-//                    handler: function () {
-//                        grid.getSelectionModel().selectAll();
-//                    }
-//                }, {
-//                    text: messagesBundle[configuration.dataSource + '.clearSelections'] || messagesBundle['input.datasource.default.clearSelections'],
-//                    handler: function () {
-//                        grid.getSelectionModel().clearSelections();
-//                    }
-//                }
+                    text: messagesBundle[configuration.dataSource + '.removeAll'] || messagesBundle['input.datasource.default.removeAll'],
+                    handler: function () {
+                        grid.getStore().removeAll();
+                    }
+                }
                 ]);
 
                 var grid = new Ext.grid.GridPanel({
@@ -272,14 +267,12 @@ OE.input.datasource.form.init = function (configuration) {
                     xtype: 'hidden',
                     name: dimension.name,
                     allowBlank: field.allowBlank,
-                    isValid: function (preventMark) {
+                    isValid: function () {
                         if (field.allowBlank) {
                             return true;
                         }
-                        if (dataStore && dataStore.getCount() > 0) {
-                            return true;
-                        }
-                        return false;
+                        return dataStore && dataStore.getCount() > 0;
+
                     },
                     setValue: function (v) {
                         this.value = v;
@@ -312,12 +305,6 @@ OE.input.datasource.form.init = function (configuration) {
                             var data = {};
                             data[parentChildFks[0]] = (fkToParent === "" ? null : fkToParent);
                             data[pvChildFks[0]] = record.data[pvDimensionKeys[0]];
-//                            Ext.each(dimension.childEditDimensions, function(field) {
-//                                var value = record.data[field];
-//                                if (value != undefined) {
-//                                    data[field] = value;
-//                                }
-//                            }, this);
                             dataArray.push(data);
                         });
 
@@ -325,234 +312,241 @@ OE.input.datasource.form.init = function (configuration) {
                     }
                 });
             } else {
-                // One to one (get values)
-                if (dimensionMetadata.xtype === 'multiselect' || dimensionMetadata.xtype === 'superboxselect') {
-                    field.xtype = dimensionMetadata.xtype;//'multiselect';
-                    var results = [];
-                    var baseParams = {dsId: dimension.possibleValues.dsId, results: Ext.pluck(dimension.possibleValues.detailDimensions, 'name')};
+                // TODO move this to separate function
+                (function () {
+                    // One to one (get values)
+                    if (dimensionMetadata.xtype === 'multiselect' || dimensionMetadata.xtype === 'superboxselect') {
+                        field.xtype = dimensionMetadata.xtype;//'multiselect';
+                        var results = [];
+                        var baseParams = {dsId: dimension.possibleValues.dsId, results: Ext.pluck(dimension.possibleValues.detailDimensions, 'name')};
 
-                    var pvChildFks = [];
-                    var pvDimensionKeys = [];
-                    var pvFks = dimension.possibleValues.fks;
-                    Ext.iterate(pvFks, function (key, value) {
-                        pvChildFks.push(key);
-                        pvDimensionKeys.push(value);
-                    });
-
-                    var parentChildFks = [];
-                    var parentKeys = [];
-                    var pFks = dimension.fksToParent;
-                    Ext.iterate(pFks, function (key, value) {
-                        parentChildFks.push(key);
-                        pvDimensionKeys.push(value);
-                    });
-
-                    if (dimension.possibleValues.data) {
-                        // Load possible value data array
-                        field.store = new Ext.data.ArrayStore({
-                            fields: ['Id', 'Name'],
-                            data: dimension.possibleValues.data
-                        });
-                        field.valueField = 'Id';
-                        field.displayField = 'Name';
-                    } else {
-                        // Load possible values via details query
-                        var storeFields = [];
-                        Ext.each(dimension.possibleValues.detailDimensions, function (result) {
-                            storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
-                            results.push(result.name);
+                        var pvChildFks = [];
+                        var pvDimensionKeys = [];
+                        var pvFks = dimension.possibleValues.fks;
+                        Ext.iterate(pvFks, function (key, value) {
+                            pvChildFks.push(key);
+                            pvDimensionKeys.push(value);
                         });
 
-                        field.store = new OE.data.RestrictedJsonStore({
-                            url: OE.util.getUrl('/report/detailsQuery'),
-                            method: 'POST',
-                            autoLoad: true,
-                            baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
-                            sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, results[1]), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')},
-                            root: 'rows',
-                            fields: storeFields
+                        var parentChildFks = [];
+                        var parentKeys = [];
+                        var pFks = dimension.fksToParent;
+                        Ext.iterate(pFks, function (key, value) {
+                            parentChildFks.push(key);
+                            pvDimensionKeys.push(value);
                         });
-                        field.valueField = dimensionMetadata.valueField || results[0]; // 'Id';
-                        field.displayField = dimensionMetadata.displayField || results[1] || results[0]; // 'Name';
 
-                    }
+                        if (dimension.possibleValues.data) {
+                            // Load possible value data array
+                            field.store = new Ext.data.ArrayStore({
+                                fields: ['Id', 'Name'],
+                                data: dimension.possibleValues.data
+                            });
+                            field.valueField = 'Id';
+                            field.displayField = 'Name';
+                        } else {
+                            // Load possible values via details query
+                            var storeFields = [];
+                            Ext.each(dimension.possibleValues.detailDimensions, function (result) {
+                                storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                                results.push(result.name);
+                            });
 
-                    field.hiddenName = dimension.name;
-                    field.mode = 'local';
-                    field.triggerAction = 'all';
-                    field.typeAhead = true;
-                    field.forceSelection = true;
-                    field.selectOnFocus = true;
-                    field.emptyText = OE.util.getEmptyText(field.fieldLabel);
+                            field.store = new OE.data.RestrictedJsonStore({
+                                url: OE.util.getUrl('/report/detailsQuery'),
+                                method: 'POST',
+                                autoLoad: true,
+                                baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
+                                sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, results[1]), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')},
+                                root: 'rows',
+                                fields: storeFields
+                            });
+                            field.valueField = dimensionMetadata.valueField || results[0];
+                            field.displayField = dimensionMetadata.displayField || results[1] || results[0];
 
-                    if (field.xtype === 'multiselect') {
-                        field.getValue = function () {
-                            var dataArray = [];
-                            var fkToParent = formPanel.getForm().findField(parentKeys[0]).getValue();
-                            if (this.view) {
-                                var selectionsArray = this.view.getSelectedIndexes();
-                                if (selectionsArray.length != 0) {
-                                    for (var i = 0; i < selectionsArray.length; i++) {
-                                        var data = {};
-                                        data[parentChildFks[0]] = (fkToParent === "" ? null : fkToParent);
-                                        data[pvChildFks[0]] =
-                                            this.store.getAt(selectionsArray[i]).get(((this.valueField != null) ? this.valueField : this.valueField));
-                                        dataArray.push(data);
+                        }
+
+                        field.hiddenName = dimension.name;
+                        field.mode = 'local';
+                        field.triggerAction = 'all';
+                        field.typeAhead = true;
+                        field.forceSelection = true;
+                        field.selectOnFocus = true;
+                        field.emptyText = OE.util.getEmptyText(field.fieldLabel);
+
+                        if (field.xtype === 'multiselect') {
+                            field.getValue = function () {
+                                var dataArray = [];
+                                var fkToParent = formPanel.getForm().findField(parentKeys[0]).getValue();
+                                if (this.view) {
+                                    var selectionsArray = this.view.getSelectedIndexes();
+                                    if (selectionsArray.length !== 0) {
+                                        for (var i = 0; i < selectionsArray.length; i++) {
+                                            var data = {};
+                                            data[parentChildFks[0]] = (fkToParent === "" ? null : fkToParent);
+                                            data[pvChildFks[0]] =
+                                                this.store.getAt(selectionsArray[i]).get(((this.valueField !== null) ? this.valueField : this.valueField));
+                                            dataArray.push(data);
+                                        }
                                     }
                                 }
-                            }
-                            if (dataArray.length > 0) {
-                                return (Ext.encode(dataArray));
-                            }
-                            //this enables validation to work properly (multiselect checks for value.length < 1)
-                            return '';
-                        };
-                        field.setValue = function (v) {
-                            //begin patch
-                            // View not rendered.  Defer call to setValue when rendered.
-                            if (!this.view) {
-                                this.on('render',
-                                    this.setValue.createDelegate(this, [v]), null, {single: true});
-                                return;
-                            }
-                            // Store not loaded yet? Set value when it *is* loaded.
-                            // Defer the setValue call until after the next load.
-                            if (this.view.store.getCount() == 0) {
-                                this.view.store.on('load',
-                                    this.setValue.createDelegate(this, [v]), null, {single: true});
-                                return;
-                            }
-                            //end patch
-
-                            //pull just the child id for this widget
-                            var values = Ext.pluck(v, pvChildFks[0]);
-
-                            var index;
-                            var selections = [];
-                            this.view.clearSelections();
-                            this.hiddenField.dom.value = '';
-
-                            if (!values || (values == '')) {
-                                return;
-                            }
-
-                            if (!(values instanceof Array)) {
-                                values = values.split(this.delimiter);
-                            }
-                            for (var i = 0; i < values.length; i++) {
-                                index = this.view.store.indexOf(this.view.store.query(this.valueField,
-                                    new RegExp('^' + values[i] + '$', "i")).itemAt(0));
-                                selections.push(index);
-                            }
-                            this.view.select(selections);
-                            this.hiddenField.dom.value = values;//this.getValue();
-                            this.validate();
-                        };
-                    } else if (field.xtype === 'superboxselect') {
-                        field.getValue = function () {
-                            var dataArray = [];
-
-                            var fkToParent = formPanel.getForm().findField(parentKeys[0]).getValue();
-                            if (this.rendered) {
-                                this.items.each(function (item) {
-                                    var data = {};
-                                    data[parentChildFks[0]] = (fkToParent === "" ? null : fkToParent);
-                                    data[pvChildFks[0]] = item.value;
-                                    dataArray.push(data);
-                                });
-                            }
-                            if (dataArray.length > 0) {
-                                return (Ext.encode(dataArray));
-                            }
-                            //this enables validation to work properly (multiselect checks for value.length < 1)
-                            return '';
-                        };
-                        field.setValue = function (v) {
-                            if (!this.rendered) {
-                                this.on('render',
-                                    this.setValue.createDelegate(this, [v]), null, {single: true});
-                                return;
-                            }
-                            // Store not loaded yet? Set value when it *is* loaded.
-                            // Defer the setValue call until after the next load.
-                            if (this.store.getCount() == 0) {
-                                this.store.on('load',
-                                    this.setValue.createDelegate(this, [v]), null, {single: true});
-                                return;
-                            }
-                            //end patch
-
-                            //pull just the child id for this widget
-                            var value = Ext.pluck(v, pvChildFks[0]);
-                            this.removeAllItems().resetStore();
-                            this.remoteLookup = [];
-
-                            if (Ext.isEmpty(value)) {
-                                return;
-                            }
-
-                            var values = value;
-                            if (!Ext.isArray(value)) {
-                                value = '' + value;
-                                values = value.split(this.valueDelimiter);
-                            }
-
-                            Ext.each(values, function (val) {
-                                var record = this.findRecord(this.valueField, val);
-                                if (record) {
-                                    this.addRecord(record);
-                                } else if (this.mode === 'remote') {
-                                    this.remoteLookup.push(val);
+                                if (dataArray.length > 0) {
+                                    return (Ext.encode(dataArray));
                                 }
-                            }, this);
+                                //this enables validation to work properly (multiselect checks for value.length < 1)
+                                return '';
+                            };
+                            field.setValue = function (v) {
+                                //begin patch
+                                // View not rendered.  Defer call to setValue when rendered.
+                                if (!this.view) {
+                                    this.on('render',
+                                        this.setValue.createDelegate(this, [v]), null, {single: true});
+                                    return;
+                                }
+                                // Store not loaded yet? Set value when it *is* loaded.
+                                // Defer the setValue call until after the next load.
+                                if (this.view.store.getCount() === 0) {
+                                    this.view.store.on('load',
+                                        this.setValue.createDelegate(this, [v]), null, {single: true});
+                                    return;
+                                }
+                                //end patch
 
-                            if (this.mode === 'remote') {
-                                var q = this.remoteLookup.join(this.queryValuesDelimiter);
-                                this.doQuery(q, false, true); //3rd param to specify a values query
-                            }
-                        };
-                    }
-                } else {
-                    field.xtype = 'combo';
-                    var results = [];
+                                //pull just the child id for this widget
+                                var values = Ext.pluck(v, pvChildFks[0]);
 
-                    if (dimension.possibleValues.data) {
-                        // Load possible value data array
-                        field.store = new Ext.data.ArrayStore({
-                            fields: ['Id', 'Name'],
-                            data: dimension.possibleValues.data
-                        });
-                        field.valueField = 'Id';
-                        field.displayField = 'Name';
+                                var index;
+                                var selections = [];
+                                this.view.clearSelections();
+                                this.hiddenField.dom.value = '';
+
+                                if (!values || (values === '')) {
+                                    return;
+                                }
+
+                                if (!(values instanceof Array)) {
+                                    values = values.split(this.delimiter);
+                                }
+                                for (var i = 0; i < values.length; i++) {
+                                    index = this.view.store.indexOf(this.view.store.query(this.valueField,
+                                        new RegExp('^' + values[i] + '$', "i")).itemAt(0));
+                                    selections.push(index);
+                                }
+                                this.view.select(selections);
+                                this.hiddenField.dom.value = values;//this.getValue();
+                                this.validate();
+                            };
+                        } else if (field.xtype === 'superboxselect') {
+                            field.getValue = function () {
+                                var dataArray = [];
+
+                                var fkToParent = formPanel.getForm().findField(parentKeys[0]).getValue();
+                                if (this.rendered) {
+                                    this.items.each(function (item) {
+                                        var data = {};
+                                        data[parentChildFks[0]] = (fkToParent === "" ? null : fkToParent);
+                                        data[pvChildFks[0]] = item.value;
+                                        dataArray.push(data);
+                                    });
+                                }
+                                if (dataArray.length > 0) {
+                                    return (Ext.encode(dataArray));
+                                }
+                                //this enables validation to work properly (multiselect checks for value.length < 1)
+                                return '';
+                            };
+                            field.setValue = function (v) {
+                                if (!this.rendered) {
+                                    this.on('render',
+                                        this.setValue.createDelegate(this, [v]), null, {single: true});
+                                    return;
+                                }
+                                // Store not loaded yet? Set value when it *is* loaded.
+                                // Defer the setValue call until after the next load.
+                                if (this.store.getCount() === 0) {
+                                    this.store.on('load',
+                                        this.setValue.createDelegate(this, [v]), null, {single: true});
+                                    return;
+                                }
+                                //end patch
+
+                                //pull just the child id for this widget
+                                var value = Ext.pluck(v, pvChildFks[0]);
+                                this.removeAllItems().resetStore();
+                                this.remoteLookup = [];
+
+                                if (Ext.isEmpty(value)) {
+                                    return;
+                                }
+
+                                var values = value;
+                                if (!Ext.isArray(value)) {
+                                    value = '' + value;
+                                    values = value.split(this.valueDelimiter);
+                                }
+
+                                Ext.each(values, function (val) {
+                                    var record = this.findRecord(this.valueField, val);
+                                    if (record) {
+                                        this.addRecord(record);
+                                    } else if (this.mode === 'remote') {
+                                        this.remoteLookup.push(val);
+                                    }
+                                }, this);
+
+                                if (this.mode === 'remote') {
+                                    var q = this.remoteLookup.join(this.queryValuesDelimiter);
+                                    this.doQuery(q, false, true); //3rd param to specify a values query
+                                }
+                            };
+                        }
                     } else {
-                        // Load possible values via details query
-                        var storeFields = [];
-                        Ext.each(dimension.possibleValues.detailDimensions, function (result) {
-                            storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
-                            results.push(result.name);
-                        });
+                        // TODO move this to separate function
+                        (function () {
+                            field.xtype = 'combo';
+                            var results = [];
 
-                        field.store = new OE.data.RestrictedJsonStore({
-                            url: OE.util.getUrl('/report/detailsQuery'),
-                            method: 'POST',
-                            autoLoad: true,
-                            baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
-                            sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, results[1]), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')},
-                            root: 'rows',
-                            fields: storeFields
-                        });
-                        field.valueField = results[0]; // 'Id';
-                        field.displayField = results[1] || results[0]; // 'Name';
+                            if (dimension.possibleValues.data) {
+                                // Load possible value data array
+                                field.store = new Ext.data.ArrayStore({
+                                    fields: ['Id', 'Name'],
+                                    data: dimension.possibleValues.data
+                                });
+                                field.valueField = 'Id';
+                                field.displayField = 'Name';
+                            } else {
+                                // Load possible values via details query
+                                var storeFields = [];
+                                Ext.each(dimension.possibleValues.detailDimensions, function (result) {
+                                    storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                                    results.push(result.name);
+                                });
+
+                                field.store = new OE.data.RestrictedJsonStore({
+                                    url: OE.util.getUrl('/report/detailsQuery'),
+                                    method: 'POST',
+                                    autoLoad: true,
+                                    baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
+                                    sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, results[1]), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')},
+                                    root: 'rows',
+                                    fields: storeFields
+                                });
+                                // TODO: for now, default to key then label
+                                field.valueField = results[0];//'Id';
+                                field.displayField = results[1] || results[0];//'Name';
+                            }
+
+                            field.hiddenName = dimension.name;
+                            field.mode = 'local';
+                            field.triggerAction = 'all';
+                            field.typeAhead = true;
+                            field.forceSelection = true;
+                            field.selectOnFocus = true;
+                            field.emptyText = OE.util.getEmptyText(field.fieldLabel);
+                        })();
                     }
-
-                    field.hiddenName = dimension.name;
-                    field.mode = 'local';
-                    field.triggerAction = 'all';
-                    field.typeAhead = true;
-                    field.forceSelection = true;
-                    field.selectOnFocus = true;
-                    field.emptyText = OE.util.getEmptyText(field.fieldLabel);
-                }
+                })();
             }
         } else {
             switch (dimension.type) {
@@ -562,17 +556,14 @@ OE.input.datasource.form.init = function (configuration) {
                 case 'Int':
                 case 'INTEGER':
                 case 'LONG':
-                {
                     field.xtype = 'numberfield';
                     field.minValue = OE.util.getNumberValue(dimensionMetadata.minValue, Number.NEGATIVE_INFINITY);
                     field.maxValue = OE.util.getNumberValue(dimensionMetadata.maxValue, Number.MAX_VALUE);
                     field.allowDecimals = OE.util.getBooleanValue(dimensionMetadata.allowDecimals, false);
                     field.allowNegative = OE.util.getBooleanValue(dimensionMetadata.allowNegative, true);
                     break;
-                }
                 case 'DOUBLE':
                 case 'FLOAT':
-                {
                     field.xtype = 'numberfield';
                     field.minValue = OE.util.getNumberValue(dimensionMetadata.minValue, Number.NEGATIVE_INFINITY);
                     field.maxValue = OE.util.getNumberValue(dimensionMetadata.maxValue, Number.MAX_VALUE);
@@ -580,12 +571,9 @@ OE.input.datasource.form.init = function (configuration) {
                     field.decimalPrecision = OE.util.getNumberValue(dimensionMetadata.decimalPrecision, 2);
                     field.allowNegative = OE.util.getBooleanValue(dimensionMetadata.allowNegative, true);
                     break;
-                }
                 case 'String':
                 case 'TEXT':
-                {
-
-                    if (dimensionMetadata.maxLength != undefined) {
+                    if (Ext.isDefined(dimensionMetadata.maxLength)) {
                         field.maxLength = OE.util.getNumberValue(dimensionMetadata.maxLength, Number.MAX_VALUE);
                     }
 
@@ -598,7 +586,7 @@ OE.input.datasource.form.init = function (configuration) {
                         field.afterRender = function () {
                             Ext.ux.ColorField.superclass.afterRender.call(this);
 
-                            if (this.value && this.value != undefined) {
+                            if (this.value && Ext.isDefined(this.value)) {
                                 this.el.setStyle('background', this.value);
                             } else if (this.formConfig && this.formConfig.record && this.formConfig.record[field.name]) {
                                 this.el.setStyle('background', this.formConfig.record[field.name]);
@@ -645,13 +633,13 @@ OE.input.datasource.form.init = function (configuration) {
                                 help: field.help,
                                 qtip: field.qtip,
                                 listeners: {
-                                    resize: function (comp, adjWidth, adjHeight, rawWidth, rawHeight) {
+                                    resize: function (comp, adjWidth) {
                                         this.objMeter.setWidth(adjWidth);
                                     }
                                 },
                                 //listen for validateValue call
-                                validator: function (value) {
-                                    if (confirmpass.getValue() != '') {
+                                validator: function () {
+                                    if (confirmpass.getValue() !== '') {
                                         confirmpass.validate();
                                     }
                                     //return true to continue validateValue process
@@ -676,29 +664,24 @@ OE.input.datasource.form.init = function (configuration) {
                         }
                     }
                     break;
-                }
                 case 'Date':
                 case 'DATE':
                 case 'Date_Time':
                 case 'DATE_TIME':
-                {
                     Ext.applyIf(field, {
                         xtype: 'datefield',
                         format: OE.util.getStringValue(dimensionMetadata.format, OE.util.defaultDateFormat),
                         value: new Date()
                     });
                     break;
-                }
                 default:
-                {
                     field.xtype = 'textfield';
                     break;
-                }
             }
         }
 
         return field;
-    };
+    }
 
     function showSearchForm(configuration) {
         var win = null;
@@ -710,7 +693,7 @@ OE.input.datasource.form.init = function (configuration) {
             callback: function (values) {
                 if (values && configuration.store) {
                     var newData = Ext.pluck(values.results, 'data');
-                    Ext.each(newData, function (item, index) {
+                    Ext.each(newData, function (item) {
                         if (!configuration.store.data.containsKey(item[configuration.store.idProperty])) {
                             configuration.store.loadData({rows: item}, true);
                         }
@@ -720,7 +703,7 @@ OE.input.datasource.form.init = function (configuration) {
             }
         });
 
-        var win = new Ext.Window({
+        win = new Ext.Window({
             layout: 'fit',
             title: messagesBundle[configuration.dataSource + '.search'] || messagesBundle['input.datasource.default.search'],
             height: 600,
@@ -737,7 +720,7 @@ OE.input.datasource.form.init = function (configuration) {
         win.show();
 
         return form;
-    };
+    }
 
     var formPanel = new Ext.form.FormPanel({
         itemId: configuration.itemId || null,
@@ -766,17 +749,11 @@ OE.input.datasource.form.init = function (configuration) {
             }
         ],
         buttonAlign: 'left',
-//        monitorValid: true,
-//        listeners: {
-//	        clientvalidation: function(form, valid) {
-//	            OE.util.updateFormTitle(form, configuration.itemId);
-//	        }
-//	    },
         buttons: [
             {
                 text: messagesBundle[configuration.dataSource + '.save'] || messagesBundle['input.datasource.default.save'],
                 formBind: true,
-                handler: function (button) {
+                handler: function () {
                     var values = formPanel.getForm().getFieldValues();
                     values.dsId = configuration.dataSource;
 
@@ -796,7 +773,7 @@ OE.input.datasource.form.init = function (configuration) {
                                     tabPanel.setTabTitle(tabPanel.activeTab.itemId, newTitle);
                                 }
                                 // Show the success message once the changes are saved
-                                if (configuration.itemId && configuration.showMessageOnUpdate == true) {
+                                if (configuration.itemId && configuration.showMessageOnUpdate === true) {
                                     Ext.MessageBox.alert(messagesBundle['input.datasource.default.update.message.title'],
                                         messagesBundle['input.datasource.default.update.message.text']);
                                 }
@@ -819,7 +796,7 @@ OE.input.datasource.form.init = function (configuration) {
 
     // For each field, add onchange event so that we can update tabpanel title
     formPanel.getForm().items.each(function (field) {
-        field.on('change', function (f, n, o) {
+        field.on('change', function () {
             var tabPanel = formPanel.findParentByType('tabpanel');
             if (tabPanel && tabPanel.activeTab.itemId) {
                 var title = tabPanel.activeTab.title;
