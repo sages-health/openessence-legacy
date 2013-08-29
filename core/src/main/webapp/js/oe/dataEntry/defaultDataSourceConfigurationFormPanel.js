@@ -372,9 +372,8 @@ OE.input.datasource.form.init = function (configuration) {
                             root: 'rows',
                             fields: storeFields
                         });
-                        field.valueField = dimensionMetadata.valueField || results[0];
-                        ;//'Id';
-                        field.displayField = dimensionMetadata.displayField || results[1];//'Name';
+                        field.valueField = dimensionMetadata.valueField || results[0]; // 'Id';
+                        field.displayField = dimensionMetadata.displayField || results[1] || results[0]; // 'Name';
 
                     }
 
@@ -534,7 +533,7 @@ OE.input.datasource.form.init = function (configuration) {
                         });
 
                         field.store = new OE.data.RestrictedJsonStore({
-                            url: '../../oe/report/detailsQuery',
+                            url: OE.util.getUrl('/report/detailsQuery'),
                             method: 'POST',
                             autoLoad: true,
                             baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
@@ -542,9 +541,8 @@ OE.input.datasource.form.init = function (configuration) {
                             root: 'rows',
                             fields: storeFields
                         });
-                        // TODO: for now, default to key then label
-                        field.valueField = results[0];//'Id';
-                        field.displayField = results[1];//'Name';
+                        field.valueField = results[0]; // 'Id';
+                        field.displayField = results[1] || results[0]; // 'Name';
                     }
 
                     field.hiddenName = dimension.name;

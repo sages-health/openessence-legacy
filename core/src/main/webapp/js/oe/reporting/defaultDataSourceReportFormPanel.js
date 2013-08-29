@@ -675,7 +675,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                 });
 
                 field.store = new OE.data.RestrictedJsonStore({
-                    url: '../../oe/report/detailsQuery',
+                    url: OE.util.getUrl('/report/detailsQuery'),
                     method: 'POST',
                     autoLoad: true,
                     baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
@@ -683,9 +683,8 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                     root: 'rows',
                     fields: storeFields
                 });
-                // TODO: for now, default to key then label
-                field.valueField = results[0];//'Id';
-                field.displayField = results[1];//'Name';
+                field.valueField = results[0]; // 'Id'
+                field.displayField = results[1] || results[0]; // 'Name', defaults to ID if no name
             }
 
             field.hiddenName = dimension.name;
