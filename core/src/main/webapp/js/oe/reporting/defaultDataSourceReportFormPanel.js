@@ -670,13 +670,20 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                     url: OE.util.getUrl('/report/detailsQuery'),
                     method: 'POST',
                     autoLoad: true,
-                    baseParams: {dsId: dimension.possibleValues.dsId, results: results, pagesize: 400},
-                    sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, results[1]), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')},
+                    baseParams: {
+                        dsId: dimension.possibleValues.dsId,
+                        results: results,
+                        pagesize: 400
+                    },
+                    sortInfo: {
+                        field: OE.util.getStringValue(dimensionMetadata.sortcolumn, results[1]),
+                        direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'ASC')
+                    },
                     root: 'rows',
                     fields: storeFields
                 });
-                field.valueField = results[0]; // 'Id'
-                field.displayField = results[1] || results[0]; // 'Name', defaults to ID if no name
+                field.valueField = dimensionMetadata.valueField || results[0];
+                field.displayField = dimensionMetadata.displayField || results[1] || results[0];
             }
 
             field.hiddenName = dimension.name;

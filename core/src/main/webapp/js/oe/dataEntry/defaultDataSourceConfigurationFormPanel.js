@@ -532,9 +532,8 @@ OE.input.datasource.form.init = function (configuration) {
                                     root: 'rows',
                                     fields: storeFields
                                 });
-                                // TODO: for now, default to key then label
-                                field.valueField = results[0];//'Id';
-                                field.displayField = results[1] || results[0];//'Name';
+                                field.valueField = dimensionMetadata.valueField || results[0];
+                                field.displayField = dimensionMetadata.displayField || results[1] || results[0];
                             }
 
                             field.hiddenName = dimension.name;
