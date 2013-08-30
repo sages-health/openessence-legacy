@@ -515,6 +515,10 @@ td.x-date-mp-sel a {
     font-weight: bold;
 }
 
+.details-grid .x-grid3-row {
+    cursor: pointer;
+}
+
 /**
  * demo styles TODO merge with core styles on individual level
  */

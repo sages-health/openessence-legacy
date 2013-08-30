@@ -36,6 +36,9 @@ OE.report.datasource.details.init = function (configuration) {
             configuration.index : messagesBundle['panel.details.header'] + ' ' + configuration.index;
     }
 
+    var dataSource = configuration.dataSource;
+    var entryDataSource = configuration.dataSource + '_Entry';
+
     return new Ext.Panel({
         layout: 'fit',
         title: title,
@@ -44,11 +47,37 @@ OE.report.datasource.details.init = function (configuration) {
             OE.datasource.grid.init({
                 url: configuration.url,
                 parameters: configuration.parameters,
-                dataSource: configuration.dataSource,
+                dataSource: dataSource,
                 data: configuration.data || {},
                 allowExport: true,
                 gridClass: configuration.gridClass,
-                gridExtraConfig: configuration.gridExtraConfig,
+                gridExtraConfig: (function () {
+                    var gridExtraConfig = Ext.apply({
+                        cls: 'details-grid'
+                    }, configuration.gridExtraConfig);
+                    gridExtraConfig.listeners = gridExtraConfig.listeners || {};
+
+                    gridExtraConfig.listeners = Ext.apply({
+                        /**
+                         * Open edit form when row is clicked
+                         */
+                        rowclick: function (grid, rowIndex) {
+                            // TODO see if this works with paging
+                            var record = grid.getStore().getAt(rowIndex);
+
+                            var navNode = OE.NavPanel.instance.root.findChildBy(function(n) {
+                                return n.leaf && n.attributes.name === entryDataSource;
+                            }, this, true);
+
+                            OE.NavPanel.instance.openTab(navNode, function(tab) {
+                                tab.openFormTab(record, tab.setValuesCallback);
+                            });
+                        }
+                    }, gridExtraConfig.listeners);
+
+                    return gridExtraConfig;
+
+                })(),
                 pageSize: configuration.pageSize,
                 pivot: configuration.pivot
             })
