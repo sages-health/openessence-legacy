@@ -59,11 +59,13 @@ OE.report.datasource.panel = function (configuration) {
     function showPivot(parameters) {
         var ctId = Ext.id() + '-pivottable';
         var tab = resultsTabPanel.add({
-            id:ctId,
-            title: parameters.title
+            id: ctId,
 
-            // fix scrolling (layout=border?, region center...)
+            // parameters.title is set if running a saved query
+            title: parameters.title || messagesBundle['query.pivot'] + ' ' + ++n
         });
+
+        var pivotParams = parameters.pivot || {};
 
         OE.data.doAjaxRestricted({
             url: OE.util.getUrl('/report/detailsQuery'),
@@ -71,27 +73,27 @@ OE.report.datasource.panel = function (configuration) {
             scope: this,
             params: Ext.apply({
                 dsId: configuration.dataSource,
-                //results: parameters.results,
                 pagesize: -1
             }, parameters.filters),
             onJsonSuccess: function (response) {
                 // TODO error check??? on response.rows
-                $(function(){
-                    $('#'+ctId).pivotUI(
-                        response.rows
-                    )
+                $(function () {
+                    $('#' + ctId).pivotUI(response.rows, {
+                        rows: pivotParams.rows,
+                        cols: pivotParams.cols
+                    })
                 });
-                $('#'+ctId).parent().css('overflow', 'auto');
+                $('#' + ctId).parent().css('overflow', 'auto');
             },
-            // TODO make a callback function for this
             onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
         });
 
         tab.parameters = parameters || {};
+        tab.parameters.pivotId = ctId;
 
         // this is a hack so saved queries know what type of query to save
         // TODO move to more object-oriented solution
-        tab.parameters.queryType = parameters.queryType || 'details';
+        tab.parameters.queryType = parameters.queryType || 'pivot';
 
         resultsTabPanel.setActiveTab(tab);
         queryFormPanel.collapse(true);
@@ -260,7 +262,18 @@ OE.report.datasource.panel = function (configuration) {
                                             results: tab.parameters.results,
                                             filters: rollingDateWindow ? queryFormPanel.convertDateFiltersToLength() : queryFormPanel.getFilters(),
                                             charts: tab.charts,
-                                            pivot: tab.parameters.pivot
+                                            pivot: (function () {
+                                                var extractId = function (jElement) {
+                                                    return jElement.map(function () {
+                                                        return this.id.match(/^axis_(.*$)/)[1];
+                                                    }).get();
+                                                };
+                                                var pivot = $('#' + tab.parameters.pivotId);
+                                                return {
+                                                    rows: extractId(pivot.find('#rows li')),
+                                                    cols: extractId(pivot.find('#cols li'))
+                                                }
+                                            })()
                                         })
                                     },
                                     onJsonSuccess: function () {
