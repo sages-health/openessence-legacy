@@ -763,7 +763,7 @@
           radio.attr("checked", "checked");
           first = false;
         }
-        form.append(radio).append($("<label class='checkbox inline' for='renderers_" + (x.replace(/\s/g, "")) + "'>").text(x));
+        form.append(radio).append($("<label class='checkbox inline' for='renderers_" + (x.replace(/\s/g, "")) + "'></label>").text(x));
       }
       uiTable.append($("<tr>").append(controls));
     }

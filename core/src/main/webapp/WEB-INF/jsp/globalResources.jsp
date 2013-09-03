@@ -44,11 +44,15 @@
 <link type="text/css" rel="stylesheet" href="${globalContextPath}/css/openessence.css"/>
 
 <%-- TODO use conditional loader (Modernizr.load or yepnope.js) --%>
+<!--[if lt IE 9]>
+    <script type="text/javascript" src="${globalContextPath}/js/lib/html5shiv/html5shiv.js"></script>
+    <script type="text/javascript" src="${globalContextPath}/js/lib/augmentjs/augment.min.js"></script>
+<![endif]-->
 <script type="text/javascript" src="${globalContextPath}/js/lib/console-polyfill/console-polyfill.js"></script>
 	   
 <script type="text/javascript" src="${globalContextPath}/js/ext-3.0.3/adapter/ext/ext-base.js"></script>
 <script type="text/javascript" src="${globalContextPath}/js/ext-3.0.3/ext-all.js"></script>
-<%-- <script type="text/javascript" src="${globalContextPath}/js/ext-3.0.3/ext-all-debug.js"></script> --%>
+<%--<script type="text/javascript" src="${globalContextPath}/js/ext-3.0.3/ext-all-debug.js"></script>--%>
 
 <%-- localized Ext, very important to use locale of response, not request, since this is locale Spring gives you,
  	not what the browser says it supports --%>
@@ -65,5 +69,6 @@ if (!Ext.String) {
 	Ext.String = String;
 }
 </script>
+
 <script type="text/javascript" src="${globalContextPath}/js/oe/app/util/oeUtils.js"></script>
 <script type="text/javascript" src="${globalContextPath}/js/oe/app/widget/Header.js"></script>
