@@ -580,7 +580,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 				}
 			}
             // if this is a required field, make sure we have at least one row 
-			else if (grid.getValue() && grid.getValue().length == 0) {
+			else if (grid.getValue() && grid.getValue().length === 0) {
 				if (showMessage) {
 					return messagesBundle['input.datasource.grid.error.requiredAtleastOneRow'];
 				} else {
@@ -594,7 +594,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 				Ext.iterate(grid.store.fields.items, function (fld) {
 
 					// if blank value is not valid for this field
-					if (fld.allowBlank == false) {
+					if (fld.allowBlank === false) {
 						if (!row[fld.name]) {
 							if (showMessage) {
 								errorMessage = messagesBundle['input.datasource.grid.error.requiredColumn'] + row['recId'];
@@ -611,7 +611,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
 			} else {
 				return valid;
 			}
-		};
+		}
 
         this.on('afterrender', function (me) {
             // add hidden field to store the

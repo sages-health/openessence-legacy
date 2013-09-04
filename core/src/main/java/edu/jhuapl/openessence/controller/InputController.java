@@ -29,6 +29,7 @@ package edu.jhuapl.openessence.controller;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -43,8 +44,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -86,9 +90,8 @@ public class InputController extends OeController {
      * @param request request object containing parameters such as data source, field values, etc.
      */
     @RequestMapping("/add")
-    public
-    @ResponseBody
-    Map<String, Object> add(@RequestParam("dsId") JdbcOeDataSource ds, final HttpServletRequest request)
+    public @ResponseBody Map<String, Object> add(@RequestParam("dsId") JdbcOeDataSource ds,
+                                                 final HttpServletRequest request)
             throws ErrorMessageException, OeDataSourceAccessException, IOException {
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         Set<String> pks = jdes.getParentTableDetails().getPks();
@@ -116,9 +119,7 @@ public class InputController extends OeController {
     }
 
     @RequestMapping("/update")
-    public
-    @ResponseBody
-    Map<String, Object> update(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request,
+    public @ResponseBody Map<String, Object> update(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request,
                                HttpServletRequest servletRequest)
             throws ErrorMessageException, OeDataSourceAccessException, IOException {
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
@@ -127,9 +128,8 @@ public class InputController extends OeController {
         DbKeyValMap dbKeyValMap = ControllerUtils.parseKeyValueMap(jdes, request.getParameterMap());
 
         // retrieve existing record and children
-        CompleteRecord
-                completeRecord =
-                jdes.getCompleteRecord(dbKeyValMap, new ArrayList<String>(jdes.getChildTableMap().keySet()));
+        CompleteRecord completeRecord = jdes.getCompleteRecord(dbKeyValMap,
+                                                               new ArrayList<String>(jdes.getChildTableMap().keySet()));
 
         // Option to only update parameter values on the completeRecord that
         // are included as part of the request (when merge parameter is true)
@@ -166,10 +166,9 @@ public class InputController extends OeController {
     }
 
     @RequestMapping("/data")
-    public
-    @ResponseBody
-    Map<String, Object> data(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request)
+    public @ResponseBody Map<String, Object> data(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request)
             throws ErrorMessageException, OeDataSourceAccessException {
+
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         DbKeyValMap dbKeyValMap = new DbKeyValMap();
         String doNotParseKeys = request.getParameter("doNotParseKeys");
@@ -208,6 +207,7 @@ public class InputController extends OeController {
     @ResponseBody
     Map<String, Object> delete(@RequestParam("dsId") JdbcOeDataSource ds, @RequestBody DeleteRequest body)
             throws IOException, ErrorMessageException, OeDataSourceAccessException {
+
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         List<DbKeyValMap> pksForDeletion = new ArrayList<DbKeyValMap>();
 
@@ -224,14 +224,16 @@ public class InputController extends OeController {
     }
 
     @RequestMapping(value = "/importExcel")
+// , consumes = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public void importExcel(@RequestPart MultipartFile file, @RequestParam("dsId") JdbcOeDataSource ds,
-                            HttpServletRequest request, HttpServletResponse response)
+                            HttpServletResponse response)
             throws IOException, ServletException {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
             // Ext needs this for the crazy way it does file uploads
-            // it's normally bad to manually write JSON, but dealing with a custom Spring MessageConverter seems like overkill
+            // it's normally bad to manually write JSON, but dealing with a custom Spring MessageConverter seems like
+            // overkill
             response.setContentType("text/html;charset=utf-8");
             FileImporter<?> importer = fileImporters.get(ds);
             if (importer == null) {
@@ -244,112 +246,78 @@ public class InputController extends OeController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(mapper.writeValueAsString(handleException(e)));
         }
-
     }
-    
 
-    @RequestMapping(value = "/importCSV")
-    public void importCSV(@RequestPart MultipartFile file, 
-    		HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException  {
- 
-    	parseCSVData(file, request, response);
+    @RequestMapping(value = "/importCSV")//, consumes = "application/vnd.ms-excel")
+    public void importCSV(@RequestPart MultipartFile file,
+                          @RequestParam(value = "delimiter", defaultValue = ",") char delimiter,
+                          @RequestParam(value = "qualifier", defaultValue = "\"") char qualifier,
+                          @RequestParam(value = "rowsToSkip", defaultValue = "0") int rowsToSkip,
+                          @RequestParam(value = "numRowsToRead", defaultValue = "-1") int numRowsToRead,
+                          @RequestParam("fields") String fields, HttpServletRequest request,
+                          HttpServletResponse response) throws IOException, ServletException {
+
+        parseCSVData(file, response, delimiter, qualifier, rowsToSkip, numRowsToRead, fields);
     }
-    
-    private void parseCSVData(MultipartFile csvFile,
-			HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		ObjectMapper mapper = new ObjectMapper();
 
-		String user = request.getUserPrincipal().getName();
-		Calendar cal = Calendar.getInstance();
-		String dateTimeString = cal.get(Calendar.YEAR) + "_"
-				+ (cal.get(Calendar.MONTH) + 1) + "_" + cal.get(Calendar.DATE)
-				+ "_" + cal.get(Calendar.HOUR_OF_DAY) + "_"
-				+ cal.get(Calendar.MINUTE) + "_" + cal.get(Calendar.SECOND);
+    private void parseCSVData(MultipartFile csvFile, HttpServletResponse response,
+                              char delimiter, char qualifier, int rowsToSkip, int numRowsToRead, String flds)
+            throws IOException, ServletException {
 
-		char delimiter = ',';
-		char qualifier = '"';
-		int rowsToSkip = 0;
-		int numRowsToRead = -1;
-		if (request.getParameter("delimiter") != null
-				&& request.getParameter("delimiter").length() > 0) {
-			delimiter = request.getParameter("delimiter").charAt(0);
-		}
-		if (request.getParameter("qualifier") != null
-				&& request.getParameter("qualifier").length() > 0) {
-			qualifier = request.getParameter("qualifier").charAt(0);
-		}
-		if (request.getParameter("rowsToSkip") != null
-				&& request.getParameter("rowsToSkip").length() > 0 ) {
-			try {
-				rowsToSkip = Integer.parseInt(request
-						.getParameter("rowsToSkip"));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		if (request.getParameter("numRowsToRead") != null
-				&& request.getParameter("numRowsToRead").length() > 0) {
-			numRowsToRead = Integer.parseInt(request
-					.getParameter("numRowsToRead"));
-		}
+        ObjectMapper mapper = new ObjectMapper();
 
-		Map<String, Object> map = new HashMap<String, Object>();
-		response.setContentType("text/html;charset=utf-8");
-		response.setHeader("Cache-control", "no-cache, no-store");
-		response.setHeader("Pragma", "no-cache");
-		response.setHeader("Expires", "-1");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String user = auth.getName();
 
-		File upDir = uploadDir();
-		try {
-			File upFile = null;
-			if (csvFile == null) {
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				response.getWriter()
-						.write(mapper
-								.writeValueAsString(handleException(new RuntimeException(
-										"Error: File not uploaded!"))));
-				return;
-			}
-			upFile = new File(upDir, csvFile.getName() + "_" + user + "_"
-					+ dateTimeString + ".csv");
-			csvFile.transferTo(upFile);
-			
-			if (!upFile.isFile()) {
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				response.getWriter()
-						.write(mapper
-								.writeValueAsString(handleException(new RuntimeException(
-										"Error: File is not valid!"))));
-				return;
-			}
+        Calendar cal = Calendar.getInstance();
+        String dateTimeString = (new SimpleDateFormat("yyyyy_mm_dd_hh_mm_ss")).format(cal.getTime());
 
-			CSVParser parser = new CSVParser();
+        Map<String, Object> map = new HashMap<String, Object>();
+        response.setContentType("text/html;charset=utf-8");
+        response.setHeader("Cache-control", "no-cache, no-store");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "-1");
 
-			String flds =request.getParameter("fields");
-			String [] fields = flds.split(",");
-			// parse first N lines if N not provided then parse everything...
-			Map<String, String>[] data = parser.parse(upFile, delimiter, qualifier,
-					rowsToSkip, numRowsToRead, fields);
-			map.put("rows", data);
-			map.put("success", true);
-			response.getWriter().write(mapper.writeValueAsString(map));
+        File upDir = uploadDir();
+        File upFile = null;
+        if (csvFile == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter()
+                    .write(mapper
+                                   .writeValueAsString(handleException(new RuntimeException(
+                                           "Error: File not uploaded!"))));
+            return;
+        }
+        upFile = new File(upDir, csvFile.getName() + "_" + user + "_"
+                                 + dateTimeString + ".csv");
+        csvFile.transferTo(upFile);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			response.getWriter().write(
-					mapper.writeValueAsString(handleException(e)));
-		}
-	}
+        if (!upFile.isFile()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter()
+                    .write(mapper
+                                   .writeValueAsString(handleException(new RuntimeException(
+                                           "Error: File is not valid!"))));
+            return;
+        }
 
-	private File uploadDir() {
-		String uploadDir = Paths.get(FileUtils.getTempDirectoryPath(), "upload").toString();//jndiConfig.configDir() + "/upload";
-		File uploadDirObj = new File(uploadDir);
-		if (!uploadDirObj.exists()) {
-			System.out.println("creating directory: " + uploadDirObj);
-			uploadDirObj.mkdir();
-		}
-		return uploadDirObj;
-	}
+        CSVParser parser = new CSVParser();
+
+        String[] fields = flds.split(",");
+        // parse first N lines if N not provided then parse everything...
+        Map<String, String>[] data = parser.parse(upFile, delimiter, qualifier,
+                                                  rowsToSkip, numRowsToRead, fields);
+        map.put("rows", data);
+        map.put("success", true);
+        response.getWriter().write(mapper.writeValueAsString(map));
+    }
+
+    private File uploadDir() {
+        String uploadDir = Paths.get(FileUtils.getTempDirectoryPath(), "upload").toString();
+        File uploadDirObj = new File(uploadDir);
+        if (!uploadDirObj.exists()) {
+            uploadDirObj.mkdir();
+        }
+        return uploadDirObj;
+    }
 }

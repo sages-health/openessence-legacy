@@ -82,7 +82,7 @@ OE.uploadCSVForm = function(configuration){
 					if (form.isValid()) {
 						try {
 							form.submit({
-								url : '../../oe/input/importCSV',
+								url : OE.util.getUrl('/input/importCSV'),
 								params: {dsId: configuration.dataSource, fields: configuration.fields.toString(), 
 									rowsToSkip :  form.getFieldValues().headerRow ? 1 : 0 , 
 									numRowsToRead : configuration.numRowsToRead},
