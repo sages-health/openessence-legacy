@@ -57,6 +57,7 @@ OE.report.datasource.panel = function (configuration) {
     }
 
     function showPivot(parameters) {
+        var pivotParams = parameters.pivot || {};
         var ctId = Ext.id() + '-pivottable';
         var tab = resultsTabPanel.add({
             id: ctId,
@@ -65,27 +66,42 @@ OE.report.datasource.panel = function (configuration) {
             title: parameters.title || messagesBundle['query.pivot'] + ' ' + ++n
         });
 
-        var pivotParams = parameters.pivot || {};
+        require(['Q'], function (Q) {
+            var getDetails = function () {
+                var deferred = Q.defer();
 
-        OE.data.doAjaxRestricted({
-            url: OE.util.getUrl('/report/detailsQuery'),
-            method: 'GET',
-            scope: this,
-            params: Ext.apply({
-                dsId: configuration.dataSource,
-                pagesize: -1
-            }, parameters.filters),
-            onJsonSuccess: function (response) {
-                // TODO error check??? on response.rows
-                $(function () {
-                    $('#' + ctId).pivotUI(response.rows, {
-                        rows: pivotParams.rows,
-                        cols: pivotParams.cols
-                    })
+                OE.data.doAjaxRestricted({
+                    url: OE.util.getUrl('/report/detailsQuery'),
+                    method: 'GET',
+                    scope: this,
+                    params: Ext.apply({
+                        dsId: configuration.dataSource,
+                        pagesize: -1
+                    }, parameters.filters),
+                    onJsonSuccess: function (response) {
+                        deferred.resolve(response);
+                    },
+                    onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
+                });
+
+                return deferred.promise;
+            };
+
+            var fetchPivotJs = function () {
+                var deferred = Q.defer();
+                require(['pivottable'], function ($) {
+                    deferred.resolve($);
+                });
+                return deferred.promise;
+            };
+
+            Q.all([getDetails(), fetchPivotJs()]).spread(function (response, $) {
+                $('#' + ctId).pivotUI(response.rows, {
+                    rows: pivotParams.rows,
+                    cols: pivotParams.cols
                 });
                 $('#' + ctId).parent().css('overflow', 'auto');
-            },
-            onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
+            }).done();
         });
 
         tab.parameters = parameters || {};

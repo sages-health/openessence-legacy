@@ -181,23 +181,6 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                         filters: filters,
                         results: results
                     });
-/*                    {
-                        data: formConfiguration.dimensions,
-                            dataSource: this.dataSource,
-                        results: this.results,
-                        callback: function (pivot) {
-                        if (pivot != undefined) {
-
-
-                            me.pivotCallback({
-                                dsId: dsId,
-                                filters: filters,
-                                results: results,
-                                pivot: pivot
-                            });
-                        }
-                    }
-                    }*/
                 },
                 scope: configuration
             });

@@ -222,6 +222,19 @@ Ext.onReady(function () {
     // turn on validation errors beside the field globally
     Ext.form.Field.prototype.msgTarget = 'side';
 
+    requirejs.config({ // TODO configure other modules see http://requirejs.org/docs/api.html#config
+        baseUrl: OE.context.root + '/js',
+        paths: {
+            pivottable: 'lib/pivottable/pivot.min',
+            Q: 'lib/q/q.min'
+        },
+        shim: {
+            pivottable: {
+                exports: '$'
+            }
+        }
+    });
+
     OE.data.doAjaxRestricted({
         url: OE.util.getUrl('/home/getNavigationMenu'),
         onJsonSuccess: function (response) {
