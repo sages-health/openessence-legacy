@@ -226,7 +226,7 @@ Ext.onReady(function () {
         baseUrl: OE.context.root + '/js',
         paths: {
             pivottable: 'lib/pivottable/pivot.min',
-            Q: 'lib/q/q.min'
+            Q: 'lib/q/q.min' // TODO use jQuery promises instead
         },
         shim: {
             pivottable: {

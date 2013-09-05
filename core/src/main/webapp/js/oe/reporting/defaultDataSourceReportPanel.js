@@ -66,42 +66,43 @@ OE.report.datasource.panel = function (configuration) {
             title: parameters.title || messagesBundle['query.pivot'] + ' ' + ++n
         });
 
-        require(['Q'], function (Q) {
-            var getDetails = function () {
-                var deferred = Q.defer();
+        var getDetails = function () {
+            var deferred = new $.Deferred();
 
-                OE.data.doAjaxRestricted({
-                    url: OE.util.getUrl('/report/detailsQuery'),
-                    method: 'GET',
-                    scope: this,
-                    params: Ext.apply({
-                        dsId: configuration.dataSource,
-                        pagesize: -1
-                    }, parameters.filters),
-                    onJsonSuccess: function (response) {
-                        deferred.resolve(response);
-                    },
-                    onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
-                });
+            OE.data.doAjaxRestricted({
+                url: OE.util.getUrl('/report/detailsQuery'),
+                method: 'GET',
+                scope: this,
+                params: Ext.apply({
+                    dsId: configuration.dataSource,
+                    pagesize: -1
+                }, parameters.filters),
+                onJsonSuccess: function (response) {
+                    deferred.resolve(response);
+                },
+                onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
+            });
 
-                return deferred.promise;
-            };
+            return deferred.promise();
+        };
 
-            var fetchPivotJs = function () {
-                var deferred = Q.defer();
-                require(['pivottable'], function ($) {
-                    deferred.resolve($);
-                });
-                return deferred.promise;
-            };
+        var fetchPivotJs = function () {
+            var deferred = new $.Deferred();
+            require(['pivottable'], function ($) {
+                deferred.resolve($);
+            });
+            return deferred.promise();
+        };
 
-            Q.all([getDetails(), fetchPivotJs()]).spread(function (response, $) {
-                $('#' + ctId).pivotUI(response.rows, {
-                    rows: pivotParams.rows,
-                    cols: pivotParams.cols
-                });
-                $('#' + ctId).parent().css('overflow', 'auto');
-            }).done();
+        // for some reason, Q.all fails on IE, even though this jQuery version works,
+        // probably some weird bug from the combo of augment.js + Q + old version of ExtJS
+        $.when(getDetails(), fetchPivotJs()).done(function (response, $) {
+            var pivotEl = $('#' + ctId);
+            pivotEl.pivotUI(response.rows, {
+                rows: pivotParams.rows,
+                cols: pivotParams.cols
+            });
+            pivotEl.parent().css('overflow', 'auto');
         });
 
         tab.parameters = parameters || {};
