@@ -863,23 +863,23 @@
     _ref3 = opts.cols;
     for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
       x = _ref3[_k];
-      $("#cols").append($("#axis_" + (x.replace(/\s/g, ""))));
+      this.find("#cols").append(this.find("#axis_" + (x.replace(/\s/g, ""))));
     }
     _ref4 = opts.rows;
     for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
       x = _ref4[_l];
-      $("#rows").append($("#axis_" + (x.replace(/\s/g, ""))));
+      this.find("#rows").append(this.find("#axis_" + (x.replace(/\s/g, ""))));
     }
     _ref5 = opts.vals;
     for (_m = 0, _len4 = _ref5.length; _m < _len4; _m++) {
       x = _ref5[_m];
-      $("#vals").append($("#axis_" + (x.replace(/\s/g, ""))));
+      this.find("#vals").append(this.find("#axis_" + (x.replace(/\s/g, ""))));
     }
     if (opts.aggregatorName != null) {
-      $("#aggregator").val(opts.aggregatorName);
+      this.find("#aggregator").val(opts.aggregatorName);
     }
     if (opts.rendererName != null) {
-      $("#renderer").val(opts.rendererName);
+      this.find("#renderer").val(opts.rendererName);
     }
     refresh = function() {
       var exclusions, subopts, vals;
@@ -889,19 +889,19 @@
       subopts.cols = [];
       subopts.rows = [];
       vals = [];
-      $("#rows li nobr").each(function() {
+      _this.find("#rows li nobr").each(function() {
         return subopts.rows.push($(this).text());
       });
-      $("#cols li nobr").each(function() {
+      _this.find("#cols li nobr").each(function() {
         return subopts.cols.push($(this).text());
       });
-      $("#vals li nobr").each(function() {
+      _this.find("#vals li nobr").each(function() {
         return vals.push($(this).text());
       });
       subopts.aggregator = opts.aggregators[aggregator.val()](vals);
       subopts.renderer = opts.renderers[renderer.val()];
       exclusions = [];
-      $('input.pvtFilter').not(':checked').each(function() {
+      _this.find('input.pvtFilter').not(':checked').each(function() {
         return exclusions.push($(this).data("filter"));
       });
       subopts.filter = function(record) {
@@ -928,7 +928,7 @@
       });
     };
     refresh();
-    $(".pvtAxisContainer").sortable({
+    this.find(".pvtAxisContainer").sortable({
       connectWith: ".pvtAxisContainer",
       items: 'li'
     }).bind("sortstop", refresh);
