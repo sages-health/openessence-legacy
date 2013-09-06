@@ -127,6 +127,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -1380,96 +1381,6 @@ public class ReportController extends OeController {
                                                       firstRecord, pageSize, true);
     }
 
-    @RequestMapping("/detailsPivot")
-    public
-    @ResponseBody
-    DataSourceDetails detailsPivot(WebRequest request, @RequestParam("dsId") JdbcOeDataSource ds,
-                                   @RequestParam(value = "pivotX") String pivotX,
-                                   @RequestParam(value = "pivotY") String pivotY,
-                                   @RequestParam(value = "firstrecord", defaultValue = "0") long firstRecord,
-                                   @RequestParam(value = "pagesize", defaultValue = "200") long pageSize)
-            throws ErrorMessageException, OeDataSourceException, OeDataSourceAccessException {
-
-        // Do the normal details query using the pivots as dimensions
-        DataSourceDetails details = this.detailsQuery(request, ds, firstRecord, pageSize);
-
-        // Expand the sparse results into a full matrix
-        Map<String, Map<String, Integer>> matrix = new LinkedHashMap<String, Map<String, Integer>>();
-        matrix.put("Total", new LinkedHashMap<String, Integer>());
-        // TODO: Colin: (Round 2 feature) Perform some check to disable the pivot button if the report doesn't have an ACCUM field, or if it only has 1 "DS" field
-        // TODO: Colin: (Round 2 feature) Put this where the button gets created in a JS file.
-        String accum = null;
-        for (String key : details.getRows().get(0).keySet()) {
-            if (!key.equals(pivotX) && !key.equals(pivotY)) {
-                accum = key;
-                break;
-            }
-        }
-
-        for (Map<String, Object> row : details.getRows()) {
-            // Add a new column to the matrix for the value of the pivotX dimension if needed
-            // Otherwise, find the column for the value of the pivotX dimension
-            Map<String, Integer> col;
-            if (!matrix.containsKey(String.valueOf(row.get(pivotX)))) {
-                col = (matrix.size() < 1)
-                      ? new LinkedHashMap<String, Integer>()
-                      : new LinkedHashMap<String, Integer>(matrix.get(matrix.keySet().iterator().next()));
-                for (Map.Entry<String, Integer> e : col.entrySet()) {
-                    col.put(e.getKey(), null);
-                }
-                matrix.put(String.valueOf(row.get(pivotX)), col);
-            } else {
-                col = matrix.get(String.valueOf(row.get(pivotX)));
-            }
-
-            // Make sure that every column in the matrix has a key for the value of the pivotY dimension
-            // If not, set it to 0
-            for (Map.Entry<String, Map<String, Integer>> e : matrix.entrySet()) {
-                if (!e.getValue().containsKey(String.valueOf(row.get(pivotY)))) {
-                    e.getValue().put(String.valueOf(row.get(pivotY)), null);
-                }
-            }
-
-            // Set the pivotX column at pivotY as the value of the accumulation
-            col.put(String.valueOf(row.get(pivotY)), (Integer) row.get(accum));
-
-            // Add the accumulation value to the total matrix for bookkeeping
-            Integer oldValue = matrix.get("Total").get(String.valueOf(row.get(pivotY)));
-            oldValue = (oldValue != null) ? oldValue : 0;
-            matrix.get("Total").put(String.valueOf(row.get(pivotY)), oldValue + (Integer) row.get(accum));
-        }
-
-        // Calculate totals for each column
-        for (Map.Entry<String, Map<String, Integer>> row : matrix.entrySet()) {
-            Integer total = 0;
-            for (Map.Entry<String, Integer> col : row.getValue().entrySet()) {
-                if (col.getValue() != null) {
-                    total += col.getValue();
-                }
-            }
-            row.getValue().put("Total", total);
-        }
-
-        // Move the total column to the end
-        matrix.put("Total", matrix.remove("Total"));
-
-        // Reformat the expanded data back into rows for the grid
-        List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
-        for (String key : matrix.get(matrix.keySet().iterator().next()).keySet()) {
-            Map<String, Object> row = new LinkedHashMap<String, Object>();
-            row.put(pivotY, key);
-            for (String col : matrix.keySet()) {
-                row.put(col, matrix.get(col).get(key));
-            }
-            rows.add(row);
-        }
-
-        DataSourceDetails pivotDetails = new DataSourceDetails();
-        pivotDetails.setRows(rows);
-        pivotDetails.setTotalRecords(rows.size());
-        return pivotDetails;
-    }
-
     private int getCalWeekStartDay(Map<String, ResolutionHandler> resolutionHandlers) {
         ResolutionHandler handler = resolutionHandlers.get("weekly");
         int startDay;
@@ -1750,6 +1661,12 @@ public class ReportController extends OeController {
         // Cache-Control = cache and Pragma = cache enable IE to download files over SSL.
         response.setHeader("Cache-Control", "cache");
         response.setHeader("Pragma", "cache");
+
+        // See http://johnculviner.com/jquery-file-download-plugin-for-ajax-like-feature-rich-file-downloads/
+        Cookie fileDownloadCookie = new Cookie("fileDownload", "true");
+        fileDownloadCookie.setPath("/");
+        response.addCookie(fileDownloadCookie);
+
         FileExportUtil.exportGridToCSV(response.getWriter(), columnHeaders.toArray(new String[columnHeaders.size()]),
                                        points, timezone);
     }

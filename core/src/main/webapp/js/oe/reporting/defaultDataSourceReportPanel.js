@@ -57,17 +57,98 @@ OE.report.datasource.panel = function (configuration) {
     }
 
     function showPivot(parameters) {
-        parameters = Ext.applyIf({
-            url: OE.util.getUrl('/report/detailsPivot'),
-            autoTitle: parameters.title,
-            gridClass: Ext.grid.GridPanel,
-            gridExtraConfig: {},
-            pageSize: -1,
-            queryType: 'pivot'
-        }, parameters);
-        showDetails(parameters);
-    }
+        var pivotParams = parameters.pivot || {};
+        var ctId = Ext.id() + '-pivottable';
+        var tab = resultsTabPanel.add({
+            id: ctId,
 
+            // parameters.title is set if running a saved query
+            title: parameters.title || messagesBundle['query.pivot'] + ' ' + ++n
+        });
+
+        var getDetails = function () {
+            var deferred = new $.Deferred();
+
+            OE.data.doAjaxRestricted({
+                url: OE.util.getUrl('/report/detailsQuery'),
+                method: 'GET',
+                scope: this,
+                params: Ext.apply({
+                    dsId: configuration.dataSource,
+                    pagesize: -1
+                }, parameters.filters),
+                onJsonSuccess: function (response) {
+                    deferred.resolve(response);
+                },
+                onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
+            });
+
+            return deferred.promise();
+        };
+
+        var fetchPivotJs = function () {
+            var deferred = new $.Deferred();
+            require(['pivottable'], function ($) {
+                deferred.resolve($);
+            });
+            return deferred.promise();
+        };
+
+        // for some reason, Q.all fails on IE, even though this jQuery version works,
+        // probably some weird bug from the combo of augment.js + Q + old version of ExtJS
+        $.when(getDetails(), fetchPivotJs()).done(function (response, $) {
+            var pivotEl = $('#' + ctId);
+            var pivot = pivotEl.pivotUI(response.rows, {
+                rows: pivotParams.rows,
+                cols: pivotParams.cols
+            });
+            pivotEl.parent().css('overflow', 'auto');
+
+            // add export button
+            $('<button type="button">' + messagesBundle['panel.details.export.link'] + '</button>')
+                .insertAfter(pivotEl.find('#renderer'))
+                .addClass('btn btn-default') // one day we'll use bootstrap...
+                .click(function () {
+                    require(['filedownload'], function ($) {
+                        var requestParams = {
+                            dsId: parameters.dsId,
+                            timezoneOffset: new Date().getTimezoneOffset(),
+                            results: parameters.results.map(function (r) {
+                                if (Array.isArray(r)) {
+                                    // result dimension is tuple of ID, name, and other stuff
+                                    return r[0];
+                                } else {
+                                    // accumulation ID
+                                    return r;
+                                }
+                            })
+                        };
+
+                        // TODO make exportGridToFile accept explicit filters
+                        Ext.apply(requestParams, parameters.filters);
+
+                        var url = Ext.urlAppend(OE.util.getUrl('/report/exportGridToFile'),
+                            Ext.urlEncode(requestParams));
+                        $.fileDownload(url, {
+                            failCallback: OE.data.defaultUnsuccessfulRequest
+                        });
+                    });
+                });
+        });
+
+        tab.parameters = parameters || {};
+        tab.parameters.pivotId = ctId;
+
+        // this is a hack so saved queries know what type of query to save
+        // TODO move to more object-oriented solution
+        tab.parameters.queryType = parameters.queryType || 'pivot';
+
+        resultsTabPanel.setActiveTab(tab);
+        queryFormPanel.collapse(true);
+
+        return tab;
+    };
+    
     function showDetails(parameters) {
         Ext.applyIf(parameters, {
             gridClass: Ext.grid.GridPanel
@@ -229,7 +310,21 @@ OE.report.datasource.panel = function (configuration) {
                                             results: tab.parameters.results,
                                             filters: rollingDateWindow ? queryFormPanel.convertDateFiltersToLength() : queryFormPanel.getFilters(),
                                             charts: tab.charts,
-                                            pivot: tab.parameters.pivot
+                                            pivot: (function () {
+                                                if (tab.parameters.queryType !== 'pivot') {
+                                                    return void 0;
+                                                }
+                                                var extractId = function (jElement) {
+                                                    return jElement.map(function () {
+                                                        return this.id.match(/^axis_(.*$)/)[1];
+                                                    }).get();
+                                                };
+                                                var pivot = $('#' + tab.parameters.pivotId);
+                                                return {
+                                                    rows: extractId(pivot.find('#rows li')),
+                                                    cols: extractId(pivot.find('#cols li'))
+                                                }
+                                            })()
                                         })
                                     },
                                     onJsonSuccess: function () {

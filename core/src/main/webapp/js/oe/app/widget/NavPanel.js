@@ -97,8 +97,8 @@ OE.NavPanel = Ext.extend(Ext.tree.TreePanel, {
         var tab = OE.MainTabPanel.instance.getComponent(node.id);
 
         // Make Q globally available after the tab is opened
-        require([OE.context.root + '/js/lib/q/q.min.js'], function (Q) {
-            // This is terrible because it breaks IOC but its needed because our code is bad
+        require(['Q'], function (Q) {
+            // This is terrible because it breaks IoC but it's needed because our code is bad
             window.Q = Q;
 
             // If allowing multiples then just add the tab with a null item id,

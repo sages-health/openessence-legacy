@@ -155,15 +155,32 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
             buttons.push({
                 text: messagesBundle['query.pivot'],
                 handler: function () {
-                    // Get group by dimensions (for user selection)
-                    var dimensions = [];
+                    // Get all result dimensions
+                    var results = [];
                     Ext.each(configuration.data.detailDimensions, function (dimension) {
                         var name = dimension.name;
-                        if (dimension.possibleValues && me.accumulationIds.indexOf(name) == -1) {
-                            dimensions.push([name, OE.util.getDimensionName(configuration.dataSource, dimension.name), dimension]);
+                        if (me.accumulationIds.indexOf(name) == -1) {
+                            results.push([name, OE.util.getDimensionName(configuration.dataSource, dimension.name), dimension]);
                         }
                     });
-                    me.showPivotSelectionForm({dimensions: dimensions});
+
+                    var filters = me.getForm().getFieldValues();
+                    var dsId = filters.dsId; // TODO don't store DS ID as hidden field
+                    delete filters.dsId;
+
+                    // Add the selected accumulation or all (for the grid)
+                    var selectedAccumulations = filters['accumId'];
+                    if (selectedAccumulations) {
+                        results = results.concat(selectedAccumulations);
+                    } else {
+                        results = results.concat(me.accumulationIds);
+                    }
+
+                    configuration.pivotCallback({
+                        dsId: dsId,
+                        filters: filters,
+                        results: results
+                    });
                 },
                 scope: configuration
             });
@@ -459,61 +476,6 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
             plain: true,
             border: false,
             modal: true,
-            items: [form]
-        });
-        win.show();
-
-        return form;
-    },
-
-    showPivotSelectionForm: function (formConfiguration) {
-        var me = this;
-        var win = null;
-
-        var form = OE.report.datasource.pivot.form({
-            data: formConfiguration.dimensions,
-            dataSource: this.dataSource,
-            results: this.results,
-            callback: function (pivot) {
-                if (Ext.isDefined(pivot)) {
-                    var filters = me.getForm().getFieldValues();
-                    var dsId = filters.dsId; // TODO don't store DS ID as hidden field
-                    delete filters.dsId;
-
-                    var results = [pivot.x.id, pivot.y.id];
-                    if (typeof pivot.z !== "undefined" && pivot.z !== null) {
-                        results.push(pivot.z.id);
-                    }
-
-                    // Add the selected accumulation or all (for the grid)
-                    var selectedAccumulations = filters.accumId;
-                    if (selectedAccumulations) {
-                        results = results.concat(selectedAccumulations);
-                    } else {
-                        results = results.concat(me.accumulationIds);
-                    }
-
-                    me.pivotCallback({
-                        dsId: dsId,
-                        filters: filters,
-                        results: results,
-                        pivot: pivot
-                    });
-                }
-                win.close();
-            }
-        });
-
-        win = new Ext.Window({
-            id: 'pivotSelectionFormWindow',
-            title: messagesBundle['input.datasource.default.pivot'],
-            padding: 5,
-            closable: true,
-            resizable: true,
-            plain: true,
-            border: false,
-            modal: true,
-            width: 250,
             items: [form]
         });
         win.show();
