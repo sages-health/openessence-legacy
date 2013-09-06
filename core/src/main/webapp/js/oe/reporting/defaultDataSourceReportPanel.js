@@ -311,6 +311,9 @@ OE.report.datasource.panel = function (configuration) {
                                             filters: rollingDateWindow ? queryFormPanel.convertDateFiltersToLength() : queryFormPanel.getFilters(),
                                             charts: tab.charts,
                                             pivot: (function () {
+                                                if (tab.parameters.queryType !== 'pivot') {
+                                                    return void 0;
+                                                }
                                                 var extractId = function (jElement) {
                                                     return jElement.map(function () {
                                                         return this.id.match(/^axis_(.*$)/)[1];
