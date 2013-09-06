@@ -127,6 +127,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -1750,6 +1751,12 @@ public class ReportController extends OeController {
         // Cache-Control = cache and Pragma = cache enable IE to download files over SSL.
         response.setHeader("Cache-Control", "cache");
         response.setHeader("Pragma", "cache");
+
+        // See http://johnculviner.com/jquery-file-download-plugin-for-ajax-like-feature-rich-file-downloads/
+        Cookie fileDownloadCookie = new Cookie("fileDownload", "true");
+        fileDownloadCookie.setPath("/");
+        response.addCookie(fileDownloadCookie);
+
         FileExportUtil.exportGridToCSV(response.getWriter(), columnHeaders.toArray(new String[columnHeaders.size()]),
                                        points, timezone);
     }

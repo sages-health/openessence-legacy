@@ -222,13 +222,17 @@ Ext.onReady(function () {
     // turn on validation errors beside the field globally
     Ext.form.Field.prototype.msgTarget = 'side';
 
-    requirejs.config({ // TODO configure other modules see http://requirejs.org/docs/api.html#config
+    requirejs.config({
         baseUrl: OE.context.root + '/js',
         paths: {
+            filedownload: 'lib/filedownload/filedownload.min',
             pivottable: 'lib/pivottable/pivot.min',
             Q: 'lib/q/q.min' // TODO use jQuery promises instead
         },
         shim: {
+            filedownload: {
+                exports: '$'
+            },
             pivottable: {
                 exports: '$'
             }

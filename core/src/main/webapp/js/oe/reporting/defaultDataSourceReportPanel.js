@@ -98,11 +98,42 @@ OE.report.datasource.panel = function (configuration) {
         // probably some weird bug from the combo of augment.js + Q + old version of ExtJS
         $.when(getDetails(), fetchPivotJs()).done(function (response, $) {
             var pivotEl = $('#' + ctId);
-            pivotEl.pivotUI(response.rows, {
+            var pivot = pivotEl.pivotUI(response.rows, {
                 rows: pivotParams.rows,
                 cols: pivotParams.cols
             });
             pivotEl.parent().css('overflow', 'auto');
+
+            // add export button
+            $('<button type="button">' + messagesBundle['panel.details.export.link'] + '</button>')
+                .insertAfter(pivotEl.find('#renderer'))
+                .addClass('btn btn-default') // one day we'll use bootstrap...
+                .click(function () {
+                    require(['filedownload'], function ($) {
+                        var requestParams = {
+                            dsId: parameters.dsId,
+                            timezoneOffset: new Date().getTimezoneOffset(),
+                            results: parameters.results.map(function (r) {
+                                if (Array.isArray(r)) {
+                                    // result dimension is tuple of ID, name, and other stuff
+                                    return r[0];
+                                } else {
+                                    // accumulation ID
+                                    return r;
+                                }
+                            })
+                        };
+
+                        // TODO make exportGridToFile accept explicit filters
+                        Ext.apply(requestParams, parameters.filters);
+
+                        var url = Ext.urlAppend(OE.util.getUrl('/report/exportGridToFile'),
+                            Ext.urlEncode(requestParams));
+                        $.fileDownload(url, {
+                            failCallback: OE.data.defaultUnsuccessfulRequest
+                        });
+                    });
+                });
         });
 
         tab.parameters = parameters || {};
