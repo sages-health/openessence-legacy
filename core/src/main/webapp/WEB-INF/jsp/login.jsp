@@ -26,7 +26,10 @@
 <%@ page contentType="text/html;charset=UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ include file="/WEB-INF/jsp/include.jsp" %>
 
+<%-- probably impossible to perform XSS by hijacking the contextPath, but better safe than sorry --%>
 <c:set var="contextPath" value="${fn:escapeXml(pageContext.servletContext.contextPath)}"/>
+<c:set var="locale" value="${pageContext.response.locale}"/>
+<c:set var="locale" value="${fn:escapeXml(locale)}"/>
 
 <!DOCTYPE html>
 <html>
@@ -38,22 +41,53 @@
     <meta http-equiv="X-UA-Compatible" content="IE=8">
 
     <title><spring:message code="app.title" text="app.title"/></title>
+    <link rel="shortcut icon" href="${contextPath}/images/openessence.ico"/>
+
     <script type="text/javascript" src="${contextPath}/oe/messages"></script>
 
-    <%@ include file="/WEB-INF/jsp/globalResources.jsp" %>
+    <link type="text/css" rel="stylesheet" href="${contextPath}/js/ext-3.0.3/resources/css/ext-all.css"/>
+    <link type="text/css" rel="stylesheet" href="${contextPath}/js/ext-3.0.3/resources/css/xtheme-tp.css"/>
+    <link type="text/css" rel="stylesheet" href="${contextPath}/css/openessence.css"/>
+
+    <%-- TODO use conditional loader (Modernizr.load or yepnope.js) --%>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="${contextPath}/js/lib/html5shiv/html5shiv.js"></script>
+    <script type="text/javascript" src="${contextPath}/js/lib/augmentjs/augment.min.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="${contextPath}/js/lib/console-polyfill/console-polyfill.js"></script>
 
     <%-- CSS for this page --%>
     <link type="text/css" rel="stylesheet" href="${contextPath}/css/login.css"/>
-
-    <script type="text/javascript">
-        Ext.namespace("OE.login", "OE.context");
-        OE.context.root = '${contextPath}';
-        OE.servletPath = '/oe';
-    </script>
-    <script type="text/javascript" src="${contextPath}/js/oe/login.js"></script>
 </head>
 
-<body></body>
+<body>
+
+<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all.js"></script>
+<%--<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all-debug.js"></script>--%>
+
+<%-- localized Ext, very important to use locale of response, not request, since this is locale Spring gives you,
+     not what the browser says it supports --%>
+<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/src/locale/ext-lang-${locale}.js"></script>
+
+<%-- OpenESSENCE JS used by every page --%>
+<script type="text/javascript">
+    Ext.namespace("OE.login", "OE.context");
+    OE.context.root = '${contextPath}';
+    OE.servletPath = '/oe';
+    var SELECTED_LOCALE = '${locale}';
+    Ext.USE_NATIVE_JSON = true;
+
+    <%-- don't rely on modifying builtin objects, Ext 4 wised up and stopped that --%>
+    if (!Ext.String) {
+        Ext.String = String;
+    }
+</script>
+<script type="text/javascript" src="${contextPath}/js/oe/app/plugin/extFixOverrides.js"></script>
+<script type="text/javascript" src="${contextPath}/js/oe/login.js"></script>
+<script type="text/javascript" src="${contextPath}/js/oe/app/util/oeUtils.js"></script>
+<script type="text/javascript" src="${contextPath}/js/oe/app/widget/Header.js"></script>
+</body>
 </html> 
 
 
