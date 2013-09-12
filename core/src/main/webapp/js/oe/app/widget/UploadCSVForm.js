@@ -26,103 +26,119 @@
  
 Ext.ns('OE');
 
-OE.uploadCSVForm = function(configuration){
+// TODO make this a class
+OE.uploadCSVForm = function (configuration){
 	var uploadForm = new Ext.form.FormPanel({
 		fileUpload: true,
-		itemId : 'uploadForm',
-		headerCfg: {'Content-type':'multipart/form-data'},
-		frame : true,
+		itemId: 'uploadForm',
+		frame: true,
 		bodyStyle: 'padding: 10px 10px 10px 10px;',
-		defaults : {
+		defaults: {
 			anchor: '95%',
-			allowBlank : false,
-			labelWidth : 75,
+			allowBlank: false,
+			labelWidth: 75,
 			msgTarget: 'side'
 		},
-		items : [ {
-			xtype : 'fileuploadfield',
-			emptyText : messagesBundle['uploadCSVForm.file.qtip'] || 'Select a CSV file to import data',
-			fieldLabel : messagesBundle['uploadCSVForm.file'] || 'CSV File',
-			name : 'file',
-			buttonText :  messagesBundle['input.datasource.default.Browse'] || 'Browse...'
-		}, {
-			xtype : 'textfield',
-			emptyText : messagesBundle['uploadCSVForm.delimiter.qtip'] || 'Select a delimiter',
-			fieldLabel : messagesBundle['uploadCSVForm.delimiter'] || 'Delimiter',
-			name : 'delimiter',
-			value : configuration.delimiter || ','
-		}, {
-			xtype : 'textfield',
-			emptyText : messagesBundle['uploadCSVForm.qualifier.qtip'] || 'Select a qualifier',
-			fieldLabel : messagesBundle['uploadCSVForm.qualifier'] || 'Qualifier',
-			name : 'qualifier',
-			value : configuration.qualifier || '"'
-		}, {
-			xtype : 'checkbox',
-			emptyText : messagesBundle['uploadCSVForm.headerRow.qtip'] || 'Check to remove the first row',
-			fieldLabel : messagesBundle['uploadCSVForm.headerRow'] || 'Remove Header?',
-			name : 'headerRow',
-			checked : configuration.headerRow || true
-		}]
+		items: [
+            {
+                xtype: 'fileuploadfield',
+                emptyText: messagesBundle['uploadCSVForm.file.qtip'] || 'Select a CSV file to import data',
+                fieldLabel: messagesBundle['uploadCSVForm.file'] || 'CSV File',
+                name: 'file',
+                buttonText: messagesBundle['input.datasource.default.Browse'] || 'Browse...'
+            },
+            {
+                xtype: 'textfield',
+                emptyText: messagesBundle['uploadCSVForm.delimiter.qtip'] || 'Select a delimiter',
+                fieldLabel: messagesBundle['uploadCSVForm.delimiter'] || 'Delimiter',
+                name: 'delimiter',
+                value: configuration.delimiter || ','
+            },
+            {
+                xtype: 'textfield',
+                emptyText: messagesBundle['uploadCSVForm.qualifier.qtip'] || 'Select a qualifier',
+                fieldLabel: messagesBundle['uploadCSVForm.qualifier'] || 'Qualifier',
+                name: 'qualifier',
+                value: configuration.qualifier || '"'
+            },
+            {
+                xtype: 'checkbox',
+                emptyText: messagesBundle['uploadCSVForm.headerRow.qtip'] || 'Check to remove the first row',
+                fieldLabel: messagesBundle['uploadCSVForm.headerRow'] || 'Remove Header?',
+                name: 'headerRow',
+                checked: configuration.headerRow || true
+            }
+        ]
 	});
 	
 	var win = new Ext.Window({
-		title : messagesBundle['input.datasource.default.uploadTitle'] || 'Upload Data',
-		layout : 'fit',
-		width : 450,
-		height : 190,
+		title: messagesBundle['input.datasource.default.uploadTitle'] || 'Upload Data',
+		layout: 'fit',
+		width: 450,
+		height: 190,
 		modal: true,
 		items: [ uploadForm ],
 		buttons: [
 			{
 				text: messagesBundle['input.datasource.default.preview'] || 'Preview',
-				handler : function(button) {
+				handler: function (button) {
 					var form = uploadForm.getForm();
-	
-					if (form.isValid()) {
-						try {
-							form.submit({
-								url : OE.util.getUrl('/input/importCSV'),
-								params: {dsId: configuration.dataSource, fields: configuration.fields.toString(), 
-									rowsToSkip :  form.getFieldValues().headerRow ? 1 : 0 , 
-									numRowsToRead : configuration.numRowsToRead},
-								waitMsg: messagesBundle['input.datasource.default.uploadWaitMessage'] || 'Uploading the file...',
-								failure: function(form, action) {
-									var response = Ext.decode(action.response.responseText);
-									Ext.Msg.show({
-										buttons: Ext.Msg.OK,
-										icon: Ext.Msg.ERROR,
-										title: 'Error',
-										msg: response.message,
-										fn: function() {
-											win.close();
-										}
-									});
-								},
-								success: function(form, action) {
-									var previewCallback = function(){
-										win.close();
-										configuration.successCallback(response);
-									};
-									var response = Ext.decode(action.response.responseText);
-									var config = {fields: configuration.fields, 
-									        fieldNames: configuration.fieldNames,
-											data: response.rows,
-											previewCallback : previewCallback };
-									var previewWindow = OE.PreviewGrid(config);
-									
-									previewWindow.show();
-									
-								}
-							});
-						} catch (e) {
-							win.close();
-						}
-					}
+
+                    if (form.isValid()) {
+                        try {
+                            form.submit({
+                                url: OE.util.getUrl('/file'),
+                                params: {
+                                    dsId: configuration.dataSource,
+                                    fields: configuration.fields.toString(),
+                                    rowsToSkip: form.getFieldValues().headerRow ? 1 : 0 ,
+                                    numRowsToRead: configuration.numRowsToRead,
+
+                                    // Unfortunately, there's no standard way to tell a server what the underlying
+                                    // content type is for a file upload. We also can't use a custom header, since
+                                    // file uploads are not done over Ajax
+                                    '_uploadContentType': 'text/csv'
+                                },
+                                waitMsg: messagesBundle['input.datasource.default.uploadWaitMessage'] ||
+                                    'Uploading the file...',
+                                failure: function (form, action) {
+                                    var response = Ext.decode(action.response.responseText);
+                                    Ext.Msg.show({
+                                        buttons: Ext.Msg.OK,
+                                        icon: Ext.Msg.ERROR,
+                                        title: 'Error',
+                                        msg: response.message,
+                                        fn: function () {
+                                            win.close();
+                                        }
+                                    });
+                                },
+                                success: function (form, action) {
+                                    var previewCallback = function (){
+                                        win.close();
+                                        configuration.successCallback(response);
+                                    };
+                                    var response = Ext.decode(action.response.responseText);
+                                    var config = {
+                                        fields: configuration.fields,
+                                        fieldNames: configuration.fieldNames,
+                                        data: response.rows,
+                                        previewCallback: previewCallback
+                                    };
+                                    var previewWindow = OE.PreviewGrid(config);
+
+                                    previewWindow.show();
+
+                                }
+                            });
+                        } catch (e) {
+                            win.close();
+                        }
+                    }
 				}
 			}, {
-				text : messagesBundle['button.reset']|| 'Reset',
-				handler : function() {
+				text: messagesBundle['button.reset']|| 'Reset',
+				handler: function () {
 					uploadForm.getForm().reset();
 				}
 			} ]
@@ -130,29 +146,27 @@ OE.uploadCSVForm = function(configuration){
 	return win;
 	
 };
-//
-OE.PreviewGrid = function(configuration){
-	
+
+// TODO make this a class
+OE.PreviewGrid = function (configuration){
 	var cols =[];
-	var i = 0;
-	 
-	for(i=0; i < configuration.fieldNames.length; i++){
+
+	for(var i = 0; i < configuration.fieldNames.length; i++) {
 		cols.push({
-			header : configuration.fieldNames[i],
-			dataIndex : configuration.fields[i],
-			id : configuration.fields[i],
-			width : 100,
-			sortable : true
+			header: configuration.fieldNames[i],
+			dataIndex: configuration.fields[i],
+			id: configuration.fields[i],
+			width: 100,
+			sortable: true
 		});
 	}
 	
 	var gridPanel = new Ext.grid.GridPanel({
-		store : new Ext.data.JsonStore({
-			idIndex : 0,
-			fields : configuration.fields,
-			root : 'data',
-//			sortInfo: {field: OE.util.getStringValue(dimensionMetadata.sortcolumn, "recId"), direction: OE.util.getStringValue(dimensionMetadata.sortorder, 'DESC')},
-			data :	configuration
+		store: new Ext.data.JsonStore({
+			idIndex: 0,
+			fields: configuration.fields,
+			root: 'data',
+			data:	configuration
 		}),
         columns: cols,
         stripeRows: true,
@@ -165,25 +179,28 @@ OE.PreviewGrid = function(configuration){
     });
 	
 	var win = new Ext.Window({
-		title : messagesBundle['input.datasource.default.Preview'] || 'Preview',
-		layout : 'fit',
-		width : 610,
-		height : 360,
+		title: messagesBundle['input.datasource.default.Preview'] || 'Preview',
+		layout: 'fit',
+		width: 610,
+		height: 360,
 		modal: true,
-		items: [ gridPanel],
-		buttons: [
-			{
-				text: messagesBundle['input.datasource.default.Upload'] || 'Upload',
-                handler : function(button) {
-                	configuration.previewCallback();
-                	win.close();
-				}
-			}, {
-				text : messagesBundle['input.datasource.default.cancel'] || 'Cancel',
-				handler : function() {
-					win.close();
-				}
-			} ]
+		items: [gridPanel],
+		buttons:
+            [
+                {
+                    text: messagesBundle['input.datasource.default.Upload'] || 'Upload',
+                    handler: function () {
+                        configuration.previewCallback();
+                        win.close();
+                    }
+                },
+                {
+                    text: messagesBundle['input.datasource.default.cancel'] || 'Cancel',
+                    handler: function () {
+                        win.close();
+                    }
+                }
+            ]
 		});
 	return win;
 	

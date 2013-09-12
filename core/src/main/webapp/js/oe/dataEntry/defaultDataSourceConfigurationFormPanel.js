@@ -119,6 +119,7 @@ OE.input.datasource.form.init = function (configuration) {
             field.xtype = dimensionMetadata.xtype;
         } else if (dimensionMetadata.xtype === 'editorgridfield') {
             field.xtype = dimensionMetadata.xtype;
+            field.dataSource = configuration.dataSource; // FIXME why isn't this set for all fields?
             field.dimension = dimension;
             field.dimensionMetadata = dimensionMetadata;
             field.width = OE.util.getNumberValue(dimensionMetadata.width, 600);

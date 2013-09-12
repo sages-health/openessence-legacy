@@ -40,7 +40,6 @@ dependencies {
     compile project(':open-detectors')
 
     compile "org.apache.httpcomponents:httpclient:${project.versions.httpclient}"
-    compile "net.sf.opencsv:opencsv:2.3"
     compile "org.apache.poi:poi:3.8"
     compile "org.apache.poi:poi-ooxml:3.8"
     compile "commons-codec:commons-codec:1.7"
@@ -52,8 +51,9 @@ dependencies {
     compile "opensymphony:quartz-all:1.6.3"
     compile "org.codehaus.groovy:groovy:${project.versions.groovy}"
     compile "org.codehaus.jackson:jackson-mapper-asl:${project.versions.jackson}"
+    compile "net.sf.opencsv:opencsv:2.3"
 
-    // Connection pooling. This is used if their's no container managed pool.
+    // Connection pooling. This is used if there's no container-managed pool.
     compile "com.jolbox:bonecp:${project.versions.bonecp}"
     compile "com.jolbox:bonecp-provider:${project.versions.bonecp}"
     compile "com.jolbox:bonecp-spring:${project.versions.bonecp}"
