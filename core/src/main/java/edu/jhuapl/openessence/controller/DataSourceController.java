@@ -34,32 +34,18 @@ import edu.jhuapl.openessence.model.DataSourceDetails;
 import edu.jhuapl.openessence.model.TimeSeriesModel;
 import edu.jhuapl.openessence.web.util.ErrorMessageException;
 
-import au.com.bytecode.opencsv.CSVReader;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
