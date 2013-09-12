@@ -82,12 +82,6 @@ define(function () { // TODO depend on Ext
                                 previewWindow.previewCallback();
                                 previewWindow.close();
                             }
-                        },
-                        {
-                            text: messagesBundle['input.datasource.default.cancel'] || 'Cancel',
-                            handler: function () {
-                                previewWindow.close();
-                            }
                         }
                     ]
             }, config);
