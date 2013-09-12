@@ -211,12 +211,8 @@ define(function () { // TODO depend on Ext
                                 uploadWindow.close();
                             }
                         }
-                    }, {
-                        text: messagesBundle['button.reset']|| 'Reset',
-                        handler: function () {
-                            uploadForm.getForm().reset();
-                        }
-                    } ]
+                    }
+                ]
             }, config);
 
             uploadWindowClass.superclass.constructor.call(this, config);
