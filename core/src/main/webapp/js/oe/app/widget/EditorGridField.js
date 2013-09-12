@@ -470,8 +470,9 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 }
             };
 
-            var win = OE.uploadCSVForm(configuration);
-            win.show();
+            require(['CsvUploadWindow'], function (OE) {
+                new OE.CsvUploadWindow(configuration).show();
+            });
         }
 
         function addNewRow (grid) {

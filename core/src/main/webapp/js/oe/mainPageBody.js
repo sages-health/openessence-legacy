@@ -208,6 +208,27 @@ OE.login.showLoginForm = function (config) {
     }
 };
 
+requirejs.config({
+    baseUrl: OE.context.root + '/js',
+    shim: {
+        filedownload: {
+            exports: '$'
+        },
+        pivottable: {
+            exports: '$'
+        }
+    },
+    paths: {
+        // libs
+        filedownload: 'lib/filedownload/filedownload.min',
+        pivottable: 'lib/pivottable/pivot.min',
+        Q: 'lib/q/q.min', // TODO use jQuery promises instead
+
+        // our stuff
+        CsvUploadWindow: 'oe/app/widget/CsvUploadWindow' // TODO redo layout according to requirejs conventions
+    }
+});
+
 Ext.onReady(function () {
 
     Ext.QuickTips.init();
@@ -221,23 +242,6 @@ Ext.onReady(function () {
 
     // turn on validation errors beside the field globally
     Ext.form.Field.prototype.msgTarget = 'side';
-
-    requirejs.config({
-        baseUrl: OE.context.root + '/js',
-        paths: {
-            filedownload: 'lib/filedownload/filedownload.min',
-            pivottable: 'lib/pivottable/pivot.min',
-            Q: 'lib/q/q.min' // TODO use jQuery promises instead
-        },
-        shim: {
-            filedownload: {
-                exports: '$'
-            },
-            pivottable: {
-                exports: '$'
-            }
-        }
-    });
 
     OE.data.doAjaxRestricted({
         url: OE.util.getUrl('/home/getNavigationMenu'),
