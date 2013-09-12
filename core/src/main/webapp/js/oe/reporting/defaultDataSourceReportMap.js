@@ -333,7 +333,8 @@ OE.report.datasource.map.Panel = Ext.extend(GeoExt.MapPanel, {
         if (thresholds) {
             Ext.each(thresholds, function (threshold) {
                 legendHTML +=
-                    '<tr><td style="background:#' + threshold.color + ';border:1px solid;"/><td>';
+                    '<tr><td style="width: 15px; height: 15px; background:#' + threshold.color +
+                        ';border:1px solid;"/><td>';
 
                 if (threshold.low == threshold.high) {
                     if (threshold.low == -9999) {
