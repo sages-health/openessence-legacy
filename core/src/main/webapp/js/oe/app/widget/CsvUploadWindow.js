@@ -68,6 +68,7 @@ define(function () { // TODO depend on Ext
             });
 
             config = Ext.apply({
+                // TODO remove all these || and actually translate these strings
                 title: messagesBundle['input.datasource.default.Preview'] || 'Preview',
                 layout: 'fit',
                 width: 610,
@@ -77,7 +78,7 @@ define(function () { // TODO depend on Ext
                 buttons:
                     [
                         {
-                            text: messagesBundle['input.datasource.default.Upload'] || 'Upload',
+                            text: messagesBundle['input.datasource.default.Submit'] || 'Submit',
                             handler: function () {
                                 previewWindow.previewCallback();
                                 previewWindow.close();
@@ -111,7 +112,7 @@ define(function () { // TODO depend on Ext
                     {
                         xtype: 'fileuploadfield',
                         emptyText: messagesBundle['uploadCSVForm.file.qtip'] || 'Select a CSV file to import data',
-                        fieldLabel: messagesBundle['uploadCSVForm.file'] || 'CSV File',
+                        fieldLabel: messagesBundle['uploadCSVForm.file'] || 'CSV file',
                         name: 'file',
                         buttonText: messagesBundle['input.datasource.default.Browse'] || 'Browse...'
                     },
@@ -132,7 +133,7 @@ define(function () { // TODO depend on Ext
                     {
                         xtype: 'checkbox',
                         emptyText: messagesBundle['uploadCSVForm.headerRow.qtip'] || 'Check to remove the first row',
-                        fieldLabel: messagesBundle['uploadCSVForm.headerRow'] || 'Remove Header?',
+                        fieldLabel: messagesBundle['uploadCSVForm.headerRow'] || 'Header?',
                         name: 'headerRow',
                         checked: uploadWindow.headerRow || true
                     }
