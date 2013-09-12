@@ -55,7 +55,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
         var params = Ext.applyIf({filters: []}, this.parameters);
         delete params.filters;
 
-        params.graphExpectedValues = true;
+        params.graphExpectedValues = false;
 
         Ext.apply(params, filters);
         Ext.applyIf(params, {height: 460});
