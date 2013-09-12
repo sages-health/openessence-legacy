@@ -173,7 +173,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                         col.renderer = formatDate;
                         col.editor = new Ext.form.DateField(Ext.apply({
                             allowBlank: false,
-                            format: 'm/d/y' // TODO externalize this
+                            format: messagesBundle['default.date.format'] || 'm/d/y'
                         }, formMeta));
                         col.width = formMeta.width ? formMeta.width : 150;
                         break;
@@ -300,7 +300,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                 '->',
                 {
                     xtype: 'tbtext',
-                    text: 'Loading ...'
+                    text: ''
                 }
             ],
             store: new Ext.data.JsonStore({
