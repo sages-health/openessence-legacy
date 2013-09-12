@@ -246,14 +246,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             if (grid && grid.getBottomToolbar()) {
                 var recordCountMsg = (messagesBundle['input.datasource.default.records'] || 'Records') +
                     ' : ' + store.getCount();
-                grid.getBottomToolbar().get(2).setText(recordCountMsg);
-
-                //Enable/Disable error button
-                if (Ext.getCmp(gridHiddenFld).isValid()) {
-                    grid.getBottomToolbar().get(0).disable(true);
-                } else {
-                    grid.getBottomToolbar().get(0).enable(true);
-                }
+                grid.getBottomToolbar().get(1).setText(recordCountMsg);
             }
         }
 
@@ -273,30 +266,6 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             }),
             keys: keys,
             bbar: [
-                {
-                    // TODO semantic CSS
-                    text: '<span style="color: red">' +
-                        (messagesBundle['input.datasource.default.error'] || 'Error') +
-                        '</span>',
-                    handler: function () {
-                        var errorMessage = isGridDataValid(false, true);
-                        if (errorMessage.length > 0) {
-                            Ext.Msg.show({
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.ERROR,
-                                title: messagesBundle['input.datasource.default.error'] || 'Error',
-                                msg: errorMessage
-                            });
-                        } else {
-                            Ext.Msg.show({
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.INFO,
-                                title: '',
-                                msg: messagesBundle['input.datasource.default.noErrorMessage'] || 'No error found!'
-                            });
-                        }
-                    }
-                },
                 '->',
                 {
                     xtype: 'tbtext',
