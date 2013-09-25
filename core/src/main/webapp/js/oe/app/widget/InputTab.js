@@ -223,11 +223,14 @@ OE.InputTab = Ext.extend(Ext.Panel, {
     openFormTab: function (record, callback) {
         var me = this;
 
-        callback = callback || function () {
-        };
+        callback = callback || function () {};
 
         // Forms are added with itemId set to appended primary keys, else null
         var identifiers = this.getItemIdFromData(record.data);
+
+        if (!identifiers.itemId) {
+            throw new OE.InputTab.MissingIdentifierError();
+        }
 
         var tab = this.formTabPanel.getComponent(identifiers.itemId);
         if (tab) {
@@ -324,3 +327,9 @@ OE.InputTab = Ext.extend(Ext.Panel, {
         }
     }
 });
+
+OE.InputTab.MissingIdentifierError = function () {
+    // this space intentionally blank
+};
+// careful, we're using global prototype, so don't overwrite anything!
+OE.InputTab.MissingIdentifierError.prototype = Error.prototype;

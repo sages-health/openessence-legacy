@@ -70,7 +70,18 @@ OE.report.datasource.details.init = function (configuration) {
                             }, this, true);
 
                             OE.NavPanel.instance.openTab(navNode, function(tab) {
-                                tab.openFormTab(record, tab.setValuesCallback);
+                                try {
+                                    tab.openFormTab(record, tab.setValuesCallback);
+                                } catch (e) {
+                                    if (e instanceof OE.InputTab.MissingIdentifierError) {
+                                        // This is expected if the primary key wasn't included in the record.
+                                        // In this case, the form tab can't be opened for the record since we don't
+                                        // know what record to open.
+                                        console.warn("Can't open form tab without identifier");
+                                    } else {
+                                        console.error(e);
+                                    }
+                                }
                             });
                         }
                     }, gridExtraConfig.listeners);
