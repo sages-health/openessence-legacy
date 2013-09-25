@@ -51,7 +51,7 @@ Ext.grid.Column.types.combocolumn = Ext.ux.grid.ComboColumn;
 Ext.ux.renderer.ComboBoxRenderer = function (combo, gridId) {
     // Get the value from displayfield, else value
     var getValue = function (value) {
-        var record = combo.store.getAt(combo.store.find(combo.valueField, value));
+        var record = combo.store.getAt(combo.store.findExact(combo.valueField, value));
         if (record) {
             return record.get(combo.displayField);
         }
@@ -62,15 +62,23 @@ Ext.ux.renderer.ComboBoxRenderer = function (combo, gridId) {
     return function (value) {
         // Ensure combos store is loaded
         if (combo.store.getCount() === 0 && gridId) {
-            combo.store.on('load', function () {
-                    var grid = Ext.getCmp(gridId);
-                    if (grid) {
-                        grid.getView().refresh();
+            if (!combo.onloadDefined) {
+                // Ensure we are adding onLoad only once per combo column
+                // This check was added because onLoad was added to the store 2^n times
+                // where n is number of combo columns in this grid
+                combo.onloadDefined = true;
+
+                combo.store.on('load', function () {
+                        var grid = Ext.getCmp(gridId);
+                        if (grid) {
+                            grid.getView().refresh();
+                        }
+                    }, {
+                        single: true
                     }
-                }, {
-                    single: true
-                }
-            );
+                );
+            }
+
             return value;
         }
 
