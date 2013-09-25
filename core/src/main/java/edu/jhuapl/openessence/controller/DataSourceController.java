@@ -107,4 +107,5 @@ public class DataSourceController extends OeController {
 
         return reportController.chartJson(request, servletRequest, dataSource, chartModel);
     }
+
 }

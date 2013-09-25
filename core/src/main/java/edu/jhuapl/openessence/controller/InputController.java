@@ -81,9 +81,8 @@ public class InputController extends OeController {
      * @param request request object containing parameters such as data source, field values, etc.
      */
     @RequestMapping("/add")
-    public
-    @ResponseBody
-    Map<String, Object> add(@RequestParam("dsId") JdbcOeDataSource ds, final HttpServletRequest request)
+    public @ResponseBody Map<String, Object> add(@RequestParam("dsId") JdbcOeDataSource ds,
+                                                 final HttpServletRequest request)
             throws ErrorMessageException, OeDataSourceAccessException, IOException {
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         Set<String> pks = jdes.getParentTableDetails().getPks();
@@ -111,9 +110,7 @@ public class InputController extends OeController {
     }
 
     @RequestMapping("/update")
-    public
-    @ResponseBody
-    Map<String, Object> update(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request,
+    public @ResponseBody Map<String, Object> update(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request,
                                HttpServletRequest servletRequest)
             throws ErrorMessageException, OeDataSourceAccessException, IOException {
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
@@ -122,9 +119,8 @@ public class InputController extends OeController {
         DbKeyValMap dbKeyValMap = ControllerUtils.parseKeyValueMap(jdes, request.getParameterMap());
 
         // retrieve existing record and children
-        CompleteRecord
-                completeRecord =
-                jdes.getCompleteRecord(dbKeyValMap, new ArrayList<String>(jdes.getChildTableMap().keySet()));
+        CompleteRecord completeRecord = jdes.getCompleteRecord(dbKeyValMap,
+                                                               new ArrayList<String>(jdes.getChildTableMap().keySet()));
 
         // Option to only update parameter values on the completeRecord that
         // are included as part of the request (when merge parameter is true)
@@ -161,10 +157,9 @@ public class InputController extends OeController {
     }
 
     @RequestMapping("/data")
-    public
-    @ResponseBody
-    Map<String, Object> data(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request)
+    public @ResponseBody Map<String, Object> data(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request)
             throws ErrorMessageException, OeDataSourceAccessException {
+
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         DbKeyValMap dbKeyValMap = new DbKeyValMap();
         String doNotParseKeys = request.getParameter("doNotParseKeys");
@@ -203,6 +198,7 @@ public class InputController extends OeController {
     @ResponseBody
     Map<String, Object> delete(@RequestParam("dsId") JdbcOeDataSource ds, @RequestBody DeleteRequest body)
             throws IOException, ErrorMessageException, OeDataSourceAccessException {
+
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         List<DbKeyValMap> pksForDeletion = new ArrayList<DbKeyValMap>();
 
@@ -219,14 +215,16 @@ public class InputController extends OeController {
     }
 
     @RequestMapping(value = "/importExcel")
+// , consumes = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public void importExcel(@RequestPart MultipartFile file, @RequestParam("dsId") JdbcOeDataSource ds,
-                            HttpServletRequest request, HttpServletResponse response)
+                            HttpServletResponse response)
             throws IOException, ServletException {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
             // Ext needs this for the crazy way it does file uploads
-            // it's normally bad to manually write JSON, but dealing with a custom Spring MessageConverter seems like overkill
+            // it's normally bad to manually write JSON, but dealing with a custom Spring MessageConverter seems like
+            // overkill
             response.setContentType("text/html;charset=utf-8");
             FileImporter<?> importer = fileImporters.get(ds);
             if (importer == null) {
@@ -239,6 +237,5 @@ public class InputController extends OeController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(mapper.writeValueAsString(handleException(e)));
         }
-
     }
 }
