@@ -47,11 +47,13 @@ import edu.jhuapl.openessence.security.LoginStatus;
 // workaround: just include full path in method mapping
 @Controller
 public class LoginController extends OeController {
-	
+
+    public static final String LOGIN_PATH = "/login/login";
+
 	@Inject
 	private EnvironmentConfig envConfig;
 	
-	@RequestMapping("/login/login")
+	@RequestMapping(LOGIN_PATH)
 	public ModelAndView login() {
 		ModelAndView mav = new ModelAndView("login");
 		mav.addObject("mainLayoutResources", envConfig.mainLayoutResources());
