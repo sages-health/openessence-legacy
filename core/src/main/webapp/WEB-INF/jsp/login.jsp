@@ -62,7 +62,9 @@
 
 <body>
 
-<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/ext/ext-base.js"></script>
+<script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+
+<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/jquery/ext-jquery-adapter.js"></script>
 <script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all.js"></script>
 <%--<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all-debug.js"></script>--%>
 

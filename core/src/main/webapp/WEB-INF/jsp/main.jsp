@@ -94,8 +94,10 @@
 
 <body>
 <%-- scripts that are inside body are not needed until later, so their loading can be delayed --%>
+<script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="${contextPath}/js/lib/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
 
-<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/jquery/ext-jquery-adapter.js"></script>
 <script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all.js"></script>
 <%--<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all-debug.js"></script>--%>
 
@@ -116,9 +118,6 @@
 </script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/util/oeUtils.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/Header.js"></script>
-
-<script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="${contextPath}/js/lib/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
 
 <script type="text/javascript">
     Ext.namespace("OE.login", "OE.context");
