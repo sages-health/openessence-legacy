@@ -24,23 +24,25 @@
  * FOR LOST PROFITS.
  */
 
-package edu.jhuapl.openessence.config;
+// always send CSRF token with Ajax requests
+(function ($) {
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.Profile;
+    var header = $("meta[name='_csrf_header']").attr('content');
 
-/**
- * JavaConfig version of security.xml. Spring doesn't like it when you mix XML and JavaConfig together. For example,
- * unit tests can declare {@code @Configuration} classes or XML they use, but not both. Thus, this class exists as a
- * JavaConfig "shim" over security.xml so that everything can be configured through JavaConfig.
- */
-@Configuration
-@Profile(SecurityConfig.SECURITY_PROFILE)
-@ImportResource("classpath:security.xml")
-public class SecurityConfig {
+    // this also works for Ext since we use the jQuery adapter
+    $(document).ajaxSend(function (e, xhr) {
+        // don't cache token outside closure! it can be updated
+        var token = $("meta[name='_csrf']").attr('content');
+        xhr.setRequestHeader(header, token);
+    });
 
-    public static final String SECURITY_PROFILE = "security";
+    // update CSRF token if server responds with one
+    $(document).ajaxComplete(function (e, xhr) {
+        var token = xhr.getResponseHeader(header);
+        if (token) {
+            $("meta[name='_csrf']").attr('content', token);
+        }
+    });
 
-    // do nothing until Spring Security supports JavaConfig
-}
+})(jQuery);
+

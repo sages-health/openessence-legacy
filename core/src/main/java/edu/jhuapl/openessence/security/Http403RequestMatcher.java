@@ -27,6 +27,9 @@
 package edu.jhuapl.openessence.security;
 
 import org.springframework.security.web.util.RequestMatcher;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.ServletRequestUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,11 +41,10 @@ public class Http403RequestMatcher implements RequestMatcher {
     /**
      * Set of paths that, when requested, should trigger redirection to login page.
      */
-    private static final Set<String> redirectPaths = new HashSet<String>();
+    private static final Set<String> redirectPaths = new HashSet<>();
 
     static {
         redirectPaths.add("/");
-        redirectPaths.add("/j_spring_security_check"); // URL login form is posted to
         redirectPaths.add("/oe");
         redirectPaths.add("/oe/");
         redirectPaths.add("/oe/home");
@@ -50,6 +52,9 @@ public class Http403RequestMatcher implements RequestMatcher {
         redirectPaths.add("/oe/home/main");
     }
 
+    /**
+     * Returns true iff 403 should be sent. Returns false iff request should be redirected.
+     */
     @Override
     public boolean matches(HttpServletRequest request) {
         String path = request.getServletPath();
@@ -57,7 +62,22 @@ public class Http403RequestMatcher implements RequestMatcher {
             path += request.getPathInfo();
         }
 
-        return !redirectPaths.contains(path);
+        if (redirectPaths.contains(path)) {
+            return false;
+        }
+
+        try {
+            Boolean redirect = ServletRequestUtils.getBooleanParameter(request, "redirect");
+            if (redirect != null) {
+                return redirect;
+            }
+        } catch (ServletRequestBindingException e) {
+            // client sent something funky, just ignore it
+        }
+
+        // could also check for something like X-Redirect header, but that's overkill right now
+
+        return true;
     }
 
 }

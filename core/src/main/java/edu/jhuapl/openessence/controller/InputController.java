@@ -132,7 +132,7 @@ public class InputController extends OeController {
         // Option to only update parameter values on the completeRecord that
         // are included as part of the request (when merge parameter is true)
         // Defaults to false (nullify parameter values not included on request)
-        boolean merge = Boolean.valueOf(request.getParameter("merge")).booleanValue();
+        boolean merge = Boolean.valueOf(request.getParameter("merge"));
 
         // parent record's values are replaced with request param values
         for (String field : completeRecord.getParentRecord().getValues().keySet()) {
@@ -143,7 +143,7 @@ public class InputController extends OeController {
                                                                            parentRecord.getEditDimensions().get(field)
                                                                                    .getSqlType(),
                                                                            dbKeyValMap.keySet().contains(field)));
-            } else if (merge == false) {
+            } else if (!merge) {
                 // NEEDS additional flags for data sources using default input panels
                 // nullify parameter values on the complete record, if it is an edit dimension
                 parentRecord.getValues().put(field, null);
