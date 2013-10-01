@@ -26,6 +26,7 @@
 
 package edu.jhuapl.openessence.security;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -40,16 +41,35 @@ import javax.servlet.http.HttpServletResponse;
  * to request the home page over Basic authentication, instead of form-based authentication, the client would request
  * "/api/oe/home/main" instead of "/oe/home/main". </p>
  *
- * This filter marks the request as using Basic, strips the "/api" prefix, and forwards the request.
+ * <p>This filter marks the request as using Basic, strips the "/api" prefix, and forwards the request. For this reason,
+ * this filter must be placed after Spring Security's filters, since our Spring Security config uses the "/api" prefix
+ * to decide whether a request should go through Basic authentication.</p>
+ *
+ * <p>This filter also throws an {@link AccessDeniedException} if the client requests a /api resource, but doesn't
+ * set their User-Agent to be {@link #API_USER_AGENT}. This is to prevent attackers from getting browsers to use Basic,
+ * which would compromise CSRF protection. </p>
  */
 public class ApiFilter extends OncePerRequestFilter {
 
-    public static String BASIC_REQUEST_ATTRIBUTE = ApiFilter.class.getName() + ".basic";
+    public static final String BASIC_REQUEST_ATTRIBUTE = ApiFilter.class.getName() + ".basic";
+
+    /**
+     * User Agent string that API clients must send
+     */
+    public static final String API_USER_AGENT = "openessence-api-client";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         if (request.getServletPath().startsWith("/api/")) {
+            String userAgent = request.getHeader("User-Agent");
+            if (!API_USER_AGENT.equals(userAgent)) {
+                // this prevents browsers from getting around CSRF protection
+                throw new AccessDeniedException("Bad User-Agent " + userAgent + ". Expected " + API_USER_AGENT
+                                                + " for API request");
+            }
+
             request.setAttribute(BASIC_REQUEST_ATTRIBUTE, true);
 
             String path = request.getServletPath().replaceFirst("^/api/", "/");

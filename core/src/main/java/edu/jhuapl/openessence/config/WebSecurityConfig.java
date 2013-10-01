@@ -107,6 +107,10 @@ public class WebSecurityConfig {
 
                     .httpBasic()
                     .realmName("OpenEssence")
+                    .and()
+
+                    // CSRF tokens are too stateful for REST clients
+                    .csrf().disable()
             ;
         }
     }
