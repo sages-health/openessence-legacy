@@ -48,11 +48,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- The X-UA-Compatible header is only supported starting with Windows Internet Explorer 8.  It must appear in the Web -->
-    <!-- page's header (the HEAD section) before all other elements, except for the title element and other meta elements.  -->
-    <!--     http://stackoverflow.com/questions/12222832/gwt-ie9-emulate-ie8                     -->
-    <!--     http://msdn.microsoft.com/en-us/library/cc288325%28v=vs.85%29.aspx#SetMode          -->
+    <%--
+    The X-UA-Compatible header is only supported starting with Windows Internet Explorer 8.
+    It must appear in the Web
+    page's header (the HEAD section) before all other elements, except for the title element and other meta elements.
+    http://stackoverflow.com/questions/12222832/gwt-ie9-emulate-ie8
+    http://msdn.microsoft.com/en-us/library/cc288325%28v=vs.85%29.aspx#SetMode
+    --%>
     <meta http-equiv="X-UA-Compatible" content="IE=8">
+
+    <meta name="_csrf" content="${_csrf.token}">
+    <meta name="_csrf_header" content="${_csrf.headerName}">
+    <!-- TODO put more stuff in meta tags, like SELECTED_LOCALE -->
 
     <title><spring:message code="app.title" text="app.title"/></title>
 
@@ -94,8 +101,10 @@
 
 <body>
 <%-- scripts that are inside body are not needed until later, so their loading can be delayed --%>
+<script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="${contextPath}/js/lib/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
 
-<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/jquery/ext-jquery-adapter.js"></script>
 <script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all.js"></script>
 <%--<script type="text/javascript" src="${contextPath}/js/ext-3.0.3/ext-all-debug.js"></script>--%>
 
@@ -114,13 +123,12 @@
         Ext.String = String;
     }
 </script>
+<script type="text/javascript" src="${contextPath}/js/oe/app.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/util/oeUtils.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/Header.js"></script>
 
-<script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="${contextPath}/js/lib/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
-
 <script type="text/javascript">
+    <%-- TODO put this stuff in <meta> tags --%>
     Ext.namespace("OE.login", "OE.context");
     OE.context.root = '${contextPath}';
     OE.servletPath = '/oe';

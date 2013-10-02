@@ -51,14 +51,14 @@ OE.login.loginForm = function (meta) {
                 {
                     xtype: 'textfield',
                     fieldLabel: messagesBundle["login.username"],
-                    name: 'j_username',
+                    name: 'username',
                     allowBlank: false,
                     value: OE.login.lastUser ? OE.login.lastUser : ""
                 },
                 {
                     xtype: 'textfield',
                     fieldLabel: messagesBundle["login.password"],
-                    name: 'j_password',
+                    name: 'password',
                     inputType: 'password',
                     allowBlank: false
                 }
@@ -69,10 +69,11 @@ OE.login.loginForm = function (meta) {
                 var me = this;
                 if (locForm.isValid()) {
                     Ext.Ajax.request({
-                        url: OE.context.root + '/j_spring_security_check',
+                        url: OE.context.root + '/login',
+                        method: 'POST',
                         params: {
-                            j_username: pnl.form.getEl().dom.j_username.value,
-                            j_password: pnl.form.getEl().dom.j_password.value
+                            username: pnl.form.getEl().dom.username.value,
+                            password: pnl.form.getEl().dom.password.value
                         },
                         callback: function (options, success, response) {
                             locWin.close();
@@ -199,7 +200,7 @@ OE.login.showLoginForm = function (config) {
         });
         OE.login.loginWindow = win;
         win.show();
-        pnl.find("name", "j_password")[0].focus();
+        pnl.find("name", "password")[0].focus();
     } else {
         // there is already an active login window, so just add the new login window's onRelogin
         // to the existing one

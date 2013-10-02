@@ -181,11 +181,16 @@ public class ReportController extends OeController {
         }
     }
 
+    /**
+     *
+     * @deprecated Use {@link DataSourceController#fields(edu.jhuapl.openessence.datasource.jdbc.JdbcOeDataSource)}
+     * instead
+     */
+    @Deprecated
     @RequestMapping("/getFields")
-    // TODO return real domain object
-    public
     @ResponseBody
-    Map<String, Object> getFields(@RequestParam("dsId") JdbcOeDataSource ds) throws IOException {
+    // TODO return real domain object
+    public Map<String, Object> getFields(@RequestParam("dsId") JdbcOeDataSource ds) throws IOException {
         final Map<String, Object> result = new HashMap<String, Object>();
         final List<DimensionConfiguration> filters = new ArrayList<DimensionConfiguration>();
         filters.addAll(getDimensionsInformation(ds.getFilterDimensions()));
@@ -290,10 +295,14 @@ public class ReportController extends OeController {
         return results;
     }
 
+    /**
+     *
+     * @deprecated Use {@link DiagramController}
+     */
+    @Deprecated
     @RequestMapping("/timeSeriesJson")
-    public
     @ResponseBody
-    Map<String, Object> timeSeriesJson(@RequestParam("dsId") JdbcOeDataSource ds, TimeSeriesModel model,
+    public Map<String, Object> timeSeriesJson(@RequestParam("dsId") JdbcOeDataSource ds, TimeSeriesModel model,
                                        Principal principal, WebRequest request, HttpServletRequest servletRequest)
             throws ErrorMessageException {
 
@@ -409,10 +418,14 @@ public class ReportController extends OeController {
         return result;
     }
 
+    /**
+     *
+     * @deprecated Use {@link DiagramController}
+     */
+    @Deprecated
     @RequestMapping("/chartJson")
-    public
     @ResponseBody
-    Map<String, Object> chartJson(WebRequest request, HttpServletRequest servletRequest,
+    public Map<String, Object> chartJson(WebRequest request, HttpServletRequest servletRequest,
                                   @RequestParam("dsId") JdbcOeDataSource ds, ChartModel chartModel)
             throws ErrorMessageException {
 

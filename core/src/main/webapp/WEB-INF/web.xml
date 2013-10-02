@@ -102,6 +102,7 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- ApiFilter must be after Spring Security -->
     <filter>
         <filter-name>apiFilter</filter-name>
         <filter-class>edu.jhuapl.openessence.security.ApiFilter</filter-class>
