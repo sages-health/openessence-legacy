@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -64,6 +65,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
+
 @Controller
 @RequestMapping("/input")
 public class InputController extends OeController {
@@ -80,9 +85,9 @@ public class InputController extends OeController {
      * @param ds      data source to be updated
      * @param request request object containing parameters such as data source, field values, etc.
      */
-    @RequestMapping("/add")
-    public @ResponseBody Map<String, Object> add(@RequestParam("dsId") JdbcOeDataSource ds,
-                                                 final HttpServletRequest request)
+    @RequestMapping(value = "/add", method = {POST, PUT}) // POST and PUT b/c we're very un-RESTful
+    @ResponseBody
+    public Map<String, Object> add(@RequestParam("dsId") JdbcOeDataSource ds, final HttpServletRequest request)
             throws ErrorMessageException, OeDataSourceAccessException, IOException {
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         Set<String> pks = jdes.getParentTableDetails().getPks();
@@ -109,8 +114,9 @@ public class InputController extends OeController {
         return jdes.addCompleteRecord(completeRecord, false);
     }
 
-    @RequestMapping("/update")
-    public @ResponseBody Map<String, Object> update(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request,
+    @RequestMapping(value = "/update", method = {POST, PUT})
+    @ResponseBody
+    public Map<String, Object> update(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request,
                                HttpServletRequest servletRequest)
             throws ErrorMessageException, OeDataSourceAccessException, IOException {
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
@@ -119,13 +125,14 @@ public class InputController extends OeController {
         DbKeyValMap dbKeyValMap = ControllerUtils.parseKeyValueMap(jdes, request.getParameterMap());
 
         // retrieve existing record and children
-        CompleteRecord completeRecord = jdes.getCompleteRecord(dbKeyValMap,
-                                                               new ArrayList<String>(jdes.getChildTableMap().keySet()));
+        CompleteRecord
+                completeRecord =
+                jdes.getCompleteRecord(dbKeyValMap, new ArrayList<String>(jdes.getChildTableMap().keySet()));
 
         // Option to only update parameter values on the completeRecord that
         // are included as part of the request (when merge parameter is true)
         // Defaults to false (nullify parameter values not included on request)
-        boolean merge = Boolean.valueOf(request.getParameter("merge")).booleanValue();
+        boolean merge = Boolean.valueOf(request.getParameter("merge"));
 
         // parent record's values are replaced with request param values
         for (String field : completeRecord.getParentRecord().getValues().keySet()) {
@@ -136,7 +143,7 @@ public class InputController extends OeController {
                                                                            parentRecord.getEditDimensions().get(field)
                                                                                    .getSqlType(),
                                                                            dbKeyValMap.keySet().contains(field)));
-            } else if (merge == false) {
+            } else if (!merge) {
                 // NEEDS additional flags for data sources using default input panels
                 // nullify parameter values on the complete record, if it is an edit dimension
                 parentRecord.getValues().put(field, null);
@@ -156,10 +163,10 @@ public class InputController extends OeController {
         return data; // TODO return RESTful response, i.e. data actually updated
     }
 
-    @RequestMapping("/data")
-    public @ResponseBody Map<String, Object> data(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request)
+    @RequestMapping(value = "/data", method = GET)
+    @ResponseBody
+    public Map<String, Object> data(@RequestParam("dsId") JdbcOeDataSource ds, WebRequest request)
             throws ErrorMessageException, OeDataSourceAccessException {
-
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         DbKeyValMap dbKeyValMap = new DbKeyValMap();
         String doNotParseKeys = request.getParameter("doNotParseKeys");
@@ -193,12 +200,12 @@ public class InputController extends OeController {
      * @param ds   data source ID sent on URL
      * @param body JSON POST body
      */
-    @RequestMapping("/delete")
-    public
+    @RequestMapping(value = "/delete",
+                    // FIXME this should obviously be DELETE, but we send an entity body
+                    method = POST)
     @ResponseBody
-    Map<String, Object> delete(@RequestParam("dsId") JdbcOeDataSource ds, @RequestBody DeleteRequest body)
+    public Map<String, Object> delete(@RequestParam("dsId") JdbcOeDataSource ds, @RequestBody DeleteRequest body)
             throws IOException, ErrorMessageException, OeDataSourceAccessException {
-
         JdbcOeDataEntrySource jdes = (JdbcOeDataEntrySource) ds;
         List<DbKeyValMap> pksForDeletion = new ArrayList<DbKeyValMap>();
 
@@ -214,8 +221,7 @@ public class InputController extends OeController {
         return data; // TODO return RESTful response, i.e. data actually deleted
     }
 
-    @RequestMapping(value = "/importExcel")
-// , consumes = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    @RequestMapping(value = "/importExcel", method = POST)
     public void importExcel(@RequestPart MultipartFile file, @RequestParam("dsId") JdbcOeDataSource ds,
                             HttpServletResponse response)
             throws IOException, ServletException {
@@ -223,8 +229,7 @@ public class InputController extends OeController {
         ObjectMapper mapper = new ObjectMapper();
         try {
             // Ext needs this for the crazy way it does file uploads
-            // it's normally bad to manually write JSON, but dealing with a custom Spring MessageConverter seems like
-            // overkill
+            // it's normally bad to manually write JSON, but dealing with a custom Spring MessageConverter seems like overkill
             response.setContentType("text/html;charset=utf-8");
             FileImporter<?> importer = fileImporters.get(ds);
             if (importer == null) {
@@ -237,5 +242,6 @@ public class InputController extends OeController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(mapper.writeValueAsString(handleException(e)));
         }
+
     }
 }

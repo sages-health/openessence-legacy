@@ -59,7 +59,7 @@ allprojects {
     ext {
         versions = [
                 spring: '3.2.3.RELEASE',
-                springSecurity: '3.1.4.RELEASE',
+                springSecurity: '3.2.0.RC1',
                 commonsIo: '2.4',
                 jackson: '1.9.12',
                 bonecp: '0.7.1.RELEASE',
@@ -86,6 +86,10 @@ allprojects {
 
             // for JAI
             url "http://repository.springsource.com/maven/bundles/external"
+        }
+        maven {
+            // for Spring Security RC, this can be removed when it hits GA
+            url "http://repo.springsource.org/milestone"
         }
     }
 

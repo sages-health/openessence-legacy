@@ -71,7 +71,13 @@ OE.Header = Ext.extend(Ext.Panel, {
                     text: messagesBundle['button.logout'],
                     hidden: !Ext.isDefined(this.username),
                     handler: function () {
-                        window.location = '../../j_spring_security_logout';
+                        $.ajax({
+                            type: 'POST',
+                            url: OE.context.root +  '/logout',
+                            success: function (data, textStatus, xhr) {
+                                window.location = OE.util.getUrl('/home/main');
+                            }
+                        });
                     }
                 }
             ]

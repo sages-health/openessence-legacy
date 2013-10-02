@@ -81,7 +81,7 @@ Ext.onReady(function () {
                             {
                                 xtype: 'form',
                                 id: 'loginForm',
-                                url: OE.context.root + '/j_spring_security_check',
+                                url: OE.context.root + '/login',
                                 padding: 10,
                                 border: false,
                                 frame: false,
@@ -115,13 +115,13 @@ Ext.onReady(function () {
                                 items: [
                                     {
                                         xtype: 'textfield',
-                                        name: 'j_username',
+                                        name: 'username',
                                         fieldLabel: messagesBundle['login.username'],
                                         cls: 'loginField'
                                     },
                                     {
                                         xtype: 'textfield',
-                                        name: 'j_password',
+                                        name: 'password',
                                         fieldLabel: messagesBundle['login.password'],
                                         inputType: 'password',
                                         cls: 'loginField'
@@ -212,5 +212,5 @@ Ext.onReady(function () {
         ]
     });
 
-    Ext.get(Ext.DomQuery.select("[name='j_username']")).focus();
+    Ext.get(Ext.DomQuery.select("[name='username']")).focus();
 });

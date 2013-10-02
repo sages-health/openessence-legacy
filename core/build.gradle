@@ -88,6 +88,8 @@ dependencies {
 
     providedCompile "javax.servlet:servlet-api:${project.versions.servlet}"
     providedCompile "javax.servlet.jsp:jsp-api:${project.versions.jsp}"
+
+    testCompile "org.springframework:spring-test:${project.versions.spring}"
 }
 
 /**

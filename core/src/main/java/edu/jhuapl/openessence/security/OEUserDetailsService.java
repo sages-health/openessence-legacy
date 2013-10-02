@@ -57,36 +57,19 @@ public class OEUserDetailsService implements UserDetailsService {
 
     private static final Logger log = LoggerFactory.getLogger(OEUserDetailsService.class);
 
-    /**
-     * TODO: Temp fix, this needs to move to a utility class or update the demo to use booleans
-     */
-    private Boolean getBooleanValue(Object value) {
-        Boolean returnValue = false;
-
-        if (value instanceof Integer) {
-            returnValue = ((Integer) value != 0);
-        } else if (value instanceof Boolean) {
-            returnValue = (Boolean) value;
-        }
-
-        return returnValue;
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException, DataAccessException {
-
-        UserDetails result = null;
 
         OeDataSource roleDs = dataSources.get("SecurityMapping");
         if (roleDs == null) {
             throw new IllegalStateException("Required data source \"SecurityMapping\" not defined");
         }
 
-        List<Filter> roleFilters = new ArrayList<Filter>();
+        List<Filter> roleFilters = new ArrayList<>();
         roleFilters.add(new EqFilter("UserName", username));
 
-        List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
+        List<GrantedAuthority> roles = new ArrayList<>();
 
         Collection<Record> roleRecs = roleDs.detailsQuery(
                 new QueryManipulationStore(roleDs.getAllResultDimensions(), null, roleFilters, null, false,
@@ -103,36 +86,36 @@ public class OEUserDetailsService implements UserDetailsService {
             throw new IllegalStateException("Required data source \"User\" not defined");
         }
 
-        List<Filter> filters = new ArrayList<Filter>();
+        List<Filter> filters = new ArrayList<>();
         filters.add(new EqFilter("UserName", username));
 
         Collection<Record> recs =
                 ds.detailsQuery(new QueryManipulationStore(ds.getAllResultDimensions(), null, filters, null, false,
                                                            null));
-        if (recs.size() == 1) {
-            Record rec = recs.toArray(new Record[1])[0];
-            String rspassword = (String) rec.getValue("Password");
-            String salt = (String) rec.getValue("Salt");
-            String algorithm = (String) rec.getValue("Algorithm");
-            Boolean rsenabled = getBooleanValue(rec.getValue("Enabled"));
-            Boolean rsnonexpired = getBooleanValue(rec.getValue("NonExpired"));
-            Boolean rscrednonexp = getBooleanValue(rec.getValue("CredentialsNonExpired"));
-            Boolean rsacctnonlock = getBooleanValue(rec.getValue("AccountNonLocked"));
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            for (String rid : rec.getResultIds()) {
-                // only process non-spring attributes
-                if (!rid.equals("UserName") && !rid.equals("Password")
-                    && !rid.equals("Enabled")
-                    && !rid.equals("NonExpired")
-                    && !rid.equals("CredentialsNonExpired")
-                    && !rid.equals("AccountNonLocked")) {
-                    attributes.put(rid, rec.getValue(rid));
-                }
-            }
-            result = new OEUser(username, rspassword, roles,
-                                attributes, salt, algorithm);
-        }
-        return result;
-    }
 
+        if (recs.size() == 0) {
+            // throw exception, as per interface contract
+            throw new UsernameNotFoundException("Username " + username + " not found");
+        } else if (recs.size() > 1) {
+            // I don't know who wouldn't make username a primary key, but just in case...
+            throw new IllegalStateException("Multiple records for username " + username);
+        }
+
+        Record rec = recs.toArray(new Record[1])[0];
+        String rspassword = (String) rec.getValue("Password");
+        String salt = (String) rec.getValue("Salt");
+        String algorithm = (String) rec.getValue("Algorithm");
+        Map<String, Object> attributes = new HashMap<>();
+        for (String rid : rec.getResultIds()) {
+            // only process non-spring attributes
+            if (!rid.equals("UserName") && !rid.equals("Password")
+                && !rid.equals("Enabled")
+                && !rid.equals("NonExpired")
+                && !rid.equals("CredentialsNonExpired")
+                && !rid.equals("AccountNonLocked")) {
+                attributes.put(rid, rec.getValue(rid));
+            }
+        }
+        return new OEUser(username, rspassword, roles, attributes, salt, algorithm);
+    }
 }
