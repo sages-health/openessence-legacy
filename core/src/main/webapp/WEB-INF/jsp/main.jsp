@@ -59,7 +59,11 @@
 
     <meta name="_csrf" content="${_csrf.token}">
     <meta name="_csrf_header" content="${_csrf.headerName}">
-    <!-- TODO put more stuff in meta tags, like SELECTED_LOCALE -->
+
+    <meta name="_context_path" content="${contextPath}">
+    <meta name="_servlet_path" content="/oe">
+    <meta name="_locale" content="${locale}">
+    <meta name="_username" content="<security:authentication property="name"/>">
 
     <title><spring:message code="app.title" text="app.title"/></title>
 
@@ -86,6 +90,7 @@
     <link type="text/css" rel="stylesheet" href="${contextPath}/js/ext-3.0.3/resources/css/xtheme-tp.css"/>
     <link type="text/css" rel="stylesheet" href="${contextPath}/css/openessence.css"/>
 
+    <script type="text/javascript" src="${contextPath}/js/lib/requirejs/require.js"></script>
     <%-- TODO use conditional loader (Modernizr.load or yepnope.js) --%>
     <!--[if lt IE 9]>
     <script type="text/javascript" src="${contextPath}/js/lib/html5shiv/html5shiv.js"></script>
@@ -95,13 +100,12 @@
 
     <%-- CSS for this page --%>
     <link type="text/css" rel="stylesheet" href="${contextPath}/css/main.css"/>
-
-    <script type="text/javascript" src="${contextPath}/js/lib/requirejs/require.js"></script>
 </head>
 
 <body>
 <%-- scripts that are inside body are not needed until later, so their loading can be delayed --%>
-<script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="${contextPath}/js/lib/jquery/jquery-1.10.2.min.js"><\/script>')</script>
 <script src="${contextPath}/js/lib/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
 
 <script type="text/javascript" src="${contextPath}/js/ext-3.0.3/adapter/jquery/ext-jquery-adapter.js"></script>
@@ -114,32 +118,15 @@
 
 <%-- OpenESSENCE JS used by every page --%>
 <script type="text/javascript" src="${contextPath}/js/oe/app/plugin/extFixOverrides.js"></script>
-<script type="text/javascript">
-    var SELECTED_LOCALE = '${locale}';
-    Ext.USE_NATIVE_JSON = true;
-
-    <%-- don't rely on modifying builtin objects, Ext 4 wised up and stopped that --%>
-    if (!Ext.String) {
-        Ext.String = String;
-    }
-</script>
 <script type="text/javascript" src="${contextPath}/js/oe/app.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/util/oeUtils.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/Header.js"></script>
-
-<script type="text/javascript">
-    <%-- TODO put this stuff in <meta> tags --%>
-    Ext.namespace("OE.login", "OE.context");
-    OE.context.root = '${contextPath}';
-    OE.servletPath = '/oe';
-    OE.login.username = '<security:authentication property="name"/>';
-    OE.login.lastUser = OE.login.username;
-</script>
 
 <%-- Mapping extensions, these need to be defined first since later code references them --%>
 <script type="text/javascript" src="${openLayersPath}/OpenLayers.js"></script>
 <script type="text/javascript" src="${openLayersPath}/lib/OpenLayers/Lang/${locale}.js"></script>
 <script type="text/javascript">
+    <%-- TODO load OpenLayers on demand and stick this code in a file --%>
     OpenLayers.Lang.setCode('${locale}');
     if (Ext.isIE) {
         OpenLayers.Tile.Image.prototype.maxGetUrlLength = 2048;

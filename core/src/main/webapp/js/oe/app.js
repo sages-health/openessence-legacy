@@ -24,9 +24,47 @@
  * FOR LOST PROFITS.
  */
 
-// always send CSRF token with Ajax requests
-(function ($) {
+// this file is included in every page
 
+// global variables TODO globals are obviously bad, replace with module(s)
+(function ($) {
+    window.OE = window.OE || {};
+
+    window.OE.contextPath = $("meta[name='_context_path']").attr('content');
+    window.OE.servletPath = $("meta[name='_servlet_path']").attr('content');
+    window.OE.username = $("meta[name='_username']").attr('content');
+    window.OE.lastUser = window.OE.username;
+})(jQuery); // we use jQuery way too much to load it through require
+
+requirejs.config({
+    baseUrl: OE.contextPath + '/js',
+    enforceDefine: true,
+    shim: {
+        jqueryui: {
+            exports: '$'
+        },
+        filedownload: {
+            exports: '$'
+        },
+        pivottable: {
+            exports: '$'
+        }
+    },
+    paths: {
+        // libs
+        jqueryui: 'lib/jquery-ui/js/jquery-ui-1.10.3.custom.min',
+        filedownload: 'lib/filedownload/filedownload.min',
+        pivottable: 'lib/pivottable/pivot.min',
+        Q: 'lib/q/q.min', // TODO use jQuery promises instead
+
+        // our stuff
+        CsvUploadWindow: 'oe/app/widget/CsvUploadWindow' // TODO redo layout according to requirejs conventions
+    }
+});
+
+
+// always send CSRF token with Ajax requests
+require(['jquery'], function ($) {
     var header = $("meta[name='_csrf_header']").attr('content');
 
     // this also works for Ext since we use the jQuery adapter
@@ -43,6 +81,13 @@
             $("meta[name='_csrf']").attr('content', token);
         }
     });
+});
 
-})(jQuery);
-
+// Ext configuration
+(function (Ext) {
+    Ext.USE_NATIVE_JSON = true;
+    // don't rely on modifying builtin objects, Ext 4 wised up and stopped that
+    if (!Ext.String) {
+        Ext.String = String;
+    }
+})(Ext);

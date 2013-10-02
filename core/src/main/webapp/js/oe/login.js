@@ -81,7 +81,7 @@ Ext.onReady(function () {
                             {
                                 xtype: 'form',
                                 id: 'loginForm',
-                                url: OE.context.root + '/login',
+                                url: OE.contextPath + '/login',
                                 padding: 10,
                                 border: false,
                                 frame: false,
@@ -147,8 +147,8 @@ Ext.onReady(function () {
                                             autoLoad: true,
                                             listeners: {
                                                 load: function (store, records) {
-                                                    // SELECTED_LOCALE is a JS variable written to page by globalResources.jsp
-                                                    Ext.getCmp('locale_selector').setValue(SELECTED_LOCALE);
+                                                    var locale = $("meta[name='_locale']").attr('content');
+                                                    Ext.getCmp('locale_selector').setValue(locale);
                                                 }
                                             }
                                         }),

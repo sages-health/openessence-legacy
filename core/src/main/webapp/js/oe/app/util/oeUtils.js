@@ -250,6 +250,6 @@ OE.util.getDate = function (delta) {
 };
 
 OE.util.getUrl = function (path) {
-    return OE.context.root + OE.servletPath + path;
+    return OE.contextPath + OE.servletPath + path;
 };
 

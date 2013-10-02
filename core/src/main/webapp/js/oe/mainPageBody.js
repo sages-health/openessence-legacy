@@ -53,7 +53,7 @@ OE.login.loginForm = function (meta) {
                     fieldLabel: messagesBundle["login.username"],
                     name: 'username',
                     allowBlank: false,
-                    value: OE.login.lastUser ? OE.login.lastUser : ""
+                    value: OE.lastUser ? OE.lastUser : ""
                 },
                 {
                     xtype: 'textfield',
@@ -69,7 +69,7 @@ OE.login.loginForm = function (meta) {
                 var me = this;
                 if (locForm.isValid()) {
                     Ext.Ajax.request({
-                        url: OE.context.root + '/login',
+                        url: OE.contextPath + '/login',
                         method: 'POST',
                         params: {
                             username: pnl.form.getEl().dom.username.value,
@@ -157,15 +157,15 @@ OE.login.resultHandler = function (options, success, response) {
         },
         success: function (response) {
             var data = Ext.decode(response.responseText);
-            OE.login.username = data.name;
+            OE.username = data.name;
 
-            if (OE.login.lastUser != OE.login.username) {
+            if (OE.lastUser != OE.username) {
                 // new user logged in
-                window.location = OE.context.root + OE.login.homePage;
+                window.location = OE.contextPath + OE.login.homePage;
                 return;
             }
 
-            OE.login.lastUser = OE.login.username;
+            OE.lastUser = OE.username;
 
             if (options.onRelogin) {
                 // call each onRelogin callback
@@ -208,27 +208,6 @@ OE.login.showLoginForm = function (config) {
         loginForm.oeMetaData.onRelogin.push(config.onRelogin);
     }
 };
-
-requirejs.config({
-    baseUrl: OE.context.root + '/js',
-    shim: {
-        filedownload: {
-            exports: '$'
-        },
-        pivottable: {
-            exports: '$'
-        }
-    },
-    paths: {
-        // libs
-        filedownload: 'lib/filedownload/filedownload.min',
-        pivottable: 'lib/pivottable/pivot.min',
-        Q: 'lib/q/q.min', // TODO use jQuery promises instead
-
-        // our stuff
-        CsvUploadWindow: 'oe/app/widget/CsvUploadWindow' // TODO redo layout according to requirejs conventions
-    }
-});
 
 Ext.onReady(function () {
 
