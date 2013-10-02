@@ -38,13 +38,6 @@
     text-align: center; /* center title, other components override this */
 }
 
-.header-images {
-    position: fixed;
-    left: 0;
-    top: 0;
-    padding: 5px;
-}
-
 /* header text, this is poorly named, but kept for compatibility */
 .oe-header {
     font-size: 14pt;
@@ -526,11 +519,6 @@ td.x-date-mp-sel a {
 /* header fixes */
 #header-div {
     border: 0px;
-}
-
-.header-images {
-    background-color: transparent;
-    padding: 20 xp;
 }
 
 .oe-header {
