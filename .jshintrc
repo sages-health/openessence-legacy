@@ -2,7 +2,6 @@
     "globals": {
         "Ext": false,
         "OE": true,
-        "messagesBundle": true,
-        "SELECTED_LOCALE": false
+        "messagesBundle": true
     }
 }

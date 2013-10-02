@@ -73,7 +73,7 @@ OE.Header = Ext.extend(Ext.Panel, {
                     handler: function () {
                         $.ajax({
                             type: 'POST',
-                            url: OE.context.root +  '/logout',
+                            url: OE.contextPath +  '/logout',
                             success: function (data, textStatus, xhr) {
                                 window.location = OE.util.getUrl('/home/main');
                             }

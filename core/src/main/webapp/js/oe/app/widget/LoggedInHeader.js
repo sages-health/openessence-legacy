@@ -31,7 +31,7 @@
 OE.LoggedInHeader = Ext.extend(OE.Header, {
 	constructor: function(config) {
 		config = Ext.apply({
-			username: OE.login.username
+			username: OE.username
 		}, config);
 		OE.LoggedInHeader.superclass.constructor.call(this, config);
 	}

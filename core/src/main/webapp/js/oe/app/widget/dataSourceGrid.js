@@ -426,7 +426,7 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
 
     if (dimensionFormMetadata.xtype === 'queryImage') {
         column.renderer = function (value, meta, record) {
-            var queryImg = "url('" + OE.context.root + "/images/queryimages/";
+            var queryImg = "url('" + OE.contextPath + "/images/queryimages/";
             if (value == "charts") {
                 var chartType = Ext.decode(record.json.Parameters).charts[0].type;
                 if (chartType == "pie") {
