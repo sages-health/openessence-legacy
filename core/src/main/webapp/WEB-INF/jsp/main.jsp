@@ -48,6 +48,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8"> <%-- must be in first 512 bytes to prevent potential XSS --%>
     <%--
     The X-UA-Compatible header is only supported starting with Windows Internet Explorer 8.
     It must appear in the Web
