@@ -38,14 +38,13 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
 
         config = Ext.apply(config, {
             layout: 'border',
-            title: config.title || messagesBundle['panel.timeseries.header'] + ' ' + config.index,
             closable: true,
             items: [chartPanel]
         });
 
         OE.GraphPanel.superclass.constructor.call(this, config);
 
-        this.loadChart(config);
+        this.loadChart();
     },
 
     loadChart: function () {

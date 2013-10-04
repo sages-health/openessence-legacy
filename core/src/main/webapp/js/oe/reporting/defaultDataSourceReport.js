@@ -44,7 +44,10 @@ OE.report.datasource.main = function (configuration) {
                 destination: configuration.destPanel,
                 dataSource: configuration.oeds,
                 data: response,
-                mapTabClass: configuration.mapTabClass || OE.MapTab // TODO use a real IoC solution, e.g. Angular
+
+                // TODO use a real IoC solution, e.g. Angular
+                graphTabClass: configuration.graphTabClass || OE.GraphPanel,
+                mapTabClass: configuration.mapTabClass || OE.MapTab
             });
 
             // add all displayNames to dimensionsBundle

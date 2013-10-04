@@ -42,12 +42,11 @@ OE.report.datasource.panel = function (configuration) {
     }
 
     function showTimeSeries(parameters) {
-        var tab = resultsTabPanel.add(new OE.GraphPanel({
+        var tab = resultsTabPanel.add(new configuration.graphTabClass({
             url: OE.util.getUrl('/ds/' + configuration.dataSource + '/diagrams/time-series'),
-            title: parameters.title, // callee handles if this is undefined
+            title: parameters.title || messagesBundle['panel.timeseries.header'] + ' ' + (++n),
             parameters: parameters,
-            queryFormCallback: populateQueryFormPanel,
-            index: ++n
+            queryFormCallback: populateQueryFormPanel
         }));
         tab.parameters = parameters || {};
         tab.parameters.queryType = 'timeseries';
