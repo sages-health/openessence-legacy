@@ -127,6 +127,23 @@ OE.InputTab = Ext.extend(Ext.Panel, {
         this.doLayout();
     },
 
+    /**
+     * Subclasses can override this method to perform custom behavior when the underlying grid's SelectionModel
+     * fires the selectionchange event.
+     */
+    onSelectionChange: function (selectionModel) {
+        var records = selectionModel.getSelections();
+        var selectionCount = records.length;
+
+        if (selectionCount === 0) {
+            this.editAction.disable();
+            this.deleteAction.disable();
+        } else {
+            this.editAction.enable();
+            this.deleteAction.enable();
+        }
+    },
+
     createGridPanel: function (dataSource, data) {
         var me = this;
         var selectionModel = new Ext.grid.RowSelectionModel();
@@ -134,18 +151,7 @@ OE.InputTab = Ext.extend(Ext.Panel, {
         dataSource = dataSource || this.dataSource;
         data = data || this.data;
 
-        selectionModel.addListener('selectionchange', function (sm) {
-            var records = sm.getSelections();
-            var selectionCount = records.length;
-
-            if (selectionCount === 0) {
-                me.editAction.disable();
-                me.deleteAction.disable();
-            } else {
-                me.editAction.enable();
-                me.deleteAction.enable();
-            }
-        }, this, {buffer: 5});
+        selectionModel.addListener('selectionchange', this.onSelectionChange, this, {buffer: 5});
 
         return OE.datasource.grid.init({
             title: messagesBundle[this.dataSource + '.grid'],  //this = use entry grid title
