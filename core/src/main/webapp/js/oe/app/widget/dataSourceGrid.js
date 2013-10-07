@@ -115,7 +115,8 @@ OE.datasource.grid.init = function (configuration) {
                 timezoneOffset: (new Date()).getTimezoneOffset(),
                 results: [],
                 sortcolumn: sortState.field || columns[0].id,
-                sortorder: sortState.direction || 'ASC'
+                sortorder: sortState.direction || 'ASC',
+                renderIntToBool: metadata.renderIntToBool ? metadata.renderIntToBool : false
             };
 
             // TODO make exportGridToFile accept explicit filters
@@ -403,6 +404,13 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
             column.renderer = function (value) {
                 return OE.util.renderBooleanAsTernary(value, overrideBundle);
             };
+        }
+    } else if (dimension.type == 'INTEGER') {
+        if (gridMetadata.renderIntToBool) {
+            column.renderer = function(value) {
+                return value ? "<img src=\"../../images/true.png\" alt=\"True\">" :
+    		        "<img src=\"../../images/false.png\" alt=\"False\">";
+    		};
         }
     }
 
