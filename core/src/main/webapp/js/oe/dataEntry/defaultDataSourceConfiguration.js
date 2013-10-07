@@ -40,7 +40,8 @@ OE.input.datasource.main = function (configuration) {
         onJsonSuccess: function (response) {
             var dest = Ext.getCmp(configuration.destPanel);
 
-            var inputTab = new OE.InputTab(Ext.applyIf({
+            var inputTabClass = configuration.inputTabClass || OE.InputTab;
+            var inputTab = new inputTabClass(Ext.applyIf({
                 data: response
             }, configuration));
 
