@@ -520,10 +520,14 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
 
         var grid = form.getComponent('groupByGrid');
         grid.on('afterrender', function () {
-            Ext.each(me.results, function (dim) {
-                var selectionModel = grid.getSelectionModel();
-                selectionModel.selectRow(grid.store.find('dimensionId', dim), true);
-            });
+            var selectionModel = grid.getSelectionModel();
+            if (me.results) {
+                Ext.each(me.results, function (dim) {
+                    selectionModel.selectRow(grid.store.find('dimensionId', dim), true);
+                });
+            } else {
+                selectionModel.selectAll();
+            }
         });
 
         var win = new Ext.Window({
