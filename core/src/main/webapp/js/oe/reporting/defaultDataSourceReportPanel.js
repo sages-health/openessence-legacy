@@ -55,6 +55,30 @@ OE.report.datasource.panel = function (configuration) {
         queryFormPanel.collapse(true);
     }
 
+	// Format dates and translate field labels
+	function fixDatesAndLabels(rows, results) {
+		var dateFormat = OE.util.defaultDateFormat;
+
+		for (var ix = 0; ix < rows.length; ix++) {
+			var row = rows[ix];
+			var newRow = {};
+			for (var dix = 0; dix < results.length; dix++) {
+				var result = results[dix];
+				var prop = result[0];
+				var value = row[prop]
+				// if result is date type, format it
+				if (result.length >= 2 && result[2] && result[2].type == 'DATE') {
+					if (value && (('string' == typeof value) || ('number' == typeof value))) {
+						value = (new Date(value)).dateFormat(dateFormat);
+					}
+				}
+				// translate id to labels
+				newRow[result[1]] = value;
+			}
+			rows[ix] = newRow;
+		}
+	}
+    
     function showPivot(parameters) {
         var pivotParams = parameters.pivot || {};
         var ctId = Ext.id() + '-pivottable';
@@ -88,6 +112,7 @@ OE.report.datasource.panel = function (configuration) {
                         pagesize: -1
                     }, parameters.filters),
                     onJsonSuccess: function (response) {
+                        fixDatesAndLabels(response.rows, parameters.results);
                         deferred.resolve(response);
                     },
                     onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
