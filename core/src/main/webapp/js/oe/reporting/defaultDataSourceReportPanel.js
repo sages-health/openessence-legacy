@@ -54,30 +54,6 @@ OE.report.datasource.panel = function (configuration) {
         resultsTabPanel.setActiveTab(tab);
         queryFormPanel.collapse(true);
     }
-
-	// Format dates and translate field labels
-	function fixDatesAndLabels(rows, results) {
-		var dateFormat = OE.util.defaultDateFormat;
-
-		for (var ix = 0; ix < rows.length; ix++) {
-			var row = rows[ix];
-			var newRow = {};
-			for (var dix = 0; dix < results.length; dix++) {
-				var result = results[dix];
-				var prop = result[0];
-				var value = row[prop]
-				// if result is date type, format it
-				if (result.length >= 2 && result[2] && result[2].type == 'DATE') {
-					if (value && (('string' == typeof value) || ('number' == typeof value))) {
-						value = (new Date(value)).dateFormat(dateFormat);
-					}
-				}
-				// translate id to labels
-				newRow[result[1]] = value;
-			}
-			rows[ix] = newRow;
-		}
-	}
     
     function showPivot(parameters) {
         var pivotParams = parameters.pivot || {};
@@ -112,8 +88,38 @@ OE.report.datasource.panel = function (configuration) {
                         pagesize: -1
                     }, parameters.filters),
                     onJsonSuccess: function (response) {
-                        fixDatesAndLabels(response.rows, parameters.results);
-                        deferred.resolve(response);
+                        var pivotData = (function (rows, results) {
+                            return rows.map(function (row) {
+                                var newRow = {};
+                                results.forEach(function (result) {
+                                    var dimensionId = Array.isArray(result) ? result[0] : result;
+                                    var dimensionLabel = Array.isArray(result) ? result[1] : result;
+                                    var oldValue = row[dimensionId];
+                                    var newValue = oldValue;
+
+                                    // format dates
+                                    if (!Array.isArray(result)) {
+                                        // this happens with accumulation dimensions (and maybe some others?)
+                                        newRow[dimensionLabel] = newValue;
+                                    } else {
+                                        if (result.length >= 2 && result[2] && result[2].type == 'DATE') {
+                                            if (('string' == typeof oldValue) || ('number' == typeof oldValue)) {
+                                                // TODO don't use private Ext function
+                                                newValue = (new Date(oldValue)).dateFormat(OE.util.defaultDateFormat);
+                                            }
+                                        }
+                                    }
+
+                                    // new row is same as old row, but with dimension labels for keys instead of
+                                    // dimension IDs and dates formatted
+                                    newRow[dimensionLabel] = newValue;
+                                });
+
+                                return newRow;
+                            });
+                        })(response.rows, parameters.results);
+
+                        deferred.resolve(pivotData);
                     },
                     onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
                 });
@@ -131,9 +137,9 @@ OE.report.datasource.panel = function (configuration) {
 
             // for some reason, Q.all fails on IE, even though this jQuery version works,
             // probably some weird bug from the combo of augment.js + Q + old version of ExtJS
-            $.when(getDetails(), fetchPivotJs()).done(function (response, $) {
+            $.when(getDetails(), fetchPivotJs()).done(function (rows, $) {
                 var pivotEl = $('#' + ctId);
-                pivotEl.pivotUI(response.rows, {
+                pivotEl.pivotUI(rows, {
                     rows: pivotParams.rows,
                     cols: pivotParams.cols
                 });
