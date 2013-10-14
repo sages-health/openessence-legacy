@@ -26,6 +26,20 @@
 
 package edu.jhuapl.bsp.detector;
 
+import edu.jhuapl.bsp.detector.exception.DetectorException;
+
+import de.jollyday.HolidayManager;
+
+import org.apache.commons.math3.distribution.TDistribution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Date;
+import java.util.Properties;
+
 import static edu.jhuapl.bsp.detector.OpenMath.any;
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAbs;
 import static edu.jhuapl.bsp.detector.OpenMath.arrayAdd;
@@ -50,41 +64,30 @@ import static java.lang.Math.abs;
 import static java.lang.Math.log;
 import static java.lang.Math.max;
 import static java.lang.Math.pow;
-import de.jollyday.HolidayManager;
-
-import edu.jhuapl.bsp.detector.exception.DetectorException;
-
-import org.apache.commons.math3.distribution.TDistribution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Date;
-import java.util.Properties;
 
 /**
  * Runs the Generalized Adaptive Smoothing algorithm
  */
 public class GSSages implements TemporalDetectorInterface, TemporalDetector {
 
+    public static final String HOLIDAYS_FILE = "/holidays.xml";
+
     private Date startDate;
     private boolean bAutoCoef;
     private int Baseline;
     private double alpha[] = new double[3], Adj, HOLfac, multFac;
-    //
-    static final int BASELINE = 56; // Multiple of 7
-    static final int GUARDBAND = 0;
-    static final double ADJ = 0;
-    static final double HOLFAC = 0.2; // If 1 no parameter will be adjusted
-    static final double SMOOTHVEC0 = 0.3;
-    static final double SMOOTHVEC1 = 0.0;
-    static final double SMOOTHVEC2 = 0.05;
-    static final double APE_LIMIT = 0.5; // This value determines if we update the parameters or not
-    static final double THRESHOLD_PROBABILITY_RED_ALERT = 0.01;
-    static final double THRESHOLD_PROBABILITY_YELLOW_ALERT = 0.05;
-    //
+
+    private static final int BASELINE = 56; // Multiple of 7
+    private static final int GUARDBAND = 0;
+    private static final double ADJ = 0;
+    private static final double HOLFAC = 0.2; // If 1 no parameter will be adjusted
+    private static final double SMOOTHVEC0 = 0.3;
+    private static final double SMOOTHVEC1 = 0.0;
+    private static final double SMOOTHVEC2 = 0.05;
+    private static final double APE_LIMIT = 0.5; // This value determines if we update the parameters or not
+    private static final double THRESHOLD_PROBABILITY_RED_ALERT = 0.01;
+    private static final double THRESHOLD_PROBABILITY_YELLOW_ALERT = 0.05;
+
     private double data[];
     private double threshPValueR, threshPValueY;
     private double levels[], pvalues[], expectedData[], colors[], r2Levels[], switchFlags[], test_stat[];
@@ -93,11 +96,11 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
     private HolidayManager holidayManager;
 
     public GSSages() {
-        try {
-            URL holidaysFile = getClass().getResource("/Holidays_OE.xml");
+        URL holidaysFile = getClass().getResource(HOLIDAYS_FILE);
+        if (holidaysFile == null) {
+            throw new IllegalStateException("Could not locate holidays file " + HOLIDAYS_FILE);
+        } else {
             this.holidayManager = HolidayManager.getInstance(holidaysFile);
-        } catch (NullPointerException e) {
-            log.error("Could not instantiate HolidayManager. Could not locate " + "Holidays_OE.xml file.", e);
         }
         init();
     }
@@ -227,7 +230,7 @@ public class GSSages implements TemporalDetectorInterface, TemporalDetector {
             }
             bSparseFlag = false;
         }
-        int HOL[] = CheckHoliday.getHolidays(startDate, data.length, holidayManager); // Holiday function
+        int HOL[] = HolidayChecker.getHolidays(startDate, data.length, holidayManager); // Holiday function
         // Format of the parameterList:
         // HOL - vector of holidays
         final int season = 7; // Seasonality
