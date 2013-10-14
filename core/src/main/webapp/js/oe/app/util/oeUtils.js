@@ -28,6 +28,8 @@ Ext.namespace("OE.util");
 
 /**
  * Formats date to (m-d-Y), ex: 02-22-2011
+ * @deprecated Use Moment.js's localized date formats, e.g. moment().format('L'), which allows the client to render
+ * dates according to the user's locale.
  */
 OE.util.defaultDateFormat = (function () {
     var defaultFormat = 'm-d-Y';
@@ -40,6 +42,10 @@ OE.util.defaultDateFormat = (function () {
     }
 })();
 
+/**
+ *
+ * @deprecated Use Moment.js, e.g. moment(date).format('L')
+ */
 OE.util.renderDate = function (d, f) {
     var date = new Date(d);
     if (Ext.isDate(date)) {

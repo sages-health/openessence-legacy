@@ -54,7 +54,7 @@ OE.report.datasource.panel = function (configuration) {
         resultsTabPanel.setActiveTab(tab);
         queryFormPanel.collapse(true);
     }
-
+    
     function showPivot(parameters) {
         var pivotParams = parameters.pivot || {};
         var ctId = Ext.id() + '-pivottable';
@@ -75,20 +75,49 @@ OE.report.datasource.panel = function (configuration) {
         resultsTabPanel.setActiveTab(tab);
         queryFormPanel.collapse(true);
 
-        require(['jqueryui'], function ($) {
+        require(['jqueryui', 'moment'], function ($, moment) {
             var getDetails = function () {
                 var deferred = new $.Deferred();
 
                 OE.data.doAjaxRestricted({
-                    url: OE.util.getUrl('/report/detailsQuery'),
+                    url: OE.util.getUrl('/ds/' + configuration.dataSource + '/details'),
                     method: 'GET',
                     scope: this,
                     params: Ext.apply({
-                        dsId: configuration.dataSource,
                         pagesize: -1
                     }, parameters.filters),
                     onJsonSuccess: function (response) {
-                        deferred.resolve(response);
+                        var pivotData = (function (rows, results) {
+                            return rows.map(function (row) {
+                                var newRow = {};
+                                results.forEach(function (result) {
+                                    var dimensionId = Array.isArray(result) ? result[0] : result;
+                                    var dimensionLabel = Array.isArray(result) ? result[1] : result;
+                                    var oldValue = row[dimensionId];
+                                    var newValue = oldValue;
+
+                                    // format dates
+                                    if (!Array.isArray(result)) {
+                                        // this happens with accumulation dimensions (and maybe some others?)
+                                        newRow[dimensionLabel] = newValue;
+                                    } else {
+                                        if (result.length >= 2 && result[2] && result[2].type == 'DATE') {
+                                            if (('string' == typeof oldValue) || ('number' == typeof oldValue)) {
+                                                newValue = moment(oldValue).format('L');
+                                            }
+                                        }
+                                    }
+
+                                    // new row is same as old row, but with dimension labels for keys instead of
+                                    // dimension IDs and dates formatted
+                                    newRow[dimensionLabel] = newValue;
+                                });
+
+                                return newRow;
+                            });
+                        })(response.rows, parameters.results);
+
+                        deferred.resolve(pivotData);
                     },
                     onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
                 });
@@ -106,9 +135,9 @@ OE.report.datasource.panel = function (configuration) {
 
             // for some reason, Q.all fails on IE, even though this jQuery version works,
             // probably some weird bug from the combo of augment.js + Q + old version of ExtJS
-            $.when(getDetails(), fetchPivotJs()).done(function (response, $) {
+            $.when(getDetails(), fetchPivotJs()).done(function (rows, $) {
                 var pivotEl = $('#' + ctId);
-                pivotEl.pivotUI(response.rows, {
+                pivotEl.pivotUI(rows, {
                     rows: pivotParams.rows,
                     cols: pivotParams.cols
                 });

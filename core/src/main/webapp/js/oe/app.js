@@ -54,6 +54,7 @@ requirejs.config({
         // libs
         jqueryui: 'lib/jquery-ui/js/jquery-ui-1.10.3.custom.min',
         filedownload: 'lib/filedownload/filedownload.min',
+        moment: 'lib/moment/moment.min',
         pivottable: 'lib/pivottable/pivot.min',
         Q: 'lib/q/q.min', // TODO use jQuery promises instead
 
