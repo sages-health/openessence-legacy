@@ -246,7 +246,16 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             if (grid && grid.getBottomToolbar()) {
                 var recordCountMsg = (messagesBundle['input.datasource.default.records'] || 'Records') +
                     ' : ' + store.getCount();
-                grid.getBottomToolbar().get(1).setText(recordCountMsg);
+                grid.getBottomToolbar().get(2).setText(recordCountMsg);
+
+                // Enable/Disable error button
+                if (Ext.getCmp(gridHiddenFld).isValid()) {
+                    grid.getBottomToolbar().get(0).setVisible(false);
+                    grid.getBottomToolbar().get(0).setTooltip('');
+                } else {
+                    grid.getBottomToolbar().get(0).setVisible(true);
+                    grid.getBottomToolbar().get(0).setTooltip(isGridDataValid(false, true));
+                }
             }
         }
 
@@ -266,6 +275,12 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
             }),
             keys: keys,
             bbar: [
+                {
+                    tooltip: messagesBundle['input.datasource.grid.error.requiredAtleastOneRow'] ||
+                        'This is a required field. It must have atleast one row.',
+                    icon: OE.util.getUrl('/../images/exclamation.gif'),
+                    visible: false
+                },
                 '->',
                 {
                     xtype: 'tbtext',
