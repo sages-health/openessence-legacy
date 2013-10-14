@@ -1664,6 +1664,19 @@ public class ReportController extends OeController {
         Collection<Record> points =
                 new DetailsQuery().performDetailsQuery(ds, results, accumulations, filters, sorts, false,
                                                        clientTimezone);
+        // Translate accumulation int to bool if renderIntToBool set to true
+        // if accumulation value is null ==> false else true
+        String renderIntToBool = request.getParameter("renderIntToBool");
+        if (renderIntToBool != null && renderIntToBool.equalsIgnoreCase("true")) {
+            for (Record point : points) {
+                Map<String, Object> vals = point.getValues();
+                for (Dimension accum : accumulations) {
+                    Object accumVal = vals.get(accum.getId());
+                    vals.put(accum.getId(), accumVal != null);
+                }
+            }
+        }
+
         response.setContentType("text/csv;charset=utf-8");
 
         String filename =
