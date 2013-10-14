@@ -75,16 +75,15 @@ OE.report.datasource.panel = function (configuration) {
         resultsTabPanel.setActiveTab(tab);
         queryFormPanel.collapse(true);
 
-        require(['jqueryui'], function ($) {
+        require(['jqueryui', 'moment'], function ($, moment) {
             var getDetails = function () {
                 var deferred = new $.Deferred();
 
                 OE.data.doAjaxRestricted({
-                    url: OE.util.getUrl('/report/detailsQuery'),
+                    url: OE.util.getUrl('/ds/' + configuration.dataSource + '/details'),
                     method: 'GET',
                     scope: this,
                     params: Ext.apply({
-                        dsId: configuration.dataSource,
                         pagesize: -1
                     }, parameters.filters),
                     onJsonSuccess: function (response) {
@@ -104,8 +103,7 @@ OE.report.datasource.panel = function (configuration) {
                                     } else {
                                         if (result.length >= 2 && result[2] && result[2].type == 'DATE') {
                                             if (('string' == typeof oldValue) || ('number' == typeof oldValue)) {
-                                                // TODO don't use private Ext function
-                                                newValue = (new Date(oldValue)).dateFormat(OE.util.defaultDateFormat);
+                                                newValue = moment(oldValue).format('L');
                                             }
                                         }
                                     }
