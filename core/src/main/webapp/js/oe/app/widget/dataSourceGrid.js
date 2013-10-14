@@ -407,10 +407,10 @@ OE.datasource.grid.createColumnFromDimension = function (dsId, gridMetadata, dim
         }
     } else if (dimension.type == 'INTEGER') {
         if (gridMetadata.renderIntToBool) {
-            column.renderer = function(value) {
-                return value ? "<img src=\"../../images/true.png\" alt=\"True\">" :
-    		        "<img src=\"../../images/false.png\" alt=\"False\">";
-    		};
+            column.renderer = function (value) {
+                return value ? '<img src="../../images/true.png" alt="True">' :
+                       '<img src="../../images/false.png" alt="False">';
+            };
         }
     }
 
