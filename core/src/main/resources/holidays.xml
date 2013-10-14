@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tns:Configuration hierarchy="us" description="United States"
+	xmlns:tns="http://www.example.org/Holiday" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.example.org/Holiday /Holiday.xsd">
+  <tns:Holidays>
+	  
+	  <!-- If it is a weekend still used it as holiday -->
+	  <tns:Fixed month="JANUARY" day="1" descriptionPropertiesKey="NEW_YEAR_O"/>
+	  <!-- If falls on saturday or sunday, consider friday or monday as holiday -->
+	  <tns:Fixed month="JANUARY" day="1" descriptionPropertiesKey="NEW_YEAR">
+			<tns:MovingCondition substitute="SUNDAY" with="NEXT" weekday="MONDAY"/>
+	  </tns:Fixed>
+	  <tns:Fixed month="DECEMBER" day="31" descriptionPropertiesKey="NEW_YEAR_FIX">
+			<tns:MovingCondition substitute="SATURDAY" with="NEXT" weekday="SUNDAY"/>
+			<tns:MovingCondition substitute="SUNDAY" with="NEXT" weekday="MONDAY"/>
+			<tns:MovingCondition substitute="MONDAY" with="NEXT" weekday="TUESDAY"/>
+			<tns:MovingCondition substitute="TUESDAY" with="NEXT" weekday="WEDNESDAY"/>
+			<tns:MovingCondition substitute="WEDNESDAY" with="NEXT" weekday="THURSDAY"/>
+			<tns:MovingCondition substitute="THURSDAY" with="NEXT" weekday="FRIDAY"/>
+	  </tns:Fixed>
+	  
+	  
+	  <tns:FixedWeekday which="THIRD" weekday="MONDAY" month="JANUARY" validFrom="1986" descriptionPropertiesKey="MARTIN_LUTHER_KING"/>
+	  
+	  <tns:FixedWeekday which="THIRD" weekday="MONDAY" month="FEBRUARY" validFrom="1968" descriptionPropertiesKey="WASHINGTONS_BIRTHDAY"/>
+	  
+	  <tns:FixedWeekday which="LAST" weekday="MONDAY" month="MAY" validFrom="1968" descriptionPropertiesKey="MEMORIAL"/>
+	  
+	  <tns:Fixed month="JULY" day="4" validFrom="1776" descriptionPropertiesKey="INDEPENDENCE_O"/>
+	  <tns:Fixed month="JULY" day="4" validFrom="1776" descriptionPropertiesKey="INDEPENDENCE">
+			<tns:MovingCondition substitute="SATURDAY" with="PREVIOUS" weekday="FRIDAY"/>
+			<tns:MovingCondition substitute="SUNDAY" with="NEXT" weekday="MONDAY"/>
+	  </tns:Fixed>
+	  
+	  <tns:FixedWeekday which="FIRST" weekday="MONDAY" month="SEPTEMBER" validFrom="1895" descriptionPropertiesKey="LABOUR_DAY"/>
+	  
+	  <tns:FixedWeekday which="SECOND" weekday="MONDAY" month="OCTOBER" validFrom="1934" descriptionPropertiesKey="COLUMBUS_DAY"/>
+	  
+	  <tns:Fixed month="NOVEMBER" day="11" validFrom="1938" descriptionPropertiesKey="VETERANS_O"/>
+	  <tns:Fixed month="NOVEMBER" day="11" validFrom="1938" descriptionPropertiesKey="VETERANS">
+			<tns:MovingCondition substitute="SATURDAY" with="PREVIOUS" weekday="FRIDAY"/>
+			<tns:MovingCondition substitute="SUNDAY" with="NEXT" weekday="MONDAY"/>
+	  </tns:Fixed>
+	  <tns:FixedWeekday which="FOURTH" weekday="THURSDAY" month="NOVEMBER" validFrom="1863" descriptionPropertiesKey="THANKSGIVING"/>
+	  
+	  <tns:Fixed month="DECEMBER" day="25" descriptionPropertiesKey="CHRISTMAS_O"/>
+	  <tns:Fixed month="DECEMBER" day="25" descriptionPropertiesKey="CHRISTMAS">
+			<tns:MovingCondition substitute="SATURDAY" with="PREVIOUS" weekday="FRIDAY"/>
+			<tns:MovingCondition substitute="SUNDAY" with="NEXT" weekday="MONDAY"/>
+	  </tns:Fixed>
+  </tns:Holidays>
+</tns:Configuration>
