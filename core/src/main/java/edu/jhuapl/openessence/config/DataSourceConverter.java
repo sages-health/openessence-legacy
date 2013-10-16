@@ -67,6 +67,15 @@ public class DataSourceConverter implements Converter<String, JdbcOeDataSource> 
             // Get roles of the authenticated user
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+            if (authentication == null) {
+                // This can happen if we're not running behind a ServletRequest, e.g. in an @Async task.
+                // It's not a security risk to return the data source because we've already caught non-logged in
+                // users (who would also have a null Authentication) at the request level. The remaining checks in this
+                // method are to make sure logged in users have appropriate access rights to the data source, but
+                // that's not an issue if there's no user associated with this action.
+                return dataSource;
+            }
+
             for (GrantedAuthority eachAuthority : authentication.getAuthorities()) {
                 if (roles.contains(eachAuthority.toString())) {
                     return dataSource;
