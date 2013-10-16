@@ -97,7 +97,7 @@ OE.report.datasource.panel = function (configuration) {
                                     } else {
                                         if (result.length >= 2 && result[2] && result[2].type == 'DATE') {
                                             if (('string' == typeof oldValue) || ('number' == typeof oldValue)) {
-                                                newValue = moment(oldValue).format('L');
+                                                newValue = moment(oldValue).format('YYYY-MM-DD');
                                             }
                                         }
                                     }
