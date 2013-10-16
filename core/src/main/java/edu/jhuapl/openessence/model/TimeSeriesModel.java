@@ -43,6 +43,8 @@ public class TimeSeriesModel { // TODO refactor with ChartModel
     private String[] accumId;
     private String[] timeseriesDenominator;
     private int prepull;
+    private String xAxisLabel;
+    private String yAxisLabel;
 
     public TimeSeriesModel() {
         timeseriesTitle = "";
@@ -148,5 +150,21 @@ public class TimeSeriesModel { // TODO refactor with ChartModel
 
     public void setGraphExpectedValues(boolean graphExpectedValues) {
         this.graphExpectedValues = graphExpectedValues;
+    }
+
+    public String getXAxisLabel() {
+        return xAxisLabel;
+    }
+
+    public void setXAxisLabel(String xAxisLabel) {
+        this.xAxisLabel = xAxisLabel;
+    }
+
+    public String getYAxisLabel() {
+        return yAxisLabel;
+    }
+
+    public void setYAxisLabel(String yAxisLabel) {
+        this.yAxisLabel = yAxisLabel;
     }
 }
