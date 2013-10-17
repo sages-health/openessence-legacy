@@ -43,7 +43,7 @@ dependencies {
     compile "org.apache.poi:poi:3.8"
     compile "org.apache.poi:poi-ooxml:3.8"
     compile "commons-codec:commons-codec:1.7"
-    compile "commons-fileupload:commons-fileupload:1.2.2"
+    compile "commons-fileupload:commons-fileupload:1.2.2" // don't need this once we move to Servlet 3.0+
     compile "commons-io:commons-io:${project.versions.commonsIo}"
     compile "commons-lang:commons-lang:2.4"
     compile "commons-net:commons-net:3.2"
@@ -92,21 +92,27 @@ dependencies {
     testCompile "org.springframework:spring-test:${project.versions.spring}"
 }
 
-/**
- * Always build an exploded version too.
- *
- * Feel free to turn this on if you want it in your personal builds,
- * but it takes a long time                                         
- */
-//task explodedWar(type: Sync) {
-//	into "$buildDir/exploded"
-//	with war
-//}
-//war.dependsOn explodedWar
+// add custom resources, e.g. for production environment
+def environment = hasProperty('env') ? env : 'main'
+sourceSets.main.resources.srcDirs += ["src/${environment}/resources"]
 
 war {
     baseName "openessence" // instead of "core"
 
     // don't put version in WAR so we don't have to rename it before deploy
     archiveName "${baseName}.war"
+}
+
+/**
+ * Task to build an exploded WAR.
+ *
+ * This needs to be declared after the `war` task since the `war` task
+ * sets `archiveName`. If using IntelliJ as the runtime environment, it looks
+ * for the "openessence" directory.
+ *
+ * WARNING: Because of how Gradle builds WARs, this does a lot of file I/O and takes a fair amount of time.
+ */
+task explodedWar(type: Sync) {
+    into "$buildDir/${war.archiveName}_exploded"
+    with war
 }

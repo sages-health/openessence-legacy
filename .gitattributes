@@ -20,7 +20,3 @@
 *.jpeg binary
 *.gif binary
 *.jar binary
-
-
-# Users need to explicitly add custom merge strategy or this won't do anything.
-site.gradle merge=ours

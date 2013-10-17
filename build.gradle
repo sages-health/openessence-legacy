@@ -26,8 +26,10 @@
 
 import org.apache.tools.ant.filters.EscapeUnicode
 
-// add site-specific build logic
-apply from: 'site.gradle'
+if (file('dev.gradle').exists()) {
+    // load custom developer settings
+    apply from: 'dev.gradle'
+}
 
 allprojects {
     apply plugin: 'java'
