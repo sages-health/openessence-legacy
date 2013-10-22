@@ -36,17 +36,11 @@ OE.report.datasource.panel = function (configuration) {
     var resultsTabPanel = null;
     var queryFormPanel = null;
 
-    function populateQueryFormPanel(parameters, expand) {
-        queryFormPanel.populate(parameters);
-        queryFormPanel.expand(expand ? expand : true);
-    }
-
     function showTimeSeries(parameters) {
         var tab = resultsTabPanel.add(new configuration.graphTabClass({
             url: OE.util.getUrl('/ds/' + configuration.dataSource + '/diagrams/time-series'),
             title: parameters.title || messagesBundle['panel.timeseries.header'] + ' ' + (++n),
-            parameters: parameters,
-            queryFormCallback: populateQueryFormPanel
+            parameters: parameters
         }));
         tab.parameters = parameters || {};
         tab.parameters.queryType = 'timeseries';
@@ -181,34 +175,44 @@ OE.report.datasource.panel = function (configuration) {
     }
     
     function showDetails(parameters) {
+        var me = this;
+
         Ext.applyIf(parameters, {
             gridClass: Ext.grid.GridPanel
         });
 
-        var tab = resultsTabPanel.add(OE.report.datasource.details.init({
-            url: parameters.url,
-            title: parameters.title,
-            autoTitle: parameters.autoTitle,
-            data: configuration.data,
-            dataSource: configuration.dataSource,
-            parameters: parameters,
-            queryFormCallback: populateQueryFormPanel,
-            gridClass: parameters.gridClass,
-            gridExtraConfig: parameters.gridExtraConfig,
-            pageSize: parameters.pageSize,
-            pivot: parameters.pivot,
-            index: ++n
-        }));
-        tab.parameters = parameters || {};
+        var addTab = function (detailsTabClass) {
+            var tab = resultsTabPanel.add(new detailsTabClass({
+                url: parameters.url,
+                title: parameters.title || messagesBundle['panel.details.header'] + ' ' + (++n),
+                data: configuration.data,
+                dataSource: configuration.dataSource,
+                parameters: parameters,
+                gridClass: parameters.gridClass,
+                gridExtraConfig: parameters.gridExtraConfig,
+                pageSize: parameters.pageSize,
+                pivot: parameters.pivot
+            }));
+            tab.parameters = parameters || {};
 
-        // this is a hack so saved queries know what type of query to save
-        // TODO move to more object-oriented solution
-        tab.parameters.queryType = parameters.queryType || 'details';
+            // this is a hack so saved queries know what type of query to save
+            // TODO move to more object-oriented solution
+            tab.parameters.queryType = parameters.queryType || 'details';
 
-        resultsTabPanel.setActiveTab(tab);
-        queryFormPanel.collapse(true);
+            resultsTabPanel.setActiveTab(tab);
+            queryFormPanel.collapse(true);
+        };
 
-        return tab;
+        if (typeof configuration.detailsTabClass == 'string') {
+            // load class through require
+            require([configuration.detailsTabClass], function (OE) {
+                addTab.call(me, OE[configuration.detailsTabClass]);
+            });
+        } else {
+            addTab.call(me, configuration.detailsTabClass);
+        }
+
+        // adds tab asynchronously, although we could return a promise if anyone wanted the details tab
     }
 
     function showCharts(parameters) {
@@ -218,7 +222,6 @@ OE.report.datasource.panel = function (configuration) {
             //Overriding title for charts since they have an ext title
             parameters: Ext.apply(parameters, {title: ""}),
             charts: parameters.charts,
-            queryFormCallback: populateQueryFormPanel,
             index: ++n
         }));
         tab.parameters = parameters || {};
@@ -237,8 +240,7 @@ OE.report.datasource.panel = function (configuration) {
         n++;
         var tab = resultsTabPanel.add(new configuration.mapTabClass({ // use injected MapTab implementation
             title: parameters.title || messagesBundle['panel.map.header'] + ' ' + n,
-            getMapData: parameters,
-            queryFormCallback: populateQueryFormPanel
+            getMapData: parameters
         }));
         tab.parameters = parameters || {};
         tab.parameters.queryType = 'map';

@@ -59,7 +59,8 @@ requirejs.config({
         Q: 'lib/q/q.min', // TODO use jQuery promises instead
 
         // our stuff
-        CsvUploadWindow: 'oe/app/widget/CsvUploadWindow' // TODO redo layout according to requirejs conventions
+        CsvUploadWindow: 'oe/app/widget/CsvUploadWindow', // TODO redo layout according to requirejs conventions
+        DetailsPanel: 'oe/app/widget/DetailsPanel'
     }
 });
 

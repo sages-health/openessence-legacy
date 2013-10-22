@@ -191,7 +191,6 @@
         src="${contextPath}/js/oe/reporting/defaultDataSourceReportPivotSelectionForm.js"></script>
 <script type="text/javascript"
         src="${contextPath}/js/oe/reporting/defaultDataSourceReportResultsParameterPanel.js"></script>
-<script type="text/javascript" src="${contextPath}/js/oe/reporting/defaultDataSourceReportDetailsPanel.js"></script>
 <script type="text/javascript"
         src="${contextPath}/js/oe/reporting/defaultDataSourceReportGraphDetailsPanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/reporting/defaultDataSourceReportFormPanel.js"></script>

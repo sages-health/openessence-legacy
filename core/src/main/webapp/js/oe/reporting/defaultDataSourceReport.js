@@ -46,6 +46,7 @@ OE.report.datasource.main = function (configuration) {
                 data: response,
 
                 // TODO use a real IoC solution, e.g. Angular
+                detailsTabClass: configuration.detailsTabClass || 'DetailsPanel', // loaded through requirejs
                 graphTabClass: configuration.graphTabClass || OE.GraphPanel,
                 mapTabClass: configuration.mapTabClass || OE.MapTab
             });
