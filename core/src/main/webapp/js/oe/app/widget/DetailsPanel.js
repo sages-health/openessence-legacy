@@ -83,8 +83,7 @@ define([], function () {
                             return gridExtraConfig;
 
                         })(),
-                        pageSize: configuration.pageSize,
-                        pivot: configuration.pivot
+                        pageSize: configuration.pageSize
                     })
                 ]
             }, configuration);

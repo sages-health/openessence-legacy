@@ -53,16 +53,12 @@ OE.datasource.grid.init = function (configuration) {
      */
     var columnsAndFields = OE.datasource.grid.createColumnsAndFields(configuration.dataSource, dimensions, metadata, configuration.parameters);
 
-    function makeStandardGrid(columnsAndFields, oldColumnsAndFields) {
+    function makeStandardGrid(columnsAndFields) {
         dataStore = new OE.data.RestrictedJsonStore({
             url: configuration.url || OE.util.getUrl('/report/detailsQuery'),
             method: 'POST',
             baseParams: (function () {
                 var params = {};
-                if (configuration.pivot) {
-                    params.pivotX = configuration.pivot.x.id;
-                    params.pivotY = configuration.pivot.y.id;
-                }
                 if (configuration.parameters.filters) {
                     // unpack filters, TODO make detailsQuery accept explicit filters
                     Ext.apply(params, configuration.parameters.filters);
@@ -95,18 +91,9 @@ OE.datasource.grid.init = function (configuration) {
          * Also respects column ordering and sorting.
          */
         function makeExportLink(gridPanel) {
-            var columns;
-
-            if (configuration.pivot) {
-                columns = [];
-                for (var i = 0; i < oldColumnsAndFields.columns.length; i++) {
-                    columns.push(oldColumnsAndFields.columns[i]);
-                }
-            } else {
-                columns = gridPanel.getColumnModel().getColumnsBy(function (c) {
-                    return Ext.isDefined(c.hidden) && !c.hidden;
-                });
-            }
+            var columns = gridPanel.getColumnModel().getColumnsBy(function (c) {
+                return Ext.isDefined(c.hidden) && !c.hidden;
+            });
 
             var sortState = gridPanel.getStore().sortInfo;
 
@@ -213,128 +200,10 @@ OE.datasource.grid.init = function (configuration) {
         }
     }, configuration));
 
-    function addPivotYColumn(columnsAndFieldsPivot) {
-        columnsAndFieldsPivot.columns.push({
-            dataIndex: configuration.pivot.y.id,
-            header: configuration.pivot.y.name,
-            id: configuration.pivot.y.id
-        });
-        columnsAndFieldsPivot.fields.push({
-            name: configuration.pivot.y.id,
-            type: 'string'
-        });
-    }
-
-    function addPivotTotalColumn(columnsAndFieldsPivot) {
-        columnsAndFieldsPivot.columns.push({
-            dataIndex: 'Total',
-            header: 'Total',
-            id: 'Total',
-            sortable: false
-        });
-        columnsAndFieldsPivot.fields.push({
-            name: 'Total',
-            type: 'int'
-        });
-    }
-
-    if (configuration.pivot) {
-        var columnsAndFieldsPivot = { columns: [], fields: [] };
-
-        if (configuration.pivot.x.dimension.possibleValues.data) {
-            // Add the category column (the Y dimension)
-            addPivotYColumn(columnsAndFieldsPivot);
-
-            // Add the data columns
-            Ext.each(configuration.pivot.x.dimension.possibleValues.data, function (row) {
-                var id = 0;
-                var name = 1;
-                var filter = configuration.parameters.filters[configuration.pivot.x.id];
-
-                // Quick fix to make the virtual x columns respect any applied filters
-                // Basically, only show selected x columns if chosen in the filter. If unspecified, show all.
-                if (!filter || filter.indexOf(row[id]) != -1) {
-                    columnsAndFieldsPivot.columns.push({dataIndex: row[id], header: row[name], id: row[id], sortable: false});
-                    columnsAndFieldsPivot.fields.push({name: row[id], type: 'int'});
-                }
-            });
-
-            // Add the total column
-            addPivotTotalColumn(columnsAndFieldsPivot);
-
-            // Render the pivot grid
-            makeStandardGrid(columnsAndFieldsPivot, columnsAndFields);
-            gridPanel.add(grid);
-            gridPanel.doLayout();
-        } else {
-            var storeFields = [];
-            var results = [];
-            Ext.each(configuration.pivot.x.dimension.possibleValues.detailDimensions, function (result) {
-                storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
-                results.push(result.name);
-            });
-
-            var getPossibleValues = function () {
-                // Extract the metadata from the dimension, delegating to inner objects if present
-                var dimensionMeta = configuration.pivot.x.dimension.meta || {};
-                dimensionMeta = Ext.applyIf(dimensionMeta, dimensionMeta.grid);
-                dimensionMeta = Ext.applyIf(dimensionMeta, dimensionMeta.form);
-
-                var deferred = Q.defer();
-                OE.data.doAjaxRestricted({
-                    url: OE.util.getUrl('/report/detailsQuery'),
-                    method: 'GET',
-                    scope: this,
-                    params: {
-                        dsId: configuration.pivot.x.dimension.possibleValues.dsId,
-                        results: results,
-                        pagesize: -1,
-                        sortcolumn: dimensionMeta.sortcolumn || configuration.pivot.x.dimension.possibleValues.detailDimensions[0].name, //Use this or first column
-                        sortorder: dimensionMeta.sortorder || 'ASC'
-                    },
-                    onJsonSuccess: function (response) {
-                        deferred.resolve(response);
-                    },
-                    onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
-                });
-                return deferred.promise;
-            };
-
-            getPossibleValues().then(function (response) {
-                // Add the category column (the Y dimension)
-                addPivotYColumn(columnsAndFieldsPivot);
-
-                // Add the data columns
-                Ext.each(response.rows, function (row) {
-                    var id = configuration.pivot.x.dimension.possibleValues.detailDimensions[0].name;
-                    var name = configuration.pivot.x.dimension.possibleValues.detailDimensions[1].name;
-                    var filter = configuration.parameters.filters[configuration.pivot.x.id];
-
-                    // Quick fix to make the virtual x columns respect any applied filters
-                    // Basically, only show selected x columns if chosen in the filter. If unspecified, show all.
-                    if (!filter || filter.indexOf(row[id]) != -1) {
-                        columnsAndFieldsPivot.columns.push({dataIndex: row[id], header: row[name], id: row[id], sortable: false});
-                        columnsAndFieldsPivot.fields.push({name: row[id], type: 'int'});
-                    }
-                });
-
-                // Add the total column
-                addPivotTotalColumn(columnsAndFieldsPivot);
-
-                // Render the pivot grid
-                makeStandardGrid(columnsAndFieldsPivot, columnsAndFields);
-                gridPanel.add(grid);
-                gridPanel.doLayout();
-            }).fail(function (e) {
-                    console.error(e);
-                });
-        }
-    } else {
-        // Render the details grid
-        makeStandardGrid(columnsAndFields, null);
-        gridPanel.add(grid);
-        gridPanel.doLayout();
-    }
+    // Render the details grid
+    makeStandardGrid(columnsAndFields, null);
+    gridPanel.add(grid);
+    gridPanel.doLayout();
 
     return gridPanel;
 };

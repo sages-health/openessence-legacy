@@ -169,7 +169,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                     delete filters.dsId;
 
                     // Add the selected accumulation or all (for the grid)
-                    var selectedAccumulations = filters['accumId'];
+                    var selectedAccumulations = filters.accumId;
                     if (selectedAccumulations) {
                         results = results.concat(selectedAccumulations);
                     } else {
