@@ -114,7 +114,7 @@ OE.EditorGridField = Ext.extend(Ext.grid.EditorGridPanel, {
                     var storeFields = [];
                     Ext.each(dimension.possibleValues.detailDimensions,
                         function (result) {
-                            storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                            storeFields.push(OE.util.dimensionToField(result));
                             results.push(result.name);
                         });
 

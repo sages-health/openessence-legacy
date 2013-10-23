@@ -112,15 +112,11 @@ OE.InputTab = Ext.extend(Ext.Panel, {
                 method: 'GET',
                 scope: this,
                 onJsonSuccess: function (response) {
-                    me.gridPanel = me.createGridPanel(displayDatasource, response);
-                    me.insert(0, me.gridPanel);
-                    me.doLayout();
+                    me.insertGridPanel(displayDatasource, response);
                 }
             });
         } else {
-            me.gridPanel = me.createGridPanel();
-            me.insert(0, me.gridPanel);
-            me.doLayout();
+            me.insertGridPanel();
         }
 
         this.insert(1, this.formTabPanel);
@@ -144,7 +140,7 @@ OE.InputTab = Ext.extend(Ext.Panel, {
         }
     },
 
-    createGridPanel: function (dataSource, data) {
+    insertGridPanel: function (dataSource, data) {
         var me = this;
         var selectionModel = new Ext.grid.RowSelectionModel();
 
@@ -153,20 +149,26 @@ OE.InputTab = Ext.extend(Ext.Panel, {
 
         selectionModel.addListener('selectionchange', this.onSelectionChange, this, {buffer: 5});
 
-        return OE.datasource.grid.init({
-            title: messagesBundle[this.dataSource + '.grid'],  //this = use entry grid title
-            itemId: me.itemId + '-grid',
-            dataSource: this.dataSource,
-            collapsible: false,
-            height: 230,
-            parameters: { dsId: dataSource},
-            data: data || {},
-            selectionModel: selectionModel,
-            rowdblclick: function () {
-                me.openFormTab(selectionModel.getSelected(), me.setValuesCallback);
-            },
-            plugins: null
+        require(['DataSourceGrid'], function (DataSourceGrid) {
+            me.gridPanel = new DataSourceGrid({
+                title: messagesBundle[me.dataSource + '.grid'],
+                itemId: me.itemId + '-grid',
+                dataSource: me.dataSource,
+                collapsible: false,
+                height: 230,
+                parameters: {dsId: dataSource},
+                data: data || {},
+                selectionModel: selectionModel,
+                rowdblclick: function () {
+                    me.openFormTab(selectionModel.getSelected(), me.setValuesCallback);
+                },
+                plugins: null
+            });
+            me.insert(0, me.gridPanel);
+            me.doLayout();
         });
+
+        // grid inserted asynchronously, could return promise if we wanted though
     },
 
     /**

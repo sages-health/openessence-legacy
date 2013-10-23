@@ -60,7 +60,9 @@ requirejs.config({
 
         // our stuff
         CsvUploadWindow: 'oe/app/widget/CsvUploadWindow', // TODO redo layout according to requirejs conventions
-        DetailsPanel: 'oe/app/widget/DetailsPanel'
+        DataSourceGrid: 'oe/app/widget/DataSourceGrid',
+        DetailsPanel: 'oe/app/widget/DetailsPanel',
+        SearchPanel: 'oe/app/widget/SearchPanel'
     }
 });
 

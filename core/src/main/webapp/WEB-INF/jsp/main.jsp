@@ -154,7 +154,6 @@
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/LinkFormLayout.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/LoggedInHeader.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/NavPanel.js"></script>
-<script type="text/javascript" src="${contextPath}/js/oe/app/widget/dataSourceGrid.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/SavedQueryPanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/ChartPanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/app/widget/Chart.js"></script>
@@ -175,8 +174,6 @@
 <script type="text/javascript" src="${contextPath}/js/oe/mainPageBody.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/data.js"></script>
 
-<script type="text/javascript"
-        src="${contextPath}/js/oe/dataEntry/defaultDataSourceConfigurationSearchFormPanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/dataEntry/defaultDataSourceConfigurationFormPanel.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/dataEntry/defaultDataSourceConfiguration.js"></script>
 <script type="text/javascript" src="${contextPath}/js/oe/dataEntry/configFormPanel.js"></script>

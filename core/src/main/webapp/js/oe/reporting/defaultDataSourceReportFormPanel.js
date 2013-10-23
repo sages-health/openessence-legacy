@@ -628,7 +628,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                 // Load possible values via details query
                 var storeFields = [];
                 Ext.each(dimension.possibleValues.detailDimensions, function (result) {
-                    storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                    storeFields.push(OE.util.dimensionToField(result));
                     results.push(result.name);
                 });
 

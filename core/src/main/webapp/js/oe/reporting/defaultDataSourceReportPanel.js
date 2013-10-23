@@ -113,7 +113,7 @@ OE.report.datasource.panel = function (configuration) {
 
                         deferred.resolve(pivotData);
                     },
-                    onRelogin: {callback: OE.datasource.grid.init, args: [configuration]}
+                    onRelogin: {callback: showPivot, args: [parameters]}
                 });
 
                 return deferred.promise();
@@ -205,8 +205,8 @@ OE.report.datasource.panel = function (configuration) {
 
         if (typeof configuration.detailsTabClass == 'string') {
             // load class through require
-            require([configuration.detailsTabClass], function (OE) {
-                addTab.call(me, OE[configuration.detailsTabClass]);
+            require([configuration.detailsTabClass], function (DetailsTab) {
+                addTab.call(me, DetailsTab);
             });
         } else {
             addTab.call(me, configuration.detailsTabClass);

@@ -24,7 +24,7 @@
  * FOR LOST PROFITS.
  */
 
-define([], function () {
+define(['DataSourceGrid'], function (DataSourceGrid) {
     var DetailsPanel = Ext.extend(Ext.Panel, {
         constructor: function (configuration) {
             var dataSource = configuration.dataSource;
@@ -63,7 +63,7 @@ define([], function () {
                 layout: 'fit',
                 closable: true,
                 items: [
-                    OE.datasource.grid.init({
+                    new DataSourceGrid({
                         url: configuration.url,
                         parameters: configuration.parameters,
                         dataSource: dataSource,
@@ -91,8 +91,6 @@ define([], function () {
             DetailsPanel.superclass.constructor.call(this, configuration);
         }
     });
-    return {
-        DetailsPanel: DetailsPanel
-    };
+    return DetailsPanel;
 });
 

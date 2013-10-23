@@ -138,7 +138,7 @@ OE.input.datasource.form.init = function (configuration) {
                 field.name = undefined;
                 field.items = [];
 
-                var columnsAndFields = OE.datasource.grid.createColumnsAndFields(dimension.possibleValues.dsId, dimension.possibleValues.detailDimensions, metadata);
+                var columnsAndFields = OE.util.createColumnsAndFields(dimension.possibleValues.dsId, dimension.possibleValues.detailDimensions, metadata);
 
                 var baseParams = {dsId: dimension.possibleValues.dsId, results: Ext.pluck(dimension.possibleValues.detailDimensions, 'name')};
 
@@ -351,7 +351,7 @@ OE.input.datasource.form.init = function (configuration) {
                             // Load possible values via details query
                             var storeFields = [];
                             Ext.each(dimension.possibleValues.detailDimensions, function (result) {
-                                storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                                storeFields.push(OE.util.dimensionToField(result));
                                 results.push(result.name);
                             });
 
@@ -522,7 +522,7 @@ OE.input.datasource.form.init = function (configuration) {
                                 // Load possible values via details query
                                 var storeFields = [];
                                 Ext.each(dimension.possibleValues.detailDimensions, function (result) {
-                                    storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                                    storeFields.push(OE.util.dimensionToField(result));
                                     results.push(result.name);
                                 });
 
@@ -687,42 +687,43 @@ OE.input.datasource.form.init = function (configuration) {
     }
 
     function showSearchForm(configuration) {
-        var win = null;
+        require(['SearchPanel'], function (SearchPanel) {
+            var win = null;
 
-        var form = OE.input.datasource.search.form({
-            dataSource: configuration.possibleValues.dsId,
-            data: configuration.possibleValues,
-            singleSelect: configuration.singleSelect,
-            callback: function (values) {
-                if (values && configuration.store) {
-                    var newData = Ext.pluck(values.results, 'data');
-                    Ext.each(newData, function (item) {
-                        if (!configuration.store.data.containsKey(item[configuration.store.idProperty])) {
-                            configuration.store.loadData({rows: item}, true);
-                        }
-                    });
+            var form = new SearchPanel({
+                dataSource: configuration.possibleValues.dsId,
+                data: configuration.possibleValues,
+                singleSelect: configuration.singleSelect,
+                callback: function (values) {
+                    if (values && configuration.store) {
+                        var newData = Ext.pluck(values.results, 'data');
+                        Ext.each(newData, function (item) {
+                            if (!configuration.store.data.containsKey(item[configuration.store.idProperty])) {
+                                configuration.store.loadData({rows: item}, true);
+                            }
+                        });
+                    }
+                    win.close();
                 }
-                win.close();
-            }
-        });
+            });
 
-        win = new Ext.Window({
-            layout: 'fit',
-            title: messagesBundle[configuration.dataSource + '.search'] || messagesBundle['input.datasource.default.search'],
-            height: 600,
-            minHeight: 400,
-            width: 500,
-            minWidth: 300,
-            closable: true,
-            resizable: true,
-            plain: true,
-            border: false,
-            modal: true,
-            items: [form]
+            win = new Ext.Window({
+                layout: 'fit',
+                title: messagesBundle[configuration.dataSource + '.search'] ||
+                    messagesBundle['input.datasource.default.search'],
+                height: 600,
+                minHeight: 400,
+                width: 500,
+                minWidth: 300,
+                closable: true,
+                resizable: true,
+                plain: true,
+                border: false,
+                modal: true,
+                items: [form]
+            });
+            win.show();
         });
-        win.show();
-
-        return form;
     }
 
     var formPanel = new Ext.form.FormPanel({
