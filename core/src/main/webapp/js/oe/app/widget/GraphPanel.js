@@ -218,6 +218,7 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                 treeData.push(parentAry);
                 i--; // we still have to add the next element in the JSON
             } else {
+                parentAry = [];
                 parentAry.id = "checkbox" + graphId + i;
                 parentAry.name = "checkbox" + graphId + i;
                 parentAry.text = dataSeriesJSON[i].seriesName;
