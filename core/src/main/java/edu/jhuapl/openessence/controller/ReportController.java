@@ -533,6 +533,10 @@ public class ReportController extends OeController {
         return response;
     }
 
+    private boolean isTimeZoneEnabled() {
+        return "true".equalsIgnoreCase(messageSource.getMessage(TIMEZONE_ENABLED, "false"));
+    }
+
     private Map<String, Object> createTimeseries(String userPrincipalName, DataSeriesSource dss, List<Filter> filters,
                                                  GroupingImpl group,
                                                  String timeResolution, Integer prepull, String graphTimeSeriesUrl,
@@ -573,8 +577,7 @@ public class ReportController extends OeController {
                     new ArrayList<Dimension>(ControllerUtils.unionDimensions(accumulations, timeseriesDenominators));
 
             int timeOffsetMillies = 0;
-            String timezoneEnabledString = messageSource.getMessage(TIMEZONE_ENABLED, "false");
-            if (timezoneEnabledString.equalsIgnoreCase("true")) {
+            if (isTimeZoneEnabled()) {
                 timeOffsetMillies = (clientTimezone.getRawOffset() - clientTimezone.getDSTSavings()) -
                                     (TimeZone.getDefault().getRawOffset() - TimeZone.getDefault().getDSTSavings());
             }
@@ -590,7 +593,10 @@ public class ReportController extends OeController {
             if (points.size() > 0) {
                 DateFormat dateFormat = getDateFormat(timeResolution); //dateFormat.setTimeZone(timezone);
                 DateFormat tmpDateFormat = (DateFormat) dateFormat.clone();
-                tmpDateFormat.setTimeZone(clientTimezone);
+
+                if (isTimeZoneEnabled()) {
+                    tmpDateFormat.setTimeZone(clientTimezone);
+                }
 
                 // number format for level
                 NumberFormat numFormat3 = NumberFormat.getNumberInstance();
