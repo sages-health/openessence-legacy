@@ -60,6 +60,16 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
         Ext.applyIf(params, {height: 460});
 
         var me = this;
+        if (me.graphConfiguration) {
+            var graphConfig = me.graphConfiguration;
+            Ext.apply(params, {
+                timeseriesTitle: graphConfig.graphTitle,
+                xAxisLabel: graphConfig.xAxisLabel,
+                yAxisLabel: graphConfig.yAxisLabel,
+                yAxisMax: graphConfig.yAxisMax,
+                yAxisMin: graphConfig.yAxisMin
+            });
+        }
         OE.data.doAjaxRestricted({
             url: this.url,
             method: 'GET',
