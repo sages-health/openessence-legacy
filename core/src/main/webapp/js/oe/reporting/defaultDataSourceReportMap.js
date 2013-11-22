@@ -311,6 +311,7 @@ OE.report.datasource.map.Panel = Ext.extend(GeoExt.MapPanel, {
                 y: 10,
                 closable: false,
                 collapsible: true,
+                resizable: false,
                 items: [
                     {
                         autoScroll: true,
