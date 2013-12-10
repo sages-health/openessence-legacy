@@ -163,13 +163,6 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                     handler: function () {
                         me.showTimeSeriesGraphOptions();
                     }
-                },
-                {
-                    id: 'save',
-                    qtip: messagesBundle['graph.downloadChart'],
-                    handler: function () {
-                        me.showDownloadOptions();
-                    }
                 }
             ],
             html: html
@@ -422,109 +415,5 @@ OE.GraphPanel = Ext.extend(Ext.Panel, { // TODO extend OE.DiagramPanel, refactor
                 }
             ]
         }).show();
-    },
-
-    showDownloadOptions: function (address, imageMapName) {
-        var me = this;
-        var graphId = "graph" + imageMapName;
-
-        var imageTypeChangeHandler = function (checkbox, checked) {
-            if (checked) {
-                var downloadForm = Ext.getCmp(checkbox.graphId + "downloadForm");
-                var isDisabled = (checkbox.inputValue === "emf" || checkbox.inputValue === "eps");
-
-                downloadForm.items.each(function (item) {
-                    var itemName = item.name;
-
-                    if (itemName && itemName.substr(0, 10) === "resolution") {
-                        item.setDisabled(isDisabled);
-                    }
-                });
-            }
-        };
-
-        var downloadWindow = null;
-        downloadWindow = new Ext.Window({
-            title: messagesBundle['graph.downloadOptions'],
-            modal: true,
-            closeAction: "hide",
-            width: 400,
-            height: 210,
-            plain: true,
-            items: [
-                {
-                    xtype: "form",
-                    id: graphId + "downloadForm",
-                    url: this.graphConfiguration.address,
-                    defaultType: "radiogroup",
-                    frame: true,
-                    defaults: {
-                        style: "width:200px"
-                    },
-                    items: [
-                        {
-                            xtype: "textfield",
-                            id: "getHighResFile",
-                            name: "getHighResFile",
-                            hidden: true,
-                            value: 1
-                        },
-                        {
-                            fieldLabel: messagesBundle['graph.imageType'] || "Image type",
-                            columns: 3,
-                            items: [
-                                {    name: "imageType", inputValue: "png", boxLabel: 'PNG',
-                                    graphId: graphId, handler: imageTypeChangeHandler, checked: true
-                                }
-                            ]
-                        },
-                        {
-                            fieldLabel: messagesBundle['graph.resolution'] || "Resolution (dpi)",
-                            columns: 3,
-                            items: [
-                                { name: "resolution", inputValue: "100", boxLabel: '100', checked: true},
-                                { name: "resolution", inputValue: "150", boxLabel: '150'},
-                                { name: "resolution", inputValue: "200", boxLabel: '200'},
-                                { name: "resolution", inputValue: "250", boxLabel: '250'},
-                                { name: "resolution", inputValue: "300", boxLabel: '300'},
-                                { name: "resolution", inputValue: "350", boxLabel: '350'}
-                            ]
-                        }
-                    ],
-                    buttons: [
-                        {
-                            text: messagesBundle['graph.download'],
-                            formBind: true,
-                            handler: function () {
-                                var downloadForm = Ext.getCmp(graphId + "downloadForm").getForm();
-                                var domForm = downloadForm.getEl().dom;
-
-                                // force submit download form in the "old" html way
-                                // this allows the browser to open up a "Save As..."
-                                // dialog without submitting to an iframe or a new
-                                // blank window
-                                domForm.action = Ext.urlAppend(me.graphConfiguration.address, Ext.urlEncode({
-                                    graphDataId: me.graphConfiguration.graphDataId
-                                }));
-                                domForm.submit();
-
-                                downloadWindow.close();
-                            }
-                        },
-                        {
-                            text: messagesBundle['input.datasource.default.cancel'],
-                            handler: function () {
-                                downloadWindow.close();
-                            }
-                        }
-                    ]
-                },
-                {
-                    xtype: "label",
-                    text: messagesBundle['graph.highResDownloadWarning']
-                }
-            ]
-        }).show();
     }
-
 });
