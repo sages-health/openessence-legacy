@@ -46,6 +46,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.inject.Inject;
@@ -83,6 +84,9 @@ public class DataSourceLoader {
             for (int i = 0; i < groovyResources.length; i++) {
                 groovyScriptNames[i] = FilenameUtils.getName(groovyResources[i].getFile().getPath());
             }
+            // make sure our loading order hack works, e.g. that ASexes.groovy is loaded before BPatients.groovy
+            // Windows and OSX tend to return resources in alphabetical order, but Linux (ext4?) doesn't
+            Arrays.sort(groovyScriptNames);
 
             GroovyScriptEngine groovyScriptEngine = new GroovyScriptEngine(new URL[]{groovyRoot});
 
