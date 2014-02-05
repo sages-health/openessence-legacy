@@ -259,3 +259,155 @@ OE.util.getUrl = function (path) {
     return OE.contextPath + OE.servletPath + path;
 };
 
+/**
+ * Builds a field configuration from detail dimension.
+ */
+OE.util.dimensionToField = function (dimension) {
+    var field = {};
+
+    // Must match dataIndex
+    field.name = dimension.name;
+
+    switch (dimension.type) {
+        case 'Int': // TODO remove unused types
+        case 'INTEGER':
+        case 'LONG':
+            field.type = 'int';
+            break;
+        case 'DOUBLE':
+        case 'FLOAT':
+            field.type = 'float';
+            break;
+        case 'String':
+        case 'TEXT':
+            field.type = 'string';
+            field.sortType = Ext.data.SortTypes.asUCString;
+            break;
+        case 'Date':
+        case 'DATE':
+        case 'Date_Time':
+        case 'DATE_TIME':
+            // Support long dates
+            field.type = 'int';
+            break;
+        default:
+            field.type = 'auto';
+            break;
+    }
+
+    return field;
+};
+
+OE.util.createColumnsAndFields = function (dsId, dimensions, metadata, parameters) {
+    var columns = [];
+    var fields = [];
+
+    var results = (parameters && parameters.results ? parameters.results : undefined);
+
+    /**
+     * Builds a column configuration from detail dimension (defaults can be over ridden using grid meta data)
+     */
+    var createColumn = function (dsId, gridMetadata, dimension) {
+        var column = {};
+
+        column.id = dimension.name;
+        column.dataIndex = dimension.name;
+
+        // Check metadata, otherwise use sensible defaults
+        var dimensionMetadata = dimension.meta ? dimension.meta : {};
+        var dimensionGridMetadata = dimensionMetadata.grid ? dimensionMetadata.grid : {};
+        var dimensionFormMetadata = dimensionMetadata.form ? dimensionMetadata.form : {};
+
+        // Attempts to load header from displayName property, then dimensions bundle
+        // using a qualified (data source name) "dot" dimension name, then will try to load from dimensions bundle
+        // just using the dimension name, finally will just use the dimension name.
+        column.header = dimension.displayName || dimensionsBundle[dsId + '.' + dimension.name] ||
+            dimensionsBundle[dimension.name] || dimension.name;
+
+        if (Ext.isDefined(dimensionGridMetadata.width)) {
+            column.width = OE.util.getNumberValue(dimensionGridMetadata.width, 150);
+        }
+
+        if (Ext.isDefined(dimensionGridMetadata.sortable)) {
+            column.sortable = OE.util.getBooleanValue(dimensionGridMetadata.sortable, true);
+        }
+
+        if (Ext.isDefined(dimensionGridMetadata.hidden)) {
+            column.hidden = OE.util.getBooleanValue(dimensionGridMetadata.hidden, false);
+        }
+
+        // Renderer based on type (string and date)
+        if (dimension.type == 'TEXT' || dimension.type == 'String') {
+            column.renderer = Ext.util.Format.htmlEncode;
+        } else if (dimension.type == 'DATE' || dimension.type == 'Date' || dimension.type == 'DATE_TIME' ||
+            dimension.type == 'Date_Time') {
+            column.format = dimensionGridMetadata.format || gridMetadata.format || OE.util.defaultDateFormat;
+
+            column.renderer = function (value) {
+                return OE.util.renderDate(value, this.format || OE.util.defaultDateFormat);
+            };
+        } else if (dimension.type == 'BOOLEAN') {
+            if (dimensionGridMetadata.renderBooleanAsTernary) {
+                var overrideBundle = dimensionGridMetadata.overrideBooleanTernary || {};
+                column.renderer = function (value) {
+                    return OE.util.renderBooleanAsTernary(value, overrideBundle);
+                };
+            }
+        } else if (dimension.type == 'INTEGER') {
+            if (gridMetadata.renderIntToBool) {
+                column.renderer = function (value) {
+                    return value ? '<img src="../../images/true.png" alt="True">' :
+                           '<img src="../../images/false.png" alt="False">';
+                };
+            }
+        }
+
+        var oldRenderer = column.renderer;
+
+        // assume all colorfields want their text to be colored; this makes sense, right?
+        if (dimensionFormMetadata.xtype === 'colorfield') {
+            column.renderer = function (value, meta) {
+                // adapted from Ext.ux.Colorfield
+                var r = parseInt(value.slice(1, 3), 16);
+                var g = parseInt(value.slice(3, 5), 16);
+                var b = parseInt(value.slice(5), 16);
+                var textColor = (r + g + b) / 3 > 128 ? '#000' : '#FFF';
+
+                meta.attr = 'style="background:' + value +
+                    ';color:' + textColor +
+                    ';border-radius:5px; -webkit-border-radius:5px; -moz-border-radius:5px"';
+                return oldRenderer.call(this, value); // delegate to existing renderer
+            };
+        }
+
+        if (dimensionFormMetadata.xtype === 'queryImage') {
+            column.renderer = function (value, meta, record) {
+                var queryImg = "url('" + OE.contextPath + "/images/queryimages/";
+                if (value == "charts") {
+                    var chartType = Ext.decode(record.json.Parameters).charts[0].type;
+                    if (chartType == "pie") {
+                        queryImg += "piechart";
+                    } else {
+                        queryImg += "barchart";
+                    }
+                } else {
+                    queryImg += value;
+                }
+                meta.attr = 'style="background:' + queryImg + '.png\') no-repeat center"';
+                return oldRenderer.call(this, ""); // delegate to existing renderer
+            };
+        }
+
+        return column;
+    };
+
+    // Build columns and fields for grid, results for query
+    Ext.each(dimensions, function (dimension) {
+        if (!results || (results.indexOf(dimension.name) != -1)) {
+            columns.push(createColumn(dsId, metadata, dimension));
+            fields.push(OE.util.dimensionToField(dimension));
+        }
+    });
+
+    return {columns: columns, fields: fields};
+};

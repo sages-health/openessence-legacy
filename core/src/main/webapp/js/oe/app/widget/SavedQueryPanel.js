@@ -77,7 +77,8 @@ OE.SavedQueryPanel = Ext.extend(Ext.Panel, {
                 /**
                  * Columns and Fields used for the grid panel to display data source records, modified by metadata and params
                  */
-                var columnsAndFields = OE.datasource.grid.createColumnsAndFields(config.dataSource, dimensions, metadata, config.parameters);
+                var columnsAndFields = OE.util.createColumnsAndFields(config.dataSource, dimensions, metadata,
+                    config.parameters);
 
                 columnsAndFields.columns[0].width = 80; // make ID column smaller
                 columnsAndFields.columns[1].width = 200; // make QueryName column bigger

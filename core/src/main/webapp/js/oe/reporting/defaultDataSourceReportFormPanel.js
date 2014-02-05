@@ -169,7 +169,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                     delete filters.dsId;
 
                     // Add the selected accumulation or all (for the grid)
-                    var selectedAccumulations = filters['accumId'];
+                    var selectedAccumulations = filters.accumId;
                     if (selectedAccumulations) {
                         results = results.concat(selectedAccumulations);
                     } else {
@@ -628,7 +628,7 @@ OE.report.ReportForm = Ext.extend(Ext.form.FormPanel, {
                 // Load possible values via details query
                 var storeFields = [];
                 Ext.each(dimension.possibleValues.detailDimensions, function (result) {
-                    storeFields.push(OE.datasource.grid.createFieldFromDimension(result));
+                    storeFields.push(OE.util.dimensionToField(result));
                     results.push(result.name);
                 });
 

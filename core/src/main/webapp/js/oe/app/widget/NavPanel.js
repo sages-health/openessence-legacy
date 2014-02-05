@@ -96,29 +96,23 @@ OE.NavPanel = Ext.extend(Ext.tree.TreePanel, {
         // Lookup tab by item id (using the navigation menu node id)
         var tab = OE.MainTabPanel.instance.getComponent(node.id);
 
-        // Make Q globally available after the tab is opened
-        require(['Q'], function (Q) {
-            // This is terrible because it breaks IoC but it's needed because our code is bad
-            window.Q = Q;
-
-            // If allowing multiples then just add the tab with a null item id,
-            // otherwise create the tab with an item id or set it as active.
-            if (node.attributes.allowMultiple || !tab) {
-                node.attributes.src({
-                    title: node.text,
-                    destPanel: OE.main.tabsPanelId,
-                    oeds: node.attributes.name,
-                    itemId: (node.attributes.allowMultiple ? null : node.id),
-                    attributes: node.attributes,
-                    tabAdded: function (tab) {
-                        callback(tab);
-                    }
-                });
-            } else {
-                OE.MainTabPanel.instance.setActiveTab(tab);
-                callback(tab);
-            }
-        });
+        // If allowing multiples then just add the tab with a null item id,
+        // otherwise create the tab with an item id or set it as active.
+        if (node.attributes.allowMultiple || !tab) {
+            node.attributes.src({
+                title: node.text,
+                destPanel: OE.main.tabsPanelId,
+                oeds: node.attributes.name,
+                itemId: (node.attributes.allowMultiple ? null : node.id),
+                attributes: node.attributes,
+                tabAdded: function (tab) {
+                    callback(tab);
+                }
+            });
+        } else {
+            OE.MainTabPanel.instance.setActiveTab(tab);
+            callback(tab);
+        }
     }
 });
 
